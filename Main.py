@@ -1,7 +1,9 @@
 import os , time, random, math
-import Game_text_data
+from random import choice
+
+import Game_text_data as GTD
 from Items import GameItem
-from collections import deque
+#from collections import deque
 
 OPPOSITE = {"top": "bottom", "bottom": "top", "left": "right", "right": "left"}
 SIDES = ["top", "bottom", "left", "right"]
@@ -52,6 +54,8 @@ def roll_dice(start,end,advan=0):
     input("\nPress Enter to return...")
     return rand
 
+
+
     
 def main_menu():
     while True:
@@ -64,36 +68,22 @@ def main_menu():
  [2] How to Play
  [3] Quit
 """)
-        next_level_xp(5)
-        choice = input("> ").strip()
+        choice = input("> ").upper().strip()
         if choice == "1":
             return "start"
         elif choice == "2":
             show_help_new()
-        elif choice == "3":
+        elif choice == "3" or 'Q':
             print("Goodbye, hero...")
             time.sleep(1)
-            exit()
+            return 'exit'
         else:
             print("Invalid option.")
             time.sleep(1)
 
-
-def show_help():
-    clear()
-    print("""
---- HOW TO PLAY ---
-- You roll a dice to move across the dungeon.
-- Use W/A/S/D to choose a path.
-- Encounter enemies, treasure, and merchants.
-- Advantage if you find them first.
-- Survive and reach the final floor.
-""")
-    input("\nPress Enter to return...")
-
 def show_help_new(page = 0):
     max_page = 0
-    help_text = Game_text_data.help_txt
+    help_text = GTD.help_txt
     while True:
         clear()
         print(f'''=============
@@ -109,13 +99,11 @@ P = Privios Page | N = Next ''')
                 page -= 1
         else:
             break
-
-
     
 def game_menu():
 
-    HP = f'HP {player.hp}/{player.max_hp}'
-    MP = f'MP {player.mp}/{player.max_mp}'
+    HP = f'HP {player.hp}/{player.max_hp + player.max_hp_items}'
+    MP = f'MP {player.mp}/{player.max_mp + player.max_mp_items}'
     gold = f'Gold {player.gold}'
     XP = f'XP {player.xp}/{player.max_xp}'
     level = f'Level {player.level}'
@@ -133,7 +121,6 @@ def game_menu():
     print(f'''
 ========================================
               Dice Dungeon
-========================================
 {HP}  {MP}  {gold}
 {level}  {XP}
 H = Help | I = Invetory | T = Stats
@@ -158,40 +145,57 @@ Selacte a player class
         else:
             print("Invalid option.")
             time.sleep(1)
-    
 
-def next_level_xp(level):
-    return (math.floor((((math.log(level ** 2,10)) ** 2) + 1) * 5)) * 3
+def fight_art(player,enemy):
+    art = GTD.fight_art
+    player_art = art['player']
+    enemy_art = art[enemy.mob]
+    for i in range(len(player_art)):
+        temp = '      '
+        temp += player_art[i]
+        while len(temp) < 40: temp += ' '
+        temp += enemy_art[i]
+        print(temp)
 
 
 class Player:
     def __init__(self,cls):
         self.cls = cls
+        stats = GTD.player_cls[cls]['stats']
         self.moves = -1
         self.x = 2
         self.y = 2
         self.level = 1
         self.xp = 0
-        self.max_xp = next_level_xp(self.level)
+        self.max_xp = self.next_level_xp(self.level)
         self.gold = 10
         self.inventory = []
         self.equiped_items = []
         self.favorit = []
-        self.equipt_slots = {'wappon': False, 'helmet': False, 'chestplate': False, 'pants': False, 'boots': False, 'sheald': False}
-        if cls == 'Adventurer':
-            self.max_move = 6
-            self.min_move = 1
-            self.max_hp = 20
-            self.max_mp = 20
-            self.atk = 2
-            self.sp_atk = 2
-            self.Def = 2
-            self.sp_Def = 2
-            self.crit_chance = 2
-            self.crit_bounus = 10
+        self.equipt_slots = {'wappon': [False,None], 'helmet': [False,None], 'chestplate': [False,None], 'pants': [False,None], 'boots': [False,None], 'sheald': [False,None]}
+        self.max_move = stats['max_move']
+        self.min_move = stats['min_move']
+        self.max_hp = stats['max_hp']
+        self.max_mp = stats['max_mp']
+        self.atk = stats['atk']
+        self.sp_atk = stats['sp_atk']
+        self.def_ = stats['def_']
+        self.sp_def = stats['sp_def']
+        self.crit_chance = stats['crit_chance']
+        self.crit_bonus = stats['crit_bonus']
+        self.add_to_inv(GameItem(*GTD.player_cls[cls]['item']))
+        self.attacks = []
+        self.attacks_used = {}
+        for i in GTD.player_cls[cls]['attacks']:
+            self.attacks.append(GTD.attacks[i])
+            self.attacks_used[i] = 0
             
         self.hp = self.max_hp
         self.mp = self.max_mp
+        self.item_stats_add()
+
+    def next_level_xp(self,level):
+        return (math.floor((((math.log(level ** 2,10)) ** 2) + 1) * 5)) * 3
 
     def roll_for_move(self):
         roll = roll_dice(self.min_move,self.max_move)
@@ -211,15 +215,25 @@ class Player:
         if item in self.equiped_items:
             self.equiped_items.remove(item)
             item.is_equiped = False
-            self.equipt_slots[slot] = False
+            self.equipt_slots[slot][0] = False
+            self.equipt_slots[slot][1] = None
         else:
-            if self.equipt_slots[slot]:
+            if self.equipt_slots[slot][0]:
                 print(f'You have laredy a {slot} equipped')
-                time.sleep(1)
+                choice = input('Do you want to swape? [y/n]>')
+                if choice == 'y':
+                    self.equiped_items.remove(self.equipt_slots[slot][1])
+                    self.equipt_slots[slot][1].is_equiped = False
+                    self.equiped_items.append(item)
+                    item.is_equiped = True
+                    self.equipt_slots[slot][0] = True
+                    self.equipt_slots[slot][1] = item
             else:
                 self.equiped_items.append(item)
                 item.is_equiped = True
-                self.equipt_slots[slot] = True
+                self.equipt_slots[slot][0] = True
+                self.equipt_slots[slot][1] = item
+        self.item_stats_add()
 
 
 
@@ -232,7 +246,7 @@ class Player:
         selected_item = None
         selected_num = None
         while True:
-            max_page = int(len(item_fillter) // (4 if is_item_selected else 6))
+            max_page = int((len(item_fillter) - 1) // (4 if is_item_selected else 6))
             item_render = []
             clear()
             for i in range(6 if is_item_selected == False else 4):
@@ -263,7 +277,7 @@ class Player:
 ==============================================================================''')
 
             if is_item_selected:
-                titel = f'Level {selected_item.level}/{selected_item.max_level} {selected_item.grade} {selected_item.item_type}: {selected_item.name} {'*' if item.is_equiped else ''}'
+                titel = f'Level {selected_item.level}/{selected_item.max_level} {selected_item.grade} {selected_item.item_type}: {selected_item.name} {'*' if selected_item.is_equiped else ''}'
                 while len(titel) < 76:
                     titel = ' ' + titel + ' '
                 stats = selected_item.get_stats()
@@ -292,8 +306,6 @@ class Player:
                 while len(crit_bounus) < 16:
                     crit_bounus += ' '
                 flavor_text = wrap_text(selected_item.flavor,75)
-
-
 
                 print(f''' {titel}
  {HP} {atk} {sp_atk} {crit_chance}
@@ -366,6 +378,12 @@ class Player:
                 except:
                     print('Invalid input')
                     time.sleep(1)
+            elif is_item_selected and (choice == ''):
+                iselected_item = None
+                is_item_selected = False
+                page = selected_num // 6
+                selected_num = None
+
             else:
                 try:
                     choice = int(choice)
@@ -384,50 +402,102 @@ class Player:
                     print('Invalid input')
                     time.sleep(1)
 
+    def item_stats_add(self):
+        self.max_hp_items = 0
+        self.max_mp_items = 0
+        self.atk_items = 0
+        self.sp_atk_items = 0
+        self.def_items = 0
+        self.sp_def_items = 0
+        self.crit_chance_items = 0
+        self.crit_bonus_items = 0
+        for item in self.equiped_items:
+            self.max_hp_items += item.max_hp
+            self.max_mp_items += item.max_mp
+            self.atk_items += item.atk
+            self.sp_atk_items += item.sp_atk
+            self.def_items += item.def_
+            self.sp_def_items += item.sp_def
+            self.crit_chance_items += item.crit_chance
+            self.crit_bonus_items += item.crit_bonus
+
+        if self.hp > self.max_hp + self.max_hp_items: self.hp = self.max_hp + self.max_hp_items
+        if self.mp > self.max_mp + self.max_mp_items: self.mp = self.max_mp + self.max_mp_items
+
+
+
     def Level(self,xp):
         self.xp += xp
         if self.xp >= self.max_xp:
-            clear()
-            print(f'''
+            loop_levelup = True
+            while loop_levelup:
+                clear()
+                print(f'''
 ===========================
         Level UP
 Level {self.level} => {self.level+1}
-XP {self.xp}/{self.max_xp} => {self.xp-self.max_xp}/{next_level_xp(self.level+1)}
+XP {self.xp}/{self.max_xp} => {self.xp-self.max_xp}/{self.next_level_xp(self.level+1)}
 [1]Max HP {self.max_hp}+3 => {self.max_hp+3}
 [2]Max MP {self.max_mp}+3 => {self.max_mp+3}
 [3]ATK {self.atk}+1 => {self.atk+1}
 [4]SP ATK {self.sp_atk}+1 => {self.sp_atk+1}
-[5]DEF {self.Def}+1 => {self.Def+1}
-[6]SP DEF {self.sp_Def}+1 => {self.sp_Def+1}
+[5]DEF {self.def_}+1 => {self.def_+1}
+[6]SP DEF {self.sp_def}+1 => {self.sp_def+1}
 [7]Crit Chance {self.crit_chance}+1 => {self.crit_chance+1}
-[8]Crit Bounus {self.crit_bounus}+2 => {self.crit_bounus+2}
+[8]Crit Bounus {self.crit_bonus}+2 => {self.crit_bonus+2}
 [9]Move {self.min_move}-{self.max_move}
 ============================
-Select stat to level up
-''')
+Select stat to level up''')
+                choice = input("> ").strip()
+                if choice == '1':
+                    rand = roll_dice(1,6,-1)
+                    self.max_hp += rand
+                    self.hp += rand
+                    loop_levelup = False
+                elif choice == '2':
+                    rand = roll_dice(1,6,-1)
+                    self.max_mp += rand
+                    self.mp += rand
+                    loop_levelup = False
+                elif choice == '3':
+                    self.atk += roll_dice(1,6,-1)
+                    loop_levelup = False
+                elif choice == '4':
+                    self.sp_atk += roll_dice(1,6,-1)
+                    loop_levelup = False
+                elif choice == '5':
+                    self.def_ += roll_dice(1,6,-1)
+                    loop_levelup = False
+                elif choice == '6':
+                    self.sp_def += roll_dice(1,6,-1)
+                    loop_levelup = False
+                elif choice == '7':
+                    self.crit_chance += roll_dice(1,6,-1)
+                    loop_levelup = False
+                elif choice == '8':
+                    self.crit_bonus += roll_dice(1,6,-1)
+                    loop_levelup = False
+                elif choice == '9':
+                    rand = roll_dice(1,6,-1)
+                    self.min_move += rand
+                    self.max_move += rand
+                    loop_levelup = False
+                else:
+                    print('Invalid input')
+                    time.sleep(1)
             self.xp -= self.max_xp
             self.level += 1
+            self.max_xp += self.next_level_xp(self.level)
             self.max_hp += 3
+            self.hp += 3
             self.max_mp += 3
+            self.mp += 3
             self.atk += 1
             self.sp_atk += 1
-            self.Def += 1
-            self.sp_Def += 1
+            self.def_ += 1
+            self.sp_def += 1
             self.crit_chance += 1
-            self.crit_bounus += 2
-            choice = input("> ").strip()
-            if choice == '1': self.max_hp += roll_dice(1,6,-1)
-            elif choice == '2': self.max_mp += roll_dice(1,6,-1)
-            elif choice == '3': self.atk += roll_dice(1,6,-1)
-            elif choice == '4': self.sp_atk += roll_dice(1,6,-1)
-            elif choice == '5': self.Def += roll_dice(1,6,-1)
-            elif choice == '6': self.sp_Def += roll_dice(1,6,-1)
-            elif choice == '7': self.crit_chance += roll_dice(1,6,-1)
-            elif choice == '8': self.crit_bounus += roll_dice(1,6,-1)
-            elif choice == '9':
-                temp = roll_dice(1,6,-1)
-                self.min_move += temp
-                self.max_move += temp
+            self.crit_bonus += 2
 
 
     def show_stats(self):
@@ -437,20 +507,237 @@ Select stat to level up
         Stats
 Level {self.level}
 XP {self.xp}/{self.max_xp}
-Max HP {self.max_hp}
-Max MP {self.max_mp}
-ATK {self.atk}
-SP ATK {self.sp_atk}
-DEF {self.Def}
-SP DEF {self.sp_Def}
-Crit Chance {self.crit_chance}
-Crit Bounus {self.crit_bounus}
+Max HP {self.max_hp} + {self.max_hp_items}
+Max MP {self.max_mp} + {self.max_mp_items}
+ATK {self.atk} + {self.atk_items}
+SP ATK {self.sp_atk} + {self.sp_atk_items}
+DEF {self.def_} + {self.def_items}
+SP DEF {self.sp_def} + {self.sp_def_items}
+Crit Chance {self.crit_chance} + {self.crit_chance_items}
+Crit Bounus {self.crit_bonus} + {self.crit_bonus_items}
 Move {self.min_move}-{self.max_move}
 ============================
 ''')
         input("\nPress Enter to return...")
 
 
+    def move(self,dir,dungeon):
+        room = dungeon.rooms[dungeon.room]
+        x,y = self.x, self.y
+        if dir == 'W':
+            if room.map[y-1][x] != '#':
+                self.y -=1
+                self.moves -= 1
+            else:
+                print('Move in valed')
+                return 'brake'
+        elif dir == 'S':
+            if room.map[y+1][x] != '#':
+                self.y +=1
+                self.moves -= 1
+            else:
+                print('Move in valed')
+                return 'brake'
+        elif dir == 'D':
+            if room.map[y][x+1] != '#':
+                self.x +=1
+                self.moves -= 1
+            else:
+                print('Move in valed')
+                return 'brake'
+        elif dir == 'A':
+            if room.map[y][x-1] != '#':
+                self.x -=1
+                self.moves -= 1
+            else:
+                print('Move in valed')
+                return 'brake'
+        x,y = self.x, self.y
+        if room.map[y][x] == 'D':
+            door_num = room.door_positions.index((x,y))
+            old_room = dungeon.room
+            dungeon.room = room.doors[door_num]
+            door_num = dungeon.rooms[dungeon.room].doors.index(old_room)
+            px,py = dungeon.rooms[dungeon.room].door_positions[door_num]
+            self.x ,self.y = px,py
+
+        game_menu()
+        print_room_options(self)
+        time.sleep(0.1)
+        return 'fine'
+
+    def print_fight_stats(self, show_atk = True):
+        bars = ''
+        if self.hp < 0: self.hp = 0
+        if self.mp < 0: self.mp = 0
+        line_1 = f'HP{self.hp}/{self.max_hp + self.max_hp_items}'
+        helf_bar_len = 57 - len(line_1)
+        helf_left = int(helf_bar_len * (self.hp / (self.max_hp + self.max_hp_items)))
+        helf_bar = '['
+        for _ in range(helf_left): helf_bar += '#'
+        for _ in range(helf_bar_len - helf_left): helf_bar += ' '
+        helf_bar += ']'
+        line_2 = f'MP{self.mp}/{self.max_mp + self.max_mp_items}'
+        mp_bar_len = 57 - len(line_2)
+        mp_left = int(helf_bar_len * (self.mp / (self.max_mp + self.max_mp_items)))
+        mp_bar = '['
+        for _ in range(mp_left): mp_bar += '#'
+        for _ in range(mp_bar_len - mp_left): mp_bar += ' '
+        mp_bar += ']'
+        #bars = line_1 + helf_bar + ' ' + line_2 + mp_bar
+        print(f'''===========================================================
+{line_1}{helf_bar}
+{line_2}{mp_bar}''')
+        del helf_bar,helf_bar_len,helf_left,mp_bar,mp_left,mp_bar_len
+        if show_atk:
+            asfd = [] # asfd stands for attack_stats_for_display
+            temp_num = 0
+            for i in self.attacks_used:
+                attack = self.attacks[temp_num]['stats']
+                temp_num += 1
+                line_1 = f'{i} {attack["max_use"] - self.attacks_used[i]}/{attack["max_use"]}'
+                while len(line_1) < 21: line_1 += ' '
+                line_2 = f'MP {attack["mp"]} ATK {attack["atk"]} SP ATK {attack["sp_atk"]}'
+                while len(line_2) < 25: line_2 += ' '
+                line_3 = f'Adv {attack["adv"]} Crit {attack["crit_chance"]}% Crit {attack["crit_bonus"]}'
+                while len(line_3) < 25: line_3 += ' '
+                asfd.append([line_1,line_2,line_3])
+            del temp_num
+            print(f'''
+ –––––––––––––––––––––––––––   ––––––––––––––––––––––––––– 
+| [0] {asfd[0][0]} | | [1] {asfd[1][0]} |
+| {asfd[0][1]} | | {asfd[1][1]} |
+| {asfd[0][2]} | | {asfd[1][2]} |
+ –––––––––––––––––––––––––––   ––––––––––––––––––––––––––– 
+ –––––––––––––––––––––––––––   ––––––––––––––––––––––––––– 
+| [2] {asfd[2][0]} | | [3] {asfd[3][0]} |
+| {asfd[2][1]} | | {asfd[3][1]} |
+| {asfd[2][2]} | | {asfd[3][2]} |
+ –––––––––––––––––––––––––––   ––––––––––––––––––––––––––– ''')
+
+
+class Enemy:
+
+    def __init__(self,mob,level,room,x,y):
+        self.room = room
+        self.mob = mob
+        self.x = x
+        self.y = y
+        self.level = level
+        stats = GTD.enemy_cls[mob]['stats']
+        self.max_move = stats['max_move']
+        self.min_move = stats['min_move']
+        self.max_hp = stats['max_hp']
+        self.max_mp = stats['max_mp']
+        self.atk = stats['atk']
+        self.sp_atk = stats['sp_atk']
+        self.def_ = stats['def_']
+        self.sp_def = stats['sp_def']
+        self.crit_chance = stats['crit_chance']
+        self.crit_bonus = stats['crit_bonus']
+        self.xp = stats['xp']
+        self.gold = stats['gold']
+        self.level_up()
+        self.hp = self.max_hp
+        self.mp = self.max_mp
+        self.get_attack_stats()
+        self.items = []
+        self.get_items()
+        self.item_stats_add()
+
+    def level_up(self):
+        self.max_hp += 3 * (self.level - 1)
+        self.max_mp += 3 * (self.level - 1)
+        self.atk += 1 * (self.level - 1)
+        self.sp_atk += 1 * (self.level - 1)
+        self.def_ += 1 * (self.level - 1)
+        self.sp_def += 1 * (self.level - 1)
+        self.gold += 2 * (self.level - 1)
+        self.xp += 2 * (self.level - 1)
+
+
+    def item_stats_add(self):
+        for item in self.items:
+            self.max_hp += item.max_hp
+            self.max_mp += item.max_mp
+            self.atk += item.atk
+            self.sp_atk += item.sp_atk
+            self.def_ += item.def_
+            self.sp_def += item.sp_def
+            self.crit_chance += item.crit_chance
+            self.crit_bonus += item.crit_bonus
+
+        self.hp = self.max_hp
+        self.mp = self.max_mp
+
+    def get_items(self):
+        posbl_items = GTD.enemy_cls[self.mob]['Items']
+        for i in posbl_items:
+            if random.randint(1,100) <= posbl_items[i]['chance']:
+                try:
+                    item_level = self.level + random.randint(posbl_items[i]['level'][0], posbl_items[i]['level'][1])
+                    if item_level <= 0: item_level = 1
+                    item = GameItem('unique',i,item_level,posbl_items[i]['name'])
+                    self.items.append(item)
+                except:
+                    rarety_temp_1 = 0
+                    rarety_temp_2 = 0
+                    rand_num = random.randint(0,100)
+                    for j in posbl_items[i]['rarety']:
+                        rarety_temp_1 = rarety_temp_2
+                        rarety_temp_2 += posbl_items[i]['rarety'][j]
+                        if (rarety_temp_1 < rand_num) and (rand_num <= rarety_temp_2):
+                            item_level = self.level + random.randint(posbl_items[i]['level'][0],posbl_items[i]['level'][1])
+                            if item_level <= 0: item_level = 1
+                            item = GameItem(j,i,item_level)
+                            self.items.append(item)
+
+    def get_attack_stats(self):
+        self.attacks_used = {}
+        attacks = []
+        self.attacks = []
+        for _ in range(4):
+            attack_temp = []
+            for i in GTD.enemy_cls[self.mob]['Attacks']:
+                if i not in attacks:
+                    for _ in range(GTD.enemy_cls[self.mob]['Attacks'][i]):
+                        attack_temp.append(i)
+            attacks.append(random.choice(attack_temp))
+        for i in attacks:
+            self.attacks.append(GTD.attacks[i])
+            self.attacks_used[i] = 0
+
+    def move(self):
+        pass
+
+
+    def print_fight_stats(self):
+        if self.hp < 0: self.hp = 0
+        if self.mp < 0: self.mp = 0
+        line_1 = f'{self.mob} Lvl. {self.level}'
+        while len(line_1) < 25: line_1 += ' '
+        line_2 = f'{self.hp}/{self.max_hp}'
+        helf_bar_len = 23 - len(line_2)
+        helf_left = int(helf_bar_len * (self.hp / self.max_hp))
+        helf_bar = '['
+        for _ in range(helf_left): helf_bar += '#'
+        for _ in range(helf_bar_len-helf_left): helf_bar += ' '
+        helf_bar += ']'
+        line_2 += helf_bar
+
+        print(f'''
+                              ––––––––––––––––––––––––––– 
+                             | {line_1} |
+                             | {line_2} |
+                              ––––––––––––––––––––––––––– ''')
+
+
+    def __repr__(self):
+        return (f'HP={self.hp} MP={self.mp} Max HP={self.max_hp} Max MP={self.max_mp}\n'
+                f'Atk={self.atk} SP Atk={self.sp_atk} Def={self.def_} SP Def={self.sp_def}\n'
+                f'Crit Chance={self.crit_chance} Crit Bonus={self.crit_bonus} XP={self.xp}\n'
+                f'Min Move={self.min_move} Max Move={self.max_move} Gold={self.gold}\n'
+                f'Items={self.items}')
 
 
 class Dungeon:
@@ -538,14 +825,12 @@ class Dungeon:
         return rooms
 
 
-
-
 class Room:
-    def __init__(self, room_id, room_type="normal", width=None, height=None):
+    def __init__(self, room_id, room_type="normal", width=6, height=6):
         self.id = room_id
         self.type = room_type
         self.doors = []           # [target_room_id, ...]
-        self.map = generate_room(width, height)
+        self.map = self.generate_room(width, height,room_type)
         self.door_positions = []  # [(x, y), ...]
         self.used_sides = set()   # which walls already have doors
 
@@ -585,11 +870,10 @@ class Room:
         self.used_sides.add(side)
         return (x, y)
 
-
-def generate_room(width=None, height=None):
-    width = width or random.randint(6, 10)
-    height = height or random.randint(6, 10)
-    return [["#" if x in (0, width - 1) or y in (0, height - 1) else "." for x in range(width)] for y in range(height)]
+    def generate_room(self,width, height, room_type):
+        width = width or random.randint(6, 10)
+        height = height or random.randint(6, 10)
+        return [["#" if x in (0, width - 1) or y in (0, height - 1) else "." for x in range(width)] for y in range(height)]
 
 
 def print_room_options(player):
@@ -603,50 +887,6 @@ def print_room_options(player):
     else:
         player.moves = -1
 
-def move(dir,player,dungeon):
-    room = dungeon.rooms[dungeon.room]
-    x,y = player.x, player.y
-    if dir == 'W':
-        if room.map[y-1][x] != '#':
-            player.y -=1
-            player.moves -= 1
-        else:
-            print('Move in valed')
-            return 'brake'
-    elif dir == 'S':
-        if room.map[y+1][x] != '#':
-            player.y +=1
-            player.moves -= 1
-        else:
-            print('Move in valed')
-            return 'brake'
-    elif dir == 'D':
-        if room.map[y][x+1] != '#':
-            player.x +=1
-            player.moves -= 1
-        else:
-            print('Move in valed')
-            return 'brake'
-    elif dir == 'A':
-        if room.map[y][x-1] != '#':
-            player.x -=1
-            player.moves -= 1
-        else:
-            print('Move in valed')
-            return 'brake'
-    x,y = player.x, player.y
-    if room.map[y][x] == 'D':
-        door_num = room.door_positions.index((x,y))
-        old_room = dungeon.room
-        dungeon.room = room.doors[door_num]
-        door_num = dungeon.rooms[dungeon.room].doors.index(old_room)
-        px,py = dungeon.rooms[dungeon.room].door_positions[door_num]
-        player.x ,player.y = px,py
-
-    game_menu()
-    print_room_options(player)
-    time.sleep(0.1)
-    return 'fine'
 
 
 def print_dungeon_map(rooms, spacing=1):
@@ -735,9 +975,9 @@ def print_dungeon_map(rooms, spacing=1):
 
 
             
-def game_loop_room(plyaer,dungeon):
-    loop = True
-    while loop:
+def game_loop_room(player,dungeon):
+    loop_room = True
+    while loop_room:
         game_menu()
         print_room_options(player)
         choice = input("> ").upper().strip()
@@ -750,8 +990,10 @@ def game_loop_room(plyaer,dungeon):
         elif choice == 'M':
             print_dungeon_map(dungeon.rooms)
         elif choice == 'Q':
-            loop = False
-            break
+            choice = input('You sure you want to qite? [Y/N]>').upper().strip()
+            if choice == 'Y' or choice == 'Q':
+                loop_room = False
+                break
         elif choice == 'GIVE ALL':
             for rarity in ["common", "uncommon", "rare", "epic", "legendary", "unique"]:
                 for item_type in ["sword", "knife", "bow", "stafe", "spear", "chestplate", "helmet","boots", "pants", "pans", "gloves", "sheald"]: # , "consumable"
@@ -760,6 +1002,9 @@ def game_loop_room(plyaer,dungeon):
             player.Level(player.max_xp + 1)
         elif choice == 'GIVE ITEM':
             player.add_to_inv(GameItem('common','sword',10))
+        elif choice == 'FIGHT':
+            enemy = Enemy('zomby',random.randint(1,5),0,5,5)
+            player, loop_room = fight_loop(player,enemy)
         elif choice == 'R':
             if player.moves == -1:
                 player.roll_for_move()
@@ -770,28 +1015,362 @@ def game_loop_room(plyaer,dungeon):
                 time.sleep(1)
             elif len(choice) <= player.moves:
                 for i in choice:
-                    out = move(i,player,dungeon)
+                    out = player.move(i,dungeon)
                     if out == 'brake':
                         time.sleep(1)
                         break
         else:
             print('Invalid input')
             time.sleep(1)
-    
-    
-    
-    
+
+
+
+
+def fight_selact_attack(player,enemy):
+    clear()
+    print('========================== FIGHT ==========================')
+    print('Number to select attack')
+    print('===========================================================')
+    enemy.print_fight_stats()
+    fight_art(player, enemy)
+    player.print_fight_stats()
+
+def p_chance(chance):
+    rand = random.randint(1,100)
+    return True if rand <= chance else False
+
+
+def fight_roll_dice(player,enemy,start,end,sel = 0,advan=0,atk=True):
+    rand = 0
+    if atk:
+        advan += player.attacks[sel]['stats']['adv']
+        player.mp -= player.attacks[sel]['stats']['mp']
+        for i in range(20):
+            rand_o = rand
+            while rand == rand_o:
+                rand = random.randint(start, end)
+            rand += advan
+            if rand < start:
+                rand = start
+            elif rand > end:
+                rand = end
+            advan_e = 0
+            rand_e = random.randint(start, end)
+            rand_e += advan_e
+            if rand_e < start:
+                rand_e = start
+            elif rand_e > end:
+                rand_e = end
+            rand_str = str(rand)
+            if len(rand_str) == 1: rand_str = ' ' + rand_str
+            if len(rand_str) == 2: rand_str = rand_str + ' '
+            rand_str_e = str(rand_e)
+            if len(rand_str_e) == 1: rand_str_e = ' ' + rand_str_e
+            if len(rand_str_e) == 2: rand_str_e = rand_str_e + ' '
+            clear()
+            print('========================== FIGHT ==========================')
+            enemy.print_fight_stats()
+            fight_art(player, enemy)
+            player.print_fight_stats(False)
+            print(f'''===========================================================
+        Player Attack        |        Enemy Deffens
+           –––––––           |            –––––––
+          |       |          |           |       |
+          |  {rand_str}  |          |           |  {rand_str_e}  |
+          |       |          |           |       |
+           –––––––           |            ––––––– 
+                             |
+===========================================================
+        ''')
+
+            time.sleep((i + 1) / 50)
+
+        p_crit = player.crit_chance + player.crit_chance_items + player.attacks[sel]['stats']['crit_chance']
+        p_crit = p_chance(p_crit)
+        if p_crit: print('Crit')
+
+        p_atk = player.atk + player.atk_items
+        p_atk = int(p_atk * (player.attacks[sel]['stats']['atk'] / 100))
+        p_crit_bonus = player.crit_bonus + player.crit_bonus_items + player.attacks[sel]['stats']['crit_bonus']
+        p_atk += int( p_atk * (p_crit_bonus / 100)) if p_crit else 0
+        stranth = p_atk * rand
+        print('stranth', stranth)
+
+        p_sp_atk = player.sp_atk + player.sp_atk_items
+        p_sp_atk = int(p_sp_atk * (player.attacks[sel]['stats']['sp_atk'] / 100))
+        p_crit_bonus = player.crit_bonus + player.crit_bonus_items + player.attacks[sel]['stats']['crit_bonus']
+        p_sp_atk += int(p_sp_atk * (p_crit_bonus / 100)) if p_crit else 0
+        sp_stranth = p_sp_atk * rand
+        print('sp_stranth', sp_stranth)
+
+        e_def = enemy.def_
+        e_def = e_def * rand_e
+        print('e_def', e_def)
+
+        e_sp_def = enemy.sp_def
+        e_sp_def = e_sp_def * rand_e
+        print('e_sp_def', e_sp_def)
+
+        demage = stranth - e_def
+        if demage < 0: demage = 0
+        sp_damage = sp_stranth - e_sp_def
+        if sp_damage < 0: sp_damage = 0
+        demage += sp_damage
+        print(f'Damage {demage}')
+        enemy.hp -= demage
+
+        input("\nPress Enter to return...")
+        return player, enemy
+    else:
+        advan_e = 0
+        e_attack_num = random.randint(0, 3)
+        e_attack_used = list(enemy.attacks_used)[e_attack_num]
+        print(enemy.attacks)
+        print(type(enemy.attacks))
+        e_attack_mp_use = enemy.attacks[e_attack_num]['stats']['mp']
+        e_attack_max_used = enemy.attacks[e_attack_num]['stats']['max_use']
+        while (enemy.attacks_used[e_attack_used] >= e_attack_max_used) or (enemy.mp < e_attack_mp_use) :
+            e_attack_num = random.randint(0, 3)
+            e_attack_used = list(enemy.attacks_used)[e_attack_num]
+            e_attack_mp_use = enemy.attacks[e_attack_num]['stats']['mp']
+            e_attack_max_used = enemy.attacks[e_attack_num]['stats']['max_use']
+        e_attack = enemy.attacks[e_attack_num]['stats']
+        enemy.attacks_used[e_attack_used] += 1
+        print(e_attack)
+        advan_e = e_attack['adv']
+        advan += player.attacks[sel]['stats']['adv']
+        for i in range(20):
+            rand_o = rand
+            while rand == rand_o:
+                rand = random.randint(start, end)
+            rand += advan
+            if rand < start:
+                rand = start
+            elif rand > end:
+                rand = end
+            rand_e = random.randint(start, end)
+            rand_e += advan_e
+            if rand_e < start:
+                rand_e = start
+            elif rand_e > end:
+                rand_e = end
+            rand_str = str(rand)
+            if len(rand_str) == 1: rand_str = ' ' + rand_str
+            if len(rand_str) == 2: rand_str = rand_str + ' '
+            rand_str_e = str(rand_e)
+            if len(rand_str_e) == 1: rand_str_e = ' ' + rand_str_e
+            if len(rand_str_e) == 2: rand_str_e = rand_str_e + ' '
+            clear()
+            print('========================== FIGHT ==========================')
+            enemy.print_fight_stats()
+            fight_art(player, enemy)
+            player.print_fight_stats(False)
+            print(f'''===========================================================
+        Player Deffens       |        Enemy Attack
+           –––––––           |            –––––––
+          |       |          |           |       |
+          |  {rand_str}  |          |           |  {rand_str_e}  |
+          |       |          |           |       |
+           –––––––           |            ––––––– 
+                             |
+===========================================================
+                ''')
+            time.sleep((i + 1) / 50)
+
+        e_crit = enemy.crit_chance + e_attack['crit_chance']
+        e_crit = p_chance(e_crit)
+        if e_crit: print('Enemy Crit')
+
+        e_atk = enemy.atk
+        e_atk = int(e_atk * (e_attack['atk'] / 100))
+        e_crit_bonus = enemy.crit_bonus  + e_attack['crit_bonus']
+        e_atk += int(e_atk * (e_crit_bonus / 100)) if e_crit else 0
+        stranth = e_atk * rand_e
+        print('stranth', stranth)
+
+        e_sp_atk = enemy.sp_atk
+        e_sp_atk = int(e_sp_atk * (e_attack['sp_atk'] / 100))
+        e_crit_bonus = enemy.crit_bonus + e_attack['crit_bonus']
+        e_sp_atk += int(e_sp_atk * (e_crit_bonus / 100)) if e_crit else 0
+        sp_stranth = e_sp_atk * rand_e
+        print('sp_stranth', sp_stranth)
+
+        p_def = player.def_ + player.def_items
+        p_def = p_def * rand
+        print('p_def', p_def)
+
+        p_sp_def = player.sp_def + player.sp_def_items
+        p_sp_def = p_sp_def * rand
+        print('p_sp_def', p_sp_def)
+
+        demage = stranth - p_def
+        if demage < 0: demage = 0
+        sp_damage = sp_stranth - p_sp_def
+        if sp_damage < 0: sp_damage = 0
+        demage += sp_damage
+        print(f'Damage {demage}')
+        player.hp -= demage
+        enemy.mp -= e_attack_mp_use
+
+        input("\nPress Enter to return...")
+        return player, enemy
+
+
+def fight_won(player,enemy):
+    gold_gain = f'{enemy.gold} Gold'
+    while len(gold_gain) < 27:
+        gold_gain = gold_gain + ' '
+        if len(gold_gain) < 27: gold_gain = ' ' + gold_gain
+    xp_gain = f'{enemy.xp} XP'
+    while len(xp_gain) < 27:
+        xp_gain = xp_gain + ' '
+        if len(xp_gain) < 27: xp_gain = ' ' + xp_gain
+    stats_gain = gold_gain + ' ' + xp_gain
+
+    clear()
+    print('========================= FIGHT ===========================')
+    enemy.print_fight_stats()
+    fight_art(player, enemy)
+    player.print_fight_stats(False)
+    print('========================= REWARD ==========================')
+    print(stats_gain)
+    print('                          ITEMS                            ')
+    for item in enemy.items:
+        print(item.Name())
+        player.inventory.append(item)
+    input("\nPress Enter to return...")
+    player.gold += enemy.gold
+    player.Level(enemy.xp)
+
+
+def you_died():
+    clear()
+    print('You died')
+    input("\nPress Enter to return...")
+
+
+def fight_loop(player,enemy,player_start = True):
+    loop_fight = True
+    turn = 1 if player_start else 0
+    first_turn = True
+    while loop_fight:
+        if enemy.hp <= 0:
+            fight_won(player, enemy)
+            loop_fight = False
+            return player , True
+        elif player.hp <= 0:
+            you_died()
+            loop_fight = False
+            return player , False
+
+        elif first_turn:
+            if turn == 0:
+                clear()
+                print('========================== FIGHT ==========================')
+                enemy.print_fight_stats()
+                fight_art(player, enemy)
+                player.print_fight_stats(False)
+                print('===========================================================')
+                choice = input('\nPress Enter to continue...').upper().strip()
+                if choice == 'Q':
+                    loop_fight = False
+                    return player, True
+                elif choice == 'S':
+                    print(enemy)
+                    input("\nPress Enter to return...")
+                else:
+                    player, enemy = fight_roll_dice(player, enemy, 1, 6, advan=-1,atk=False)
+                    turn = 1
+                    first_turn = False
+            elif turn == 1:
+                fight_selact_attack(player,enemy)
+                choice = input('>').upper().strip()
+                try:
+                    if choice == 'Q':
+                        loop_fight = False
+                        return player, True
+                    elif choice == 'S':
+                        print(enemy)
+                        input("\nPress Enter to return...")
+                    elif (0 <= int(choice)) and (int(choice) <= 3):
+                        attack_num = int(choice)
+                        attack_used = list(player.attacks_used)[attack_num]
+                        attack_max_used = player.attacks[attack_num]['stats']['max_use']
+                        if player.attacks_used[attack_used] >= attack_max_used:
+                            print('No more uses of selected attack left')
+                            time.sleep(1)
+                        elif player.attacks[attack_num]['stats']['mp'] > player.mp:
+                            print('Not enough mp for this attack')
+                            time.sleep(1)
+                        else:
+                            player.attacks_used[attack_used] += 1
+                            player, enemy = fight_roll_dice(player,enemy,1,6,attack_num,1)
+                            turn = 0
+                            first_turn = False
+                except:
+                    print('Invalid input')
+                    time.sleep(1)
+
+        elif first_turn == False:
+            if turn == 0:
+                clear()
+                print('========================== FIGHT ==========================')
+                enemy.print_fight_stats()
+                fight_art(player, enemy)
+                player.print_fight_stats(False)
+                print('===========================================================')
+                choice = input('\nPress Enter to continue...').upper().strip()
+                if choice == 'Q':
+                    loop_fight = False
+                elif choice == 'S':
+                    print(enemy)
+                    input("\nPress Enter to return...")
+                else:
+                    player, enemy = fight_roll_dice(player, enemy, 1, 6, atk=False)
+                    turn = 1
+            elif turn == 1:
+                fight_selact_attack(player, enemy)
+                choice = input('>').upper().strip()
+                try:
+                    if choice == 'Q':
+                        loop_fight = False
+                    elif choice == 'S':
+                        print(enemy)
+                        input("\nPress Enter to return...")
+                    elif (0 <= int(choice)) and (int(choice) <= 3):
+                        attack_num = int(choice)
+                        attack_used = list(player.attacks_used)[attack_num]
+                        attack_max_used = player.attacks[attack_num]['stats']['max_use']
+                        if player.attacks_used[attack_used] >= attack_max_used:
+                            print('No more uses of selected attack left')
+                            time.sleep(1)
+                        elif player.attacks[attack_num]['stats']['mp'] > player.mp:
+                            print('Not enough mp for this attack')
+                            time.sleep(1)
+                        else:
+                            player.attacks_used[attack_used] += 1
+                            player, enemy = fight_roll_dice(player, enemy, 1, 6, attack_num)
+                            turn = 0
+                except:
+                    print('Invalid input')
+                    time.sleep(1)
+
+
+
 if __name__ == "__main__":
-    print('lol')
-    out = main_menu()
-    print(out)
-    if out == 'start':
-      cls = select_player_class()
-      dangeon = Dungeon()
-      player = Player(cls)
-      player.add_to_inv(GameItem('common','sword',10))
-      player.add_to_inv(GameItem('common','sword',10))
-      GAME_STATE = 'map'
-      game_loop_room(player,dangeon)
-      # game_menu()
-      # give all
+    main_loop = True
+    while main_loop:
+        out = main_menu()
+        if out == 'start':
+            cls = select_player_class()
+            dangeon = Dungeon()
+            player = Player(cls)
+            player.add_to_inv(GameItem('legendary','sword',75))
+            player.add_to_inv(GameItem('common','sword',10))
+            GAME_STATE = 'map'
+            game_loop_room(player,dangeon)
+        # game_menu()
+        # give all
+        elif out == 'exit':
+            main_loop = False
+            break

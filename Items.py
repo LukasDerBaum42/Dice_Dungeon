@@ -1,30 +1,15 @@
 import random
+import Game_text_data
 
 class GameItem:
-    UNIQUE_ITEMS = {
-        "Excalibur": {
-            "type": "sword",
-            "stats": {"max_hp": 200, "max_mp": 100, "atk": 80, "sp_atk": 40, "def_": 30, "sp_def": 20, "crit_chance": 15, "crit_bonus": 5},
-            "flavor": "Forged by forgotten gods in the heart of a dying star, this blade hums with the wisdom of ages. Legends say it can cut through reality itself."
-        },
-        "Pan of Doom": {
-            "type": "pans",
-            "stats": {"atk": 60, "sp_atk": 0, "def_": 10, "crit_chance": 90, "crit_bonus": 1000},
-            "flavor": "Every meal it touches becomes a weapon. Every sound, a war drum. They say the last person who doubted this pan now rules a kingdom of delicious despair."
-        },
-        "Crown of the Machine": {
-            "type": "helmet",
-            "stats": {"max_mp": 150, "sp_atk": 60, "sp_def": 40, "crit_chance": 5, "crit_bonus": 30},
-            "flavor": "Cold metal whispers secrets of lost civilizations. Once worn by a mind that could outthink gods, now it seeks a new master to enlighten."
-        }
-    }
+    UNIQUE_ITEMS = Game_text_data.UNIQUE_ITEMS
 
     GRADE_INFO = {
-        "common":    {"max_level": 10,  "stat_scale": (1, 2)},
-        "uncommon":  {"max_level": 20,  "stat_scale": (2, 4)},
-        "rare":      {"max_level": 30,  "stat_scale": (3, 6)},
-        "epic":      {"max_level": 40,  "stat_scale": (5, 9)},
-        "legendary": {"max_level": 50,  "stat_scale": (8, 14)},
+        "common":    {"max_level": 20,  "stat_scale": (1, 2)},
+        "uncommon":  {"max_level": 30,  "stat_scale": (2, 4)},
+        "rare":      {"max_level": 40,  "stat_scale": (3, 6)},
+        "epic":      {"max_level": 50,  "stat_scale": (5, 9)},
+        "legendary": {"max_level": 75,  "stat_scale": (8, 14)},
         "unique":    {"max_level": 100,   "stat_scale": (0, 0)}
     }
 
@@ -63,7 +48,7 @@ class GameItem:
         stats = data["stats"]
         self.item_type = data["type"]
         for k, v in stats.items():
-            setattr(self, k, v)
+            setattr(self, k, v * (1 + self.level / 20))
 
     # ---- NAME GENERATION ----
     def generate_name(self):
@@ -215,7 +200,7 @@ class GameItem:
             "pans": {"atk": (1,5),"crit_chance": (10,15),"crit_bonus": (50,100)},
             "consumable": {"max_mp": (20, 40)},
             "gloves": {"atk": (2, 5), "sp_atk": (2, 5)},
-            "shield": {"def_": (8, 16), "sp_def": (6, 12)}
+            "sheald": {"def_": (8, 16), "sp_def": (6, 12)}
         }
 
         stat_ranges = base_stat.get(self.item_type, {"mystery": (0, 1)})
@@ -1570,13 +1555,18 @@ class GameItem:
                     "crit chance": self.crit_chance, "crit bonus": self.crit_bonus}
         return stats
 
+
+    def Name(self):
+        return f"<{self.grade.title()} {self.name} (Lvl {self.level})>"
+
+
     def __repr__(self):
         stats = {"level": self.level, "max level": self.max_level, "max hp": self.max_hp, "max mp": self.max_mp,
                  "atk": self.atk, "sp atk": self.sp_atk, "def": self.def_, "sp def": self.sp_def,
                  "crit chance": self.crit_chance, "crit bonus": self.crit_bonus}
         return (f"<{self.grade.title()} {self.name} (Lvl {self.level})>\n"
                 f"  Stats: {stats}\n"
-                f"  Flavor: \"{self.flavor}\"")
+                f"  Flavor: \"{self.flavor}\"\n")
 
 if __name__ == '__main__':
     # --- DEMO ---
