@@ -26,145 +26,17 @@ def wrap_text(text, width=72):
     lines.append(current_line.rstrip())
     return "\n ".join(lines)
 
-def roll_dice(start,end,advan=0):
-    rand = 0
-    for i in range(20):
-        rand_o = rand
-        while rand == rand_o:
-            rand = random.randint(start,end)
-        rand += advan
-        if rand < start: rand = start
-        elif rand > end: rand = end
-        rand_str = str(rand)
-        if len(rand_str) == 1: rand_str =' ' + rand_str
-        if len(rand_str) == 2: rand_str = rand_str + ' '
-        clear()
-        print(f'''
-=========================
-        Dice Roll
-         –––––––
-        |       |
-        |  {rand_str}  |
-        |       |
-         –––––––
-
-=========================
-''')
-        time.sleep((i+1)/50)
-    input("\nPress Enter to return...")
-    return rand
-
-
-
-    
-def main_menu():
-    while True:
-        clear()
-        print("""
-===================================
-       DICE DUNGEON: DESCENT
-===================================
- [1] Start Game
- [2] How to Play
- [3] Quit
-""")
-        choice = input("> ").upper().strip()
-        if choice == "1":
-            return "start"
-        elif choice == "2":
-            show_help_new()
-        elif choice == "3" or 'Q':
-            print("Goodbye, hero...")
-            time.sleep(1)
-            return 'exit'
-        else:
-            print("Invalid option.")
-            time.sleep(1)
-
-def show_help_new(page = 0):
-    max_page = 0
-    help_text = GTD.help_txt
-    while True:
-        clear()
-        print(f'''=============
-    Help Page {page} / {max_page}
-P = Privios Page | N = Next ''')
-        print(help_text[f'page {page}'])
-        choice = input("Press Enter to return... > ").upper().strip()
-        if choice == 'N':
-            if page < max_page:
-                page += 1
-        elif choice == 'P':
-            if page > 0:
-                page -= 1
-        else:
-            break
-    
-def game_menu():
-
-    HP = f'HP {player.hp}/{player.max_hp + player.max_hp_items}'
-    MP = f'MP {player.mp}/{player.max_mp + player.max_mp_items}'
-    gold = f'Gold {player.gold}'
-    XP = f'XP {player.xp}/{player.max_xp}'
-    level = f'Level {player.level}'
-    while len(HP) < 13:
-        HP += ' '
-    while len(MP) < 13:
-        MP += ' '
-    while len(gold) < 13:
-        gold += ' '
-    while len(XP) < 13:
-        XP += ' '
-    while len(level) < 13:
-        level += ' '
-    clear()
-    print(f'''
-========================================
-              Dice Dungeon
-{HP}  {MP}  {gold}
-{level}  {XP}
-H = Help | I = Invetory | T = Stats
-Q = Quit
-========================================''')
-    if GAME_STATE == 'map':
-      dangeon.print_room(player= player)
-    
-    
-def select_player_class():
-    while True:
-        clear()
-        print('''
-======================
-Selacte a player class
-======================
-[1] Adventurer
-    ''')
-        choice = input("> ").strip()
-        if choice == "1":
-            return "Adventurer"
-        else:
-            print("Invalid option.")
-            time.sleep(1)
-
-def fight_art(player,enemy):
-    art = GTD.fight_art
-    player_art = art['player']
-    enemy_art = art[enemy.mob]
-    for i in range(len(player_art)):
-        temp = '      '
-        temp += player_art[i]
-        while len(temp) < 40: temp += ' '
-        temp += enemy_art[i]
-        print(temp)
 
 
 class Player:
     def __init__(self,cls):
         self.cls = cls
+
         stats = GTD.player_cls[cls]['stats']
-        self.moves = -1
+        self.moves = -2
         self.x = 2
         self.y = 2
+        self.last_pos = [self.x,self.y]
         self.level = 1
         self.xp = 0
         self.max_xp = self.next_level_xp(self.level)
@@ -522,7 +394,9 @@ Move {self.min_move}-{self.max_move}
 
 
     def move(self,dir,dungeon):
+        global Curent_Layer ,DUNGEON
         room = dungeon.rooms[dungeon.room]
+        self.last_pos = [self.x, self.y]
         x,y = self.x, self.y
         if dir == 'W':
             if room.map[y-1][x] != '#':
@@ -559,11 +433,33 @@ Move {self.min_move}-{self.max_move}
             dungeon.room = room.doors[door_num]
             door_num = dungeon.rooms[dungeon.room].doors.index(old_room)
             px,py = dungeon.rooms[dungeon.room].door_positions[door_num]
+            new_room = dungeon.rooms[dungeon.room]
+            new_room.show_on_map = True
             self.x ,self.y = px,py
-
-        game_menu()
+        elif room.map[y][x] == 'S':
+            if Curent_Layer <= 0:
+                pass
+            else:
+                Curent_Layer -= 1
+                DUNGEON = Layers[Curent_Layer]
+                dungeon = DUNGEON
+                new_room = dungeon.rooms[dungeon.room]
+                new_room.show_on_map = True
+                self.y = len(new_room.map) // 2
+                self.x = len(new_room.map[0]) // 2
+        elif room.map[y][x] == 's':
+            Curent_Layer += 1
+            if len(Layers) <= Curent_Layer:
+                Layers.append(Dungeon(Curent_Layer,Dungeon_type))
+            DUNGEON = Layers[Curent_Layer]
+            dungeon = DUNGEON
+            new_room = dungeon.rooms[dungeon.room]
+            new_room.show_on_map = True
+            self.y = len(new_room.map) // 2
+            self.x = len(new_room.map[0]) // 2
+        game_menu(self,dungeon)
         print_room_options(self)
-        time.sleep(0.1)
+        time.sleep(0.2)
         return 'fine'
 
     def print_fight_stats(self, show_atk = True):
@@ -579,15 +475,15 @@ Move {self.min_move}-{self.max_move}
         helf_bar += ']'
         line_2 = f'MP{self.mp}/{self.max_mp + self.max_mp_items}'
         mp_bar_len = 57 - len(line_2)
-        mp_left = int(helf_bar_len * (self.mp / (self.max_mp + self.max_mp_items)))
+        mp_left = int(mp_bar_len * (self.mp / (self.max_mp + self.max_mp_items)))
         mp_bar = '['
         for _ in range(mp_left): mp_bar += '#'
         for _ in range(mp_bar_len - mp_left): mp_bar += ' '
         mp_bar += ']'
         #bars = line_1 + helf_bar + ' ' + line_2 + mp_bar
         print(f'''===========================================================
-{line_1}{helf_bar}
-{line_2}{mp_bar}''')
+{line_1}\033[31m{helf_bar}\033[0m
+{line_2}\033[34m{mp_bar}\033[0m''')
         del helf_bar,helf_bar_len,helf_left,mp_bar,mp_left,mp_bar_len
         if show_atk:
             asfd = [] # asfd stands for attack_stats_for_display
@@ -618,13 +514,18 @@ Move {self.min_move}-{self.max_move}
 
 class Enemy:
 
-    def __init__(self,mob,level,room,x,y):
+    def __init__(self,mob,level,room,x,y,is_boss = False):
         self.room = room
         self.mob = mob
+        self.is_boss = is_boss
         self.x = x
         self.y = y
+        self.is_del = False
         self.level = level
-        stats = GTD.enemy_cls[mob]['stats']
+        if is_boss:
+            stats = GTD.bosses[mob]['stats']
+        else:
+            stats = GTD.enemy_cls[mob]['stats']
         self.max_move = stats['max_move']
         self.min_move = stats['min_move']
         self.max_hp = stats['max_hp']
@@ -671,7 +572,10 @@ class Enemy:
         self.mp = self.max_mp
 
     def get_items(self):
-        posbl_items = GTD.enemy_cls[self.mob]['Items']
+        if self.is_boss:
+            posbl_items = GTD.bosses[self.mob]['Items']
+        else:
+            posbl_items = GTD.enemy_cls[self.mob]['Items']
         for i in posbl_items:
             if random.randint(1,100) <= posbl_items[i]['chance']:
                 try:
@@ -698,17 +602,86 @@ class Enemy:
         self.attacks = []
         for _ in range(4):
             attack_temp = []
-            for i in GTD.enemy_cls[self.mob]['Attacks']:
-                if i not in attacks:
-                    for _ in range(GTD.enemy_cls[self.mob]['Attacks'][i]):
-                        attack_temp.append(i)
-            attacks.append(random.choice(attack_temp))
+            if self.is_boss:
+                for i in GTD.bosses[self.mob]['Attacks']:
+                    if i not in attacks:
+                        for _ in range(GTD.bosses[self.mob]['Attacks'][i]):
+                            attack_temp.append(i)
+                attacks.append(random.choice(attack_temp))
+            else:
+                for i in GTD.enemy_cls[self.mob]['Attacks']:
+                    if i not in attacks:
+                        for _ in range(GTD.enemy_cls[self.mob]['Attacks'][i]):
+                            attack_temp.append(i)
+                attacks.append(random.choice(attack_temp))
         for i in attacks:
             self.attacks.append(GTD.attacks[i])
             self.attacks_used[i] = 0
 
-    def move(self):
-        pass
+    def move(self,player,room, dungeon):
+        rand = random.randint(self.min_move,self.max_move)
+        enemy_pos = room.get_enemy_pos()
+        player_pos = [player.x,player.y]
+        grid = room.map
+        path = self.find_path(grid,enemy_pos,player_pos)
+        if len(path) < rand: rand = len(path)
+        for i in range(rand):
+            print(path[i])
+            if path[i] == 'N':
+                self.y -= 1
+            elif path[i] == 'S':
+                self.y += 1
+            if path[i] == 'W':
+                self.x -= 1
+            elif path[i] == 'E':
+                self.x += 1
+            game_menu(player,dungeon)
+            time.sleep(0.2)
+
+
+
+    def find_path(self,grid, enemy_pos, player_pos):
+        from collections import deque
+
+        target = (player_pos[0], player_pos[1])
+        start = (self.x, self.y)
+        blocked = set((e[0], e[1]) for e in enemy_pos)
+
+        dirs = [(0, -1, 'N'), (0, 1, 'S'), (-1, 0, 'W'), (1, 0, 'E')]
+
+        q = deque([start])
+        prev = {start: None}
+        prev_dir = {}
+
+        while q:
+            x, y = q.popleft()
+            if (x, y) == target:
+                break
+            for dx, dy, d in dirs:
+                nx, ny = x + dx, y + dy
+                try:
+                    if grid[ny][nx] == '#':
+                        continue
+                except:
+                    pass
+                if (nx, ny) in blocked:
+                    continue
+                if (nx, ny) in prev:
+                    continue
+                prev[(nx, ny)] = (x, y)
+                prev_dir[(nx, ny)] = d
+                q.append((nx, ny))
+
+        if target not in prev:
+            return []
+
+        path = []
+        cur = target
+        while cur != start:
+            path.append(prev_dir[cur])
+            cur = prev[cur]
+        path.reverse()
+        return path
 
 
     def print_fight_stats(self):
@@ -723,7 +696,7 @@ class Enemy:
         for _ in range(helf_left): helf_bar += '#'
         for _ in range(helf_bar_len-helf_left): helf_bar += ' '
         helf_bar += ']'
-        line_2 += helf_bar
+        line_2 += f'\033[31m{helf_bar}\033[0m'
 
         print(f'''
                               ––––––––––––––––––––––––––– 
@@ -739,9 +712,18 @@ class Enemy:
                 f'Min Move={self.min_move} Max Move={self.max_move} Gold={self.gold}\n'
                 f'Items={self.items}')
 
+    def del_(self):
+        if self.is_boss:
+            self.room.map[self.y][self.x] = 's'
+        self.x = -1
+        self.y = -1
+        self.is_del = True
+        self.room.enemys.remove(self)
+        del self.room, self.mob,self.level , self.max_move, self.min_move, self.max_hp, self.max_mp,self.atk, self.sp_atk, self.def_, self.sp_def, self.crit_chance, self.crit_bonus, self.xp,self.gold,self.hp,self.mp,self.items
+
 
 class Dungeon:
-    def __init__(self):
+    def __init__(self,layer,type):
         room = [
         ['#','#','#','#','#','#'],
         ['#','.','.','.','.','#'],
@@ -750,40 +732,75 @@ class Dungeon:
         ['#','.','.','.','.','#'],
         ['#','.','.','.','.','#'],
         ['#','#','#','#','#','#']]
-        rand = random.randint(5,15)
-        self.rooms = self.gen_dungeon(num_rooms=rand)
+        rand = random.randint(10,15)
+        self.layer = GTD.dungeons_preset[type][layer]
+        self.room_pos = []
+        self.rooms = self.gen_dungeon(num_rooms=rand,layer=self.layer)
+        self.rooms[0].show_on_map = True
         self.room = 0
+
         
     def print_room(self, player):
         #clear()
         room = self.rooms[self.room]
+        enemys = room.enemys
         #print("=====================")
+        print(room.type)
+        #print(room.enemys)
+        fight_triger = [False,None]
         for y, row in enumerate(room.map):
             line = ""
             for x, tile in enumerate(row):
                 if (x, y) == (player.x, player.y):
+                    for i in enemys:
+                        if (x, y) == (i.x, i.y): fight_triger = [True,i]
                     line += "P "
                 else:
-                    line += tile + " "
+                    enemy_place = False
+                    for i in enemys:
+                        if (x,y) == (i.x,i.y): enemy_place = True
+                    if enemy_place:
+                        if i.is_boss:
+                            line += 'B '
+                        else:
+                            line += 'E '
+                    else:
+                        line += tile + " "
             print(line)
-        #print(self.room)
+        if fight_triger[0]:
+            if player.moves < 0:
+                fight_loop(player,fight_triger[1],False)
+            else:
+                fight_loop(player, fight_triger[1], True)
+            if fight_triger[1].is_boss:
+                player.x, player.y = player.last_pos
+            fight_triger[1].del_()
         #print(room.doors)
 
-    def gen_dungeon(self, num_rooms=8):
-        rooms = {0: Room(0, "start")}
+    def gen_dungeon(self, num_rooms=8, layer = 'layer 1'):
+        rooms = {0: Room(0, "start",0,0, width=5,height=5,layer=layer)}
         todo = [0]
+        self.room_pos = [(0,0)]
         next_id = 1
 
-        SPECIAL_ROOMS = {"merchant": 0.15}  # Easy to add more
+        SPECIAL_ROOMS = {"merchant": 0.1}  # Easy to add more
 
         while next_id < num_rooms and todo:
             current = rooms[todo.pop(0)]
+            clear()
+            print('=========================')
+            print('   Generating Dungeon')
+            print('=========================')
+            print(todo)
+            print(next_id)
 
             # Decide connections (1-3, fewer near end)
             if current.id == 0:
                 connections = 1
+            elif len(todo) >= 2:
+                connections = min(min(random.randint(0, 3), num_rooms - next_id),len(current.free_sides))
             else:
-                connections = min(random.randint(1, 3), num_rooms - next_id)
+                connections = min(min(random.randint(1, 3), num_rooms - next_id), len(current.free_sides))
 
             for _ in range(connections):
                 if next_id >= num_rooms: break
@@ -794,18 +811,22 @@ class Dungeon:
                     if random.random() < chance: room_type = special; break
 
                 # Create and connect room
-                new_room = Room(next_id, room_type)
+                new_room = Room(next_id, room_type,layer=layer)
                 rooms[next_id] = new_room
 
                 # Find available sides and connect
-                avail_sides = [s for s in SIDES if s not in current.used_sides]
+                current.update_free_sides(self.room_pos)
+                avail_sides = current.free_sides
                 if not avail_sides: break
 
                 dir_a = random.choice(avail_sides)
                 dir_b = OPPOSITE[dir_a]
 
-                pos_a = current.add_door(dir_a)
-                pos_b = new_room.add_door(dir_b, mirror=pos_a)
+                pos_a = current.add_door(dir_a,self.room_pos)
+                pos_b = new_room.add_door(dir_b,self.room_pos,current.pos, mirror=pos_a)
+
+                self.room_pos += [new_room.pos]
+
 
                 if pos_a and pos_b:
                     current.doors.append(next_id)
@@ -820,24 +841,127 @@ class Dungeon:
                 room = rooms[room_id]
                 room.doors = room.doors[:1]
                 room.door_positions = room.door_positions[:1]
-                room.used_sides = set(list(room.used_sides)[:1])
+                room.free_sides = set(list(room.free_sides)[:1])
 
         return rooms
 
 
 class Room:
-    def __init__(self, room_id, room_type="normal", width=6, height=6):
+    def __init__(self, room_id, room_type="normal",x=0,y=0, width=None, height=None , layer = 'layer 1'):
         self.id = room_id
         self.type = room_type
+        self.pos = (x,y)
         self.doors = []           # [target_room_id, ...]
-        self.map = self.generate_room(width, height,room_type)
+        self.enemys = []
+        self.map = self.generate_room(room_type,width, height)
         self.door_positions = []  # [(x, y), ...]
-        self.used_sides = set()   # which walls already have doors
+        self.spawn_positions = []
+        self.free_sides = ["top", "bottom", "left", "right"]  # which walls already have no doors
+        self.add_asets(layer)
+        self.show_on_map = False
 
-    def add_door(self, side, mirror=None):
-        if side in self.used_sides:
+
+    def place_enemy(self,width, height,layer = 'layer 1'):
+        x = random.randint(1, width)
+        y = random.randint(1, height)
+        while self.map[y][x] != '.':
+            x = random.randint(1, width)
+            y = random.randint(1, height)
+        rarety_temp_1 = 0
+        rarety_temp_2 = 0
+        rand_num = random.randint(0, 100)
+        layer = GTD.layers[layer]
+        for j in layer['mob']:
+            p = layer['mob'][j]
+            # print(p)
+            time.sleep(0.1)
+            rarety_temp_1 = rarety_temp_2
+            rarety_temp_2 += p
+            if (rarety_temp_1 < rand_num) and (rand_num <= rarety_temp_2):
+                e_level = layer['level'] + random.randint(-3,3)
+                if e_level <= 0: e_level = 1
+                self.enemys.append(Enemy(j,e_level,self,x,y))
+
+    def place_boss(self,width, height,layer = 'layer 1'):
+        x = width
+        y = height
+        layer = GTD.layers[layer]
+        e_level = layer['level'] + random.randint(-3,3)
+        if e_level <= 0: e_level = 1
+        self.enemys.append(Enemy(layer['boss'],e_level,self,x,y,True))
+
+    def get_enemy_pos(self):
+        enemy_pos = []
+        for e in self.enemys:
+            enemy_pos.append([e.x,e.y])
+        return enemy_pos
+
+    def add_asets(self,layer='layer 1'):
+        if self.type == 'start':
+            height = len(self.map) // 2
+            width = len(self.map[0]) // 2
+            self.map[height][width] = 'S'
+            print('add assets')
+
+        elif self.type == 'boss':
+            height = len(self.map) // 2
+            width = len(self.map[0]) // 2
+            self.place_boss(width, height, layer)
+            print('add assets')
+
+
+        elif self.type == 'normal':
+            height = len(self.map) - 2
+            width = len(self.map[0]) - 2
+            space = height * width
+            rand = random.randint((space//16),(space//8))
+            for i in range(rand):
+                if i == 0:
+                    self.place_enemy(width,height,layer)
+
+                else:
+                    rand_2 = random.randint(0,6)
+                    if rand_2 == 0:
+                        self.place_enemy(width,height,layer)
+                    elif rand_2 == 1:
+                        x = random.randint(2,width-1)
+                        y = random.randint(2,height-1)
+                        if self.map[y][x] == '.': self.map[y][x] = '#'
+
+                    elif rand_2 == 6:
+                        x = random.randint(2,width-1)
+                        y = random.randint(2,height-1)
+                        if self.map[y][x] == '.': self.map[y][x] = '#'
+                    elif rand_2 == 5:
+                        x = random.randint(2,width-1)
+                        y = random.randint(2,height-1)
+                        if self.map[y][x] == '.': self.map[y][x] = '#'
+                    elif rand_2 == 2:
+                        x = random.randint(1,width)
+                        y = random.randint(1,height)
+                        if self.map[y][x] == '.': self.map[y][x] = 'C'
+                    elif rand_2 == 3:
+                        x = random.randint(1,width)
+                        y = random.randint(1,height)
+                        if self.map[y][x] == '.': self.map[y][x] = 'T'
+                    elif rand_2 == 4:
+                        x = random.randint(1,width)
+                        y = random.randint(1,height)
+                        if self.map[y][x] == '.': self.map[y][x] = ' '
+                print('add assets')
+
+
+
+    def update_free_sides(self,grid):
+        for i in self.free_sides:
+            if i == 'top' and (self.pos[0],self.pos[1] - 1) in grid: self.free_sides.remove('top')
+            if i == 'bottom' and (self.pos[0], self.pos[1] + 1) in grid: self.free_sides.remove('bottom')
+            if i == 'left' and (self.pos[0] - 1, self.pos[1]) in grid: self.free_sides.remove('left')
+            if i == 'right' and (self.pos[0] + 1, self.pos[1]) in grid: self.free_sides.remove('right')
+
+    def add_door(self, side,grid,o_pos=None, mirror=None):
+        if side not in self.free_sides:
             return None  # already has a door on this side
-
         height = len(self.map)
         width = len(self.map[0])
 
@@ -849,12 +973,16 @@ class Room:
             mx, my = mirror
             if side == "left":
                 x, y = 0, clamp(my, 1, height - 2)
+                self.pos = (o_pos[0] + 1,o_pos[1])
             elif side == "right":
                 x, y = width - 1, clamp(my, 1, height - 2)
+                self.pos = (o_pos[0] - 1, o_pos[1])
             elif side == "top":
                 x, y = clamp(mx, 1, width - 2), 0
+                self.pos = (o_pos[0], o_pos[1] + 1)
             elif side == "bottom":
                 x, y = clamp(mx, 1, width - 2), height - 1
+                self.pos = (o_pos[0], o_pos[1] - 1)
         else:
             if side == "top":
                 x, y = random.randint(1, width - 2), 0
@@ -867,18 +995,30 @@ class Room:
 
         self.map[y][x] = "D"
         self.door_positions.append((x, y))
-        self.used_sides.add(side)
+        self.free_sides.remove(side)
+        self.update_free_sides(grid)
         return (x, y)
 
-    def generate_room(self,width, height, room_type):
+    def generate_room(self,room_type ,width=None, height=None):
         width = width or random.randint(6, 10)
         height = height or random.randint(6, 10)
         return [["#" if x in (0, width - 1) or y in (0, height - 1) else "." for x in range(width)] for y in range(height)]
 
+def enemy_move(dungeon, player):
+    room = dungeon.rooms[dungeon.room]
+    #print('enemys in room', len(room.enemys))
+    for enemy in room.enemys:
+        if enemy.is_del:
+            room.enemys.remove(enemy)
+        elif enemy.is_boss:
+            pass
+        else:
+            enemy.move(player,room,dungeon)
+
 
 def print_room_options(player):
     print('======== Your turn =========')
-    if player.moves == -1:
+    if player.moves == -2:
         if player.cls == 'Roghe':
           print('R = Roll dice to move | F = Roll to check for traps')
         print('R = Roll dice to move')
@@ -888,142 +1028,300 @@ def print_room_options(player):
         player.moves = -1
 
 
+def roll_dice(start, end, advan=0):
+    rand = 0
+    for i in range(20):
+        rand_o = rand
+        while rand == rand_o:
+            rand = random.randint(start, end)
+        rand += advan
+        if rand < start:
+            rand = start
+        elif rand > end:
+            rand = end
+        rand_str = str(rand)
+        if len(rand_str) == 1: rand_str = ' ' + rand_str
+        if len(rand_str) == 2: rand_str = rand_str + ' '
+        clear()
+        print(f'''
+=========================
+        Dice Roll
+         –––––––
+        |       |
+        |  {rand_str}  |
+        |       |
+         –––––––
 
-def print_dungeon_map(rooms, spacing=1):
-    # 1. BFS: relative Positionen bestimmen
+=========================
+''')
+        time.sleep((i + 1) / 50)
+    input("\nPress Enter to return...")
+    return rand
+
+
+def main_menu():
+    while True:
+        clear()
+        print("""
+===================================
+       DICE DUNGEON: DESCENT
+===================================
+ [1] Start Game
+ [2] How to Play
+ [3] Quit
+""")
+        choice = input("> ").upper().strip()
+        if choice == "1":
+            return "start"
+        elif choice == "2":
+            show_help_new()
+        elif choice == "3" or 'Q':
+            print("Goodbye, hero...")
+            time.sleep(1)
+            return 'exit'
+        else:
+            print("Invalid option.")
+            time.sleep(1)
+
+def show_help_new(page=0):
+    max_page = 0
+    help_text = GTD.help_txt
+    while True:
+        clear()
+        print(f'''=============
+    Help Page {page} / {max_page}
+P = Privios Page | N = Next ''')
+        print(help_text[f'page {page}'])
+        choice = input("Press Enter to return... > ").upper().strip()
+        if choice == 'N':
+            if page < max_page:
+                page += 1
+        elif choice == 'P':
+            if page > 0:
+                page -= 1
+        else:
+            break
+
+def game_menu(player,dungeon):
+    HP = f'HP {player.hp}/{player.max_hp + player.max_hp_items}'
+    MP = f'MP {player.mp}/{player.max_mp + player.max_mp_items}'
+    gold = f'Gold {player.gold}'
+    XP = f'XP {player.xp}/{player.max_xp}'
+    level = f'Level {player.level}'
+    while len(HP) < 13:
+        HP += ' '
+    while len(MP) < 13:
+        MP += ' '
+    while len(gold) < 13:
+        gold += ' '
+    while len(XP) < 13:
+        XP += ' '
+    while len(level) < 13:
+        level += ' '
     clear()
-    positions = {0: (0,0)}
-    positions_given = [(0,0)]
-    placed = {0}
-    queue = [0]
+    print(f'''
+========================================
+              Dice Dungeon
+{HP}  {MP}  {gold}
+{level}  {XP}
+H = Help | I = Invetory | T = Stats
+Q = Quit
+========================================''')
+    if GAME_STATE == 'map':
+        dungeon.print_room(player)
+    return player
 
-    while queue:
-        rid = queue.pop(0)
-        room = rooms[rid]
-        x, y = positions[rid]
-        print('rid:',rid,' x,y :',x,y)
-        #print('doors', room.doors)
 
-        for i, conn in enumerate(room.doors):
-            if conn in placed: continue
-            px, py = room.door_positions[i]
-            w, h = len(room.map[0]), len(room.map)
-            dx = dy = 0
-            if py == 0: dy = -1
-            elif py == h-1: dy = 1
-            elif px == 0: dx = -1
-            elif px == w-1: dx = 1
-            positions[conn] = (x+dx, y+dy)
-            placed.add(conn)
-            queue.append(conn)
-            print('conn:',conn,' px,py:',px,py,' w,h:',w,h,' dx,dy:',dx,dy)
+def select_player_class():
+    while True:
+        clear()
+        print('''
+======================
+Selacte a player class
+======================
+[1] Adventurer
+    ''')
+        choice = input("> ").strip()
+        if choice == "1":
+            return "Adventurer"
+        else:
+            print("Invalid option.")
+            time.sleep(1)
+
+
+def select_dungeon():
+    while True:
+        clear()
+        print('''
+======================
+Selacte a dungeon
+======================
+[1] Standerd
+    ''')
+        choice = input("> ").strip()
+        if choice == "1":
+            return "Standerd"
+        else:
+            print("Invalid option.")
+            time.sleep(1)
+
+
+def fight_art(player, enemy):
+    art = GTD.fight_art
+    player_art = art['player']
+    enemy_art = art[enemy.mob]
+    for i in range(len(player_art)):
+        temp = '      '
+        temp += player_art[i]
+        while len(temp) < 40: temp += ' '
+        temp += enemy_art[i]
+        print(temp)
+
+def print_dungeon_map(dungeon, spacing=1, room_size=2):
+    # 1. BFS: relative Positionen bestimmen
+    rooms = dungeon.rooms
+    print(rooms)
+    if len(str(rooms[len(rooms) - 1].id)) > room_size: room_size = len(str(rooms[len(rooms) - 1].id))
+    clear()
+    positions = [room.pos for room in dungeon.rooms.values()]
+
+            # print('conn:',conn,' px,py:',px,py,' w,h:',w,h,' dx,dy:',dx,dy)
 
     # 2. Grid vorbereiten
-    xs = [p[0] for p in positions.values()]
-    ys = [p[1] for p in positions.values()]
+    xs = [p[0] for p in positions]
+    ys = [p[1] for p in positions]
     minx, maxx = min(xs), max(xs)
     miny, maxy = min(ys), max(ys)
 
-    room_size = 2
-    width = (maxx-minx+1)*(room_size+spacing) - spacing
-    height = (maxy-miny+1)*(room_size+spacing) - spacing
+    width = (maxx - minx + 1) * (room_size + spacing) - spacing
+    height = (maxy - miny + 1) * (room_size + spacing) - spacing
+
     grid = [[" " for _ in range(width)] for _ in range(height)]
 
     # 3. Räume zeichnen
     room_coords = {}
-    for rid, (x, y) in positions.items():
-        gx = (x-minx)*(room_size+spacing)
-        gy = (y-miny)*(room_size+spacing)
-        rid_str = str(rid)
-        # ID oben links, max 2 Zeichen
-        if len(rid_str) == 1: grid[gy][gx+1] = "#"
-        grid[gy][gx:gx+len(rid_str)] = list(rid_str)
-        grid[gy+1][gx] = "#"
-        grid[gy+1][gx+1] = "#"
-        room_coords[rid] = (gx, gy)
+    for room in dungeon.rooms.values():
+        #if room.show_on_map == False:
+            #continue
+        gx, gy = room.pos
+        gx = (gx - minx) * (room_size + spacing)
+        gy = (gy - miny) * (room_size + spacing)
+
+        rid_str = str(room.id)
+        if room.show_on_map:
+            if len(rid_str) < room_size:
+                for i in range(room_size - len(rid_str)):
+                    grid[gy][gx + len(rid_str) + i] = "#"
+            grid[gy][gx:gx + len(rid_str)] = list(rid_str)
+            for i in range(room_size-1):
+                for j in range(room_size):
+                    grid[gy + 1 + i][gx + j] = "#"
+        room_coords[room.id] = (gx, gy)
+
 
     # 4. Linien nur zwischen Räumen in Zwischenzellen
-    print(rooms)
-    for rid, room in rooms.items():
-        gx, gy = room_coords[rid]
+    # print(rooms)
+    for room in dungeon.rooms.values():
+        if room.show_on_map == False:
+            continue
+        gx, gy = room_coords[room.id]
         for i, conn in enumerate(room.doors):
             cgx, cgy = room_coords[conn]
-
             # Vertikal
             if gx == cgx:
-                start = min(gy+room_size, cgy)
-                end = max(gy, cgy+room_size)
+                start = min(gy + room_size, cgy)
+                end = max(gy, cgy + room_size)
                 for y_pos in range(start, end):
                     if grid[y_pos][gx] == " ":
                         grid[y_pos][gx] = "|"
             # Horizontal
             elif gy == cgy:
-                start = min(gx+len(str(rid)), cgx)
-                end = max(gx+1, cgx)
+                start = min(gx + len(str(room.id)), cgx)
+                end = max(gx + 1, cgx)
                 for x_pos in range(start, end):
                     if grid[gy][x_pos] == " ":
                         grid[gy][x_pos] = "-"
 
+
     # 5. Ausgabe
     #clear()
+    #print(dungeon.room_pos)
     for row in grid:
-        print("".join(row))
-    for i in rooms:
-        print('room:',i,'doors',rooms[i].doors)
+        if any(i != ' ' for i in row):
+            print("".join(row))
+    #for i in rooms:
+        #print('room:',i,'doors',rooms[i].doors)
 
     input("\nPress Enter to return...")
 
-
             
-def game_loop_room(player,dungeon):
+def game_loop_room(player):
+    global loop_room, Layers, DUNGEON,CHEATS_ON
     loop_room = True
     while loop_room:
-        game_menu()
+        dungeon = DUNGEON
+        game_menu(player,dungeon)
         print_room_options(player)
         choice = input("> ").upper().strip()
         if choice == 'H':
             show_help_new()
+            continue
         elif choice == 'T':
             player.show_stats()
+            continue
         elif choice == 'I':
             player.show_inventory()
+            continue
         elif choice == 'M':
-            print_dungeon_map(dungeon.rooms)
+            print_dungeon_map(dungeon)
+            continue
         elif choice == 'Q':
             choice = input('You sure you want to qite? [Y/N]>').upper().strip()
             if choice == 'Y' or choice == 'Q':
                 loop_room = False
                 break
-        elif choice == 'GIVE ALL':
-            for rarity in ["common", "uncommon", "rare", "epic", "legendary", "unique"]:
-                for item_type in ["sword", "knife", "bow", "stafe", "spear", "chestplate", "helmet","boots", "pants", "pans", "gloves", "sheald"]: # , "consumable"
-                    player.add_to_inv(GameItem(rarity,item_type,10))
-        elif choice == 'LEVEL UP':
-            player.Level(player.max_xp + 1)
-        elif choice == 'GIVE ITEM':
-            player.add_to_inv(GameItem('common','sword',10))
-        elif choice == 'FIGHT':
-            enemy = Enemy('zomby',random.randint(1,5),0,5,5)
-            player, loop_room = fight_loop(player,enemy)
-        elif choice == 'R':
-            if player.moves == -1:
+        elif choice == 'UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT B A':
+            CHEATS_ON = True
+            continue
+        if CHEATS_ON:
+            if choice == 'GIVE ALL':
+                for rarity in ["common", "uncommon", "rare", "epic", "legendary", "unique"]:
+                    for item_type in ["sword", "knife", "bow", "stafe", "spear", "chestplate", "helmet","boots", "pants", "pans", "gloves", "sheald"]: # , "consumable"
+                        player.add_to_inv(GameItem(rarity,item_type,10))
+                continue
+            elif choice == 'LEVEL UP':
+                player.Level(player.max_xp + 1)
+                continue
+            elif choice == 'GIVE ITEM':
+                player.add_to_inv(GameItem('common','sword',10))
+                continue
+            elif choice == 'FIGHT':
+                enemy = Enemy('zomby',random.randint(1,5),0,5,5)
+                player, loop_room = fight_loop(player,enemy)
+                continue
+        if player.moves == -2:
+            if choice == 'R':
                 player.roll_for_move()
+                continue
                 #time.sleep(1)
-        elif player.moves != -1 :
+        if player.moves >= 0 :
             if any(c not in ('W', 'A', 'S', 'D') for c in choice):
                 print('Invalid input')
                 time.sleep(1)
+                continue
             elif len(choice) <= player.moves:
                 for i in choice:
                     out = player.move(i,dungeon)
                     if out == 'brake':
                         time.sleep(1)
                         break
+                continue
+        if player.moves == -1 and choice == '':
+            enemy_move(dungeon, player)
+            player.moves = -2
         else:
             print('Invalid input')
             time.sleep(1)
-
-
 
 
 def fight_selact_attack(player,enemy):
@@ -1250,6 +1548,7 @@ def you_died():
 
 
 def fight_loop(player,enemy,player_start = True):
+    global loop_fight, loop_room
     loop_fight = True
     turn = 1 if player_start else 0
     first_turn = True
@@ -1257,11 +1556,13 @@ def fight_loop(player,enemy,player_start = True):
         if enemy.hp <= 0:
             fight_won(player, enemy)
             loop_fight = False
-            return player , True
+            loop_room = True
+            return player
         elif player.hp <= 0:
             you_died()
             loop_fight = False
-            return player , False
+            loop_room = False
+            return player
 
         elif first_turn:
             if turn == 0:
@@ -1359,16 +1660,23 @@ def fight_loop(player,enemy,player_start = True):
 
 if __name__ == "__main__":
     main_loop = True
+    loop_room = False
+    loop_fight = False
+    CHEATS_ON = False
+    Layers = []
+    Curent_Layer = 0
     while main_loop:
         out = main_menu()
         if out == 'start':
             cls = select_player_class()
-            dangeon = Dungeon()
+            Dungeon_type = select_dungeon()
+            Layers.append(Dungeon(Curent_Layer,Dungeon_type))
+            DUNGEON = Layers[Curent_Layer]
             player = Player(cls)
             player.add_to_inv(GameItem('legendary','sword',75))
             player.add_to_inv(GameItem('common','sword',10))
             GAME_STATE = 'map'
-            game_loop_room(player,dangeon)
+            game_loop_room(player)
         # game_menu()
         # give all
         elif out == 'exit':

@@ -6,27 +6,6 @@ help_txt = {
 - Advantage if you find them first.
 - Survive and reach the final floor.'''}
 
-
-
-fight_art = {
-    'player':[
-        '  `o^     ',
-        '^\/0\_+---',
-        '  /O\     ',
-        ' _| /_    ',
-        ''],
-    'zomby': [
-        '   @      ',
-        '  ==|     ',
-        '    |     ',
-        '   / \    ',
-        ''],
-}
-
-
-
-
-
 UNIQUE_ITEMS = {
         "Excalibur": {
             "type": "sword",
@@ -45,13 +24,124 @@ UNIQUE_ITEMS = {
         }
     }
 
-player_cls = {
-    'Adventurer':{
-        'stats': {'max_move': 6, 'min_move': 1, 'max_hp': 20, 'max_mp': 20, 'atk': 6, 'sp_atk': 6, 'def_': 6, 'sp_def': 6, 'crit_chance': 2, 'crit_bonus': 10},
-        'item': ('common','sword',1),
-        'attacks': ('Sword slash','Sword thrust','Flame sword','Fireball')
-    }
+fight_art = {
+    'player':[
+        '  `o^     ',
+        '^\/0\_+---',
+        '  /O\     ',
+        ' _| /_    ',
+        ''],
+    'Zomby': [
+        '   @      ',
+        '  ==|     ',
+        '    |     ',
+        '   / \    ',
+        ''],
+    'Skelet': [
+        '  _@@_    ',
+        '  \__/    ',
+        '   ||     ',
+        '  _||_    ',
+        ''],
+    'Goblin': [
+        '   o      ',
+        '  /0\     ',
+        '  / \     ',
+        ' /   \    ',
+        ''],
+    'Orc': [
+        '  /@\     ',
+        ' _|||_    ',
+        '  | |     ',
+        ' /   \    ',
+        ''],
+    'Dark Elf': [
+        '   @      ',
+        '  /|\     ',
+        '  \|/     ',
+        '  / \     ',
+        ''],
+    'Giant Spider': [
+        '  /@\     ',
+        ' /@@@\    ',
+        '  / \     ',
+        ' /   \    ',
+        ''],
+    'Goblin King': [
+        '  \@/     ',
+        ' __|__    ',
+        '  / \     ',
+        ' /   \    ',
+        ''],
+    'Orc Warlord': [
+        '  \@/     ',
+        ' _|||_    ',
+        ' / | \    ',
+        '/  |  \   ',
+        ''],
+    'Lich King': [
+        '  \@/     ',
+        '  /|\     ',
+        '  \|/     ',
+        '  / \     ',
+        ''],
+'Wraith': [
+        '   @      ',
+        '  / \     ',
+        '  \ /     ',
+        '   "      ',
+        ''],
+    'Minotaur': [
+        '  \@/     ',
+        ' _|||_    ',
+        ' / | \    ',
+        '/  \  \   ',
+        ''],
+    'Dragon': [
+        '  \@/     ',
+        ' /@@@\    ',
+        '<@@@@@>   ',
+        '  / \     ',
+        '']
+}
 
+player_cls =  {
+    'Adventurer':{
+        'stats': {'max_move': 6, 'min_move': 1, 'max_hp': 150, 'max_mp': 40, 'atk': 12, 'sp_atk': 12, 'def_': 12, 'sp_def': 12, 'crit_chance': 2, 'crit_bonus': 10},
+        'item': ('common','sword',1)
+        # the item types are
+        ,'attacks': ('Sword slash','Sword thrust','Flame sword','Fireball')
+    },
+    'Warrior':{
+        'stats': {'max_move': 5, 'min_move': 1, 'max_hp': 180, 'max_mp': 20, 'atk': 18, 'sp_atk': 8, 'def_': 16, 'sp_def': 8, 'crit_chance': 5, 'crit_bonus': 15},
+        'item': ('uncommon','sword',2),
+        'attacks': ('Sword slash','Axe Swing','War Cry','Brutal Smash')
+    },
+    'Mage':{
+        'stats': {'max_move': 6, 'min_move': 1, 'max_hp': 100, 'max_mp': 80, 'atk': 8, 'sp_atk': 18, 'def_': 8, 'sp_def': 16, 'crit_chance': 8, 'crit_bonus': 12},
+        'item': ('uncommon','stafe',2),
+        'attacks': ('Fireball','Dark Bolt','Shadow Strike','Death Coil')
+    },
+    'Rogue':{
+        'stats': {'max_move': 7, 'min_move': 1, 'max_hp': 120, 'max_mp': 30, 'atk': 16, 'sp_atk': 10, 'def_': 10, 'sp_def': 10, 'crit_chance': 12, 'crit_bonus': 20},
+        'item': ('uncommon','knife',2),
+        'attacks': ('Sword thrust','Shadow Strike','Web Shot','Dark Bolt')
+    },
+    'Ranger':{
+        'stats': {'max_move': 6, 'min_move': 1, 'max_hp': 130, 'max_mp': 40, 'atk': 14, 'sp_atk': 14, 'def_': 12, 'sp_def': 12, 'crit_chance': 10, 'crit_bonus': 15},
+        'item': ('uncommon','bow',2),
+        'attacks': ('Shadow Strike','Web Shot','Dark Bolt','Fireball')
+    },
+    'Paladin':{
+        'stats': {'max_move': 5, 'min_move': 1, 'max_hp': 170, 'max_mp': 50, 'atk': 16, 'sp_atk': 14, 'def_': 18, 'sp_def': 14, 'crit_chance': 4, 'crit_bonus': 12},
+        'item': ('uncommon','sheald',2),
+        'attacks': ('Sword slash','War Cry','Healing Light','Fireball')
+    },
+    'Necromancer':{
+        'stats': {'max_move': 6, 'min_move': 1, 'max_hp': 90, 'max_mp': 100, 'atk': 6, 'sp_atk': 20, 'def_': 8, 'sp_def': 18, 'crit_chance': 10, 'crit_bonus': 18},
+        'item': ('rare','stafe',3),
+        'attacks': ('Dark Bolt','Death Coil','Shadow Strike','Poison Dart')
+    }
 }
 
 
@@ -66,51 +156,82 @@ attacks = {
         },
     'Flame sword': {
         'stats': {'atk': 50, 'sp_atk': 50, 'mp': 5, 'max_use': 10,'crit_chance': 5,'crit_bonus': 10, 'adv': 0},
-        'discription': 'A slash with a blaming sword'
+        'discription': 'A slash with a flaming sword'
         },
     'Fireball': {
         'stats': {'atk': 0, 'sp_atk': 100, 'mp': 5, 'max_use': 10,'crit_chance': 0,'crit_bonus': 10, 'adv': 0},
-        'discription': 'You through a ball of fire a your enemy'
+        'discription': 'You throw a ball of fire at your enemy'
         },
-    'atk 1': {
-        'stats': {'atk': 50, 'sp_atk': 0, 'mp': 0, 'max_use': 20,'crit_chance': 0,'crit_bonus': 0, 'adv': 0},
-        'discription': 'attack'
+    'Axe Swing': {
+        'stats': {'atk': 120, 'sp_atk': 0, 'mp': 0, 'max_use': 15,'crit_chance': 5,'crit_bonus': 15, 'adv': 0},
+        'discription': 'A powerful swing with a heavy axe'
         },
-    'atk 2': {
-        'stats': {'atk': 100, 'sp_atk': 0, 'mp': 0, 'max_use': 10,'crit_chance': 0,'crit_bonus': 0, 'adv': 0},
-        'discription': 'attack'
+    'Dark Bolt': {
+        'stats': {'atk': 0, 'sp_atk': 90, 'mp': 4, 'max_use': 12,'crit_chance': 8,'crit_bonus': 12, 'adv': 0},
+        'discription': 'A bolt of dark energy'
         },
-    'atk 3': {
-        'stats': {'atk': 40, 'sp_atk': 0, 'mp': 0, 'max_use': 20,'crit_chance': 0,'crit_bonus': 0, 'adv': 1},
-        'discription': 'attack'
+    'Shadow Strike': {
+        'stats': {'atk': 70, 'sp_atk': 30, 'mp': 3, 'max_use': 15,'crit_chance': 12,'crit_bonus': 18, 'adv': 1},
+        'discription': 'A strike from the shadows'
         },
-    'atk 4': {
-        'stats': {'atk': 110, 'sp_atk': 0, 'mp': 0, 'max_use': 5,'crit_chance': 0,'crit_bonus': 0, 'adv': -1},
-        'discription': 'attack'
+    'Web Shot': {
+        'stats': {'atk': 40, 'sp_atk': 20, 'mp': 2, 'max_use': 18,'crit_chance': 0,'crit_bonus': 0, 'adv': -2},
+        'discription': 'Shoots sticky webs to immobilize'
         },
-    'sp atk 1': {
-        'stats': {'atk': 0, 'sp_atk': 50, 'mp': 1, 'max_use': 20,'crit_chance': 0,'crit_bonus': 0, 'adv': 0},
-        'discription': 'special attack'
+    'War Cry': {
+        'stats': {'atk': 80, 'sp_atk': 0, 'mp': 0, 'max_use': 10,'crit_chance': 10,'crit_bonus': 20, 'adv': 2},
+        'discription': 'A terrifying battle cry'
         },
-    'sp atk 2': {
-        'stats': {'atk': 0, 'sp_atk': 100, 'mp': 2, 'max_use': 10,'crit_chance': 0,'crit_bonus': 0, 'adv': 0},
-        'discription': 'special attack'
+    'Brutal Smash': {
+        'stats': {'atk': 140, 'sp_atk': 0, 'mp': 0, 'max_use': 8,'crit_chance': 15,'crit_bonus': 25, 'adv': -1},
+        'discription': 'A devastating smash attack'
         },
-    'sp atk 3': {
-        'stats': {'atk': 0, 'sp_atk': 40, 'mp': 1, 'max_use': 20,'crit_chance': 0,'crit_bonus': 0, 'adv': 1},
-        'discription': 'special attack'
+    'Death Coil': {
+        'stats': {'atk': 0, 'sp_atk': 130, 'mp': 8, 'max_use': 6,'crit_chance': 10,'crit_bonus': 20, 'adv': 0},
+        'discription': 'Unleashes a coil of death energy'
         },
-    'sp atk 4': {
-        'stats': {'atk': 0, 'sp_atk': 110, 'mp': 2, 'max_use': 5,'crit_chance': 0,'crit_bonus': 0, 'adv': -1},
-        'discription': 'special attack'
+    'Ice Shard': {
+        'stats': {'atk': 0, 'sp_atk': 85, 'mp': 3, 'max_use': 15,'crit_chance': 5,'crit_bonus': 10, 'adv': -1},
+        'discription': 'Launches sharp shards of ice'
+        },
+    'Lightning Strike': {
+        'stats': {'atk': 0, 'sp_atk': 110, 'mp': 6, 'max_use': 8,'crit_chance': 15,'crit_bonus': 25, 'adv': 0},
+        'discription': 'Calls down a powerful lightning bolt'
+        },
+    'Poison Dart': {
+        'stats': {'atk': 45, 'sp_atk': 25, 'mp': 2, 'max_use': 20,'crit_chance': 8,'crit_bonus': 15, 'adv': 0},
+        'discription': 'A poisoned dart that weakens enemies'
+        },
+    'Healing Light': {
+        'stats': {'atk': 0, 'sp_atk': -80, 'mp': 6, 'max_use': 5,'crit_chance': 0,'crit_bonus': 0, 'adv': 0},
+        'discription': 'Restores health to the caster'
+        },
+    'Bone Crush': {
+        'stats': {'atk': 95, 'sp_atk': 0, 'mp': 0, 'max_use': 12,'crit_chance': 8,'crit_bonus': 15, 'adv': 0},
+        'discription': 'A crushing blow that breaks bones'
+        },
+    'Venom Bite': {
+        'stats': {'atk': 55, 'sp_atk': 35, 'mp': 3, 'max_use': 15,'crit_chance': 12,'crit_bonus': 18, 'adv': -1},
+        'discription': 'A poisonous bite that drains strength'
+        },
+    'Soul Drain': {
+        'stats': {'atk': 0, 'sp_atk': 75, 'mp': 4, 'max_use': 10,'crit_chance': 10,'crit_bonus': 20, 'adv': 1},
+        'discription': 'Drains the life force from enemies'
+        },
+    'Earthquake': {
+        'stats': {'atk': 110, 'sp_atk': 0, 'mp': 0, 'max_use': 8,'crit_chance': 5,'crit_bonus': 15, 'adv': -2},
+        'discription': 'Shakes the ground beneath enemies'
+        },
+    'Wind Slash': {
+        'stats': {'atk': 65, 'sp_atk': 45, 'mp': 4, 'max_use': 12,'crit_chance': 15,'crit_bonus': 20, 'adv': 2},
+        'discription': 'A swift slash empowered by wind'
         }
-
     }
 
 enemy_cls = {
-    'zomby':{
-        'stats': {'min_move': 1, 'max_move': 6, 'max_hp': 10, 'max_mp': 10, 'atk': 6, 'sp_atk': 6, 'def_': 6, 'sp_def':6, 'xp': 3, 'gold': 2, 'crit_chance': 0, 'crit_bonus': 0},
-        'Attacks': {'atk 1':100, 'atk 2':100, 'atk 3':100, 'atk 4':100},
+    'Zomby':{
+        'stats': {'min_move': 1, 'max_move': 6, 'max_hp': 75, 'max_mp': 20, 'atk': 12, 'sp_atk': 6, 'def_': 12, 'sp_def':6, 'xp': 3, 'gold': 2, 'crit_chance': 0, 'crit_bonus': 0},
+        'Attacks': {'Sword slash':80, 'Axe Swing':20, 'Bone Crush':60, 'Shadow Strike':40},
         'Items': {
             'sword':{'chance':10, 'rarety': {'common':70, 'uncommon':25,'rare':5}, 'level':[-3,3]},
             'knife':{'chance':10, 'rarety': {'common':70, 'uncommon':25,'rare':5}, 'level':[-3,3]},
@@ -118,5 +239,183 @@ enemy_cls = {
             'chestplate':{'chance':10, 'rarety': {'common':70, 'uncommon':25,'rare':5}, 'level':[-3,3]},
             'pants':{'chance':10, 'rarety': {'common':70, 'uncommon':25,'rare':5}, 'level':[-3,3]}
             }
+        },
+    'Skelet':{
+        'stats': {'min_move': 1, 'max_move': 6, 'max_hp': 75, 'max_mp': 50, 'atk': 6, 'sp_atk': 12, 'def_': 6, 'sp_def':12, 'xp': 3, 'gold': 2, 'crit_chance': 0, 'crit_bonus': 0},
+        'Attacks': {'Dark Bolt':70, 'Ice Shard':30, 'Bone Crush':50, 'Soul Drain':40},
+        'Items': {
+            'stafe':{'chance':10, 'rarety': {'common':70, 'uncommon':25,'rare':5}, 'level':[-3,3]},
+            'sheald':{'chance':10, 'rarety': {'common':70, 'uncommon':25,'rare':5}, 'level':[-3,3]},
+            'chestplate':{'chance':10, 'rarety': {'common':70, 'uncommon':25,'rare':5}, 'level':[-3,3]},
+            'pants':{'chance':10, 'rarety': {'common':70, 'uncommon':25,'rare':5}, 'level':[-3,3]}
+            }
+        },
+    'Goblin':{
+        'stats': {'min_move': 1, 'max_move': 6, 'max_hp': 75, 'max_mp': 50, 'atk': 12, 'sp_atk': 12, 'def_': 12, 'sp_def':12, 'xp': 6, 'gold': 4, 'crit_chance': 5, 'crit_bonus': 10},
+        'Attacks': {'Sword slash':40, 'Poison Dart':40, 'Shadow Strike':20, 'Web Shot':50, 'Venom Bite':30},
+        'Items': {
+            'stafe':{'chance':10, 'rarety': {'common':70, 'uncommon':25,'rare':5}, 'level':[-3,3]},
+            'sword': {'chance': 10, 'rarety': {'common': 70, 'uncommon': 25, 'rare': 5}, 'level': [-3, 3]},
+            'knife': {'chance': 10, 'rarety': {'common': 70, 'uncommon': 25, 'rare': 5}, 'level': [-3, 3]},
+            'sheald':{'chance':10, 'rarety': {'common':70, 'uncommon':25,'rare':5}, 'level':[-3,3]},
+            'chestplate':{'chance':10, 'rarety': {'common':70, 'uncommon':25,'rare':5}, 'level':[-3,3]},
+            'pants':{'chance':10, 'rarety': {'common':70, 'uncommon':25,'rare':5}, 'level':[-3,3]}
+            }
+        },
+    'Orc':{
+        'stats': {'min_move': 1, 'max_move': 5, 'max_hp': 120, 'max_mp': 30, 'atk': 18, 'sp_atk': 8, 'def_': 15, 'sp_def':8, 'xp': 8, 'gold': 6, 'crit_chance': 3, 'crit_bonus': 15},
+        'Attacks': {'Axe Swing':50, 'War Cry':30, 'Brutal Smash':20, 'Earthquake':40, 'Sword slash':60},
+        'Items': {
+            'sword':{'chance':15, 'rarety': {'common':60, 'uncommon':30,'rare':10}, 'level':[-2,4]},
+            'spear':{'chance':15, 'rarety': {'common':60, 'uncommon':30,'rare':10}, 'level':[-2,4]},
+            'chestplate':{'chance':15, 'rarety': {'common':60, 'uncommon':30,'rare':10}, 'level':[-2,4]},
+            'helmet':{'chance':10, 'rarety': {'common':60, 'uncommon':30,'rare':10}, 'level':[-2,4]},
+            'boots':{'chance':10, 'rarety': {'common':60, 'uncommon':30,'rare':10}, 'level':[-2,4]}
+            }
+        },
+    'Dark Elf':{
+        'stats': {'min_move': 1, 'max_move': 7, 'max_hp': 65, 'max_mp': 80, 'atk': 10, 'sp_atk': 16, 'def_': 8, 'sp_def':14, 'xp': 7, 'gold': 5, 'crit_chance': 8, 'crit_bonus': 12},
+        'Attacks': {'Dark Bolt':40, 'Shadow Strike':30, 'Ice Shard':20, 'Poison Dart':10, 'Soul Drain':50, 'Wind Slash':40},
+        'Items': {
+            'bow':{'chance':15, 'rarety': {'common':60, 'uncommon':30,'rare':10}, 'level':[-2,4]},
+            'knife':{'chance':15, 'rarety': {'common':60, 'uncommon':30,'rare':10}, 'level':[-2,4]},
+            'stafe':{'chance':20, 'rarety': {'common':60, 'uncommon':30,'rare':10}, 'level':[-2,4]},
+            'gloves':{'chance':10, 'rarety': {'common':60, 'uncommon':30,'rare':10}, 'level':[-2,4]}
+            }
+        },
+    'Giant Spider':{
+        'stats': {'min_move': 1, 'max_move': 8, 'max_hp': 90, 'max_mp': 40, 'atk': 14, 'sp_atk': 10, 'def_': 10, 'sp_def':10, 'xp': 5, 'gold': 3, 'crit_chance': 6, 'crit_bonus': 8},
+        'Attacks': {'Web Shot':60, 'Poison Dart':30, 'Shadow Strike':10, 'Venom Bite':70, 'Dark Bolt':20},
+        'Items': {
+            'pants':{'chance':10, 'rarety': {'common':70, 'uncommon':25,'rare':5}, 'level':[-3,3]},
+            'boots':{'chance':15, 'rarety': {'common':70, 'uncommon':25,'rare':5}, 'level':[-3,3]},
+            'gloves':{'chance':10, 'rarety': {'common':70, 'uncommon':25,'rare':5}, 'level':[-3,3]}
+            }
+        },
+    'Wraith':{
+        'stats': {'min_move': 1, 'max_move': 7, 'max_hp': 60, 'max_mp': 100, 'atk': 8, 'sp_atk': 18, 'def_': 6, 'sp_def':16, 'xp': 10, 'gold': 8, 'crit_chance': 10, 'crit_bonus': 15},
+        'Attacks': {'Death Coil':40, 'Dark Bolt':30, 'Shadow Strike':20, 'Ice Shard':10, 'Soul Drain':50, 'Poison Dart':25},
+        'Items': {
+            'stafe':{'chance':20, 'rarety': {'common':50, 'uncommon':35,'rare':15}, 'level':[-1,5]},
+            'gloves':{'chance':15, 'rarety': {'common':50, 'uncommon':35,'rare':15}, 'level':[-1,5]},
+            'helmet':{'chance':10, 'rarety': {'common':50, 'uncommon':35,'rare':15}, 'level':[-1,5]}
+            }
+        },
+    'Minotaur':{
+        'stats': {'min_move': 1, 'max_move': 4, 'max_hp': 160, 'max_mp': 20, 'atk': 20, 'sp_atk': 6, 'def_': 18, 'sp_def':8, 'xp': 12, 'gold': 10, 'crit_chance': 8, 'crit_bonus': 20},
+        'Attacks': {'Brutal Smash':50, 'Axe Swing':30, 'War Cry':20, 'Earthquake':40, 'Bone Crush':60},
+        'Items': {
+            'sword':{'chance':20, 'rarety': {'common':50, 'uncommon':35,'rare':15}, 'level':[-1,5]},
+            'spear':{'chance':20, 'rarety': {'common':50, 'uncommon':35,'rare':15}, 'level':[-1,5]},
+            'chestplate':{'chance':20, 'rarety': {'common':50, 'uncommon':35,'rare':15}, 'level':[-1,5]},
+            'helmet':{'chance':15, 'rarety': {'common':50, 'uncommon':35,'rare':15}, 'level':[-1,5]}
+            }
         }
     }
+
+bosses = {
+    'Goblin King':{
+        'stats': {'min_move': 1, 'max_move': 6, 'max_hp': 150, 'max_mp': 60, 'atk': 18, 'sp_atk': 14, 'def_': 16, 'sp_def':14, 'xp': 25, 'gold': 20, 'crit_chance': 8, 'crit_bonus': 15},
+        'Attacks': {'Axe Swing':30, 'War Cry':25, 'Brutal Smash':20, 'Poison Dart':15, 'Shadow Strike':10, 'Venom Bite':40, 'Earthquake':35},
+        'Items': {
+            'stafe':{'chance':20, 'rarety': {'common':50, 'uncommon':35,'rare':15}, 'level':[0,6]},
+            'sword': {'chance': 20, 'rarety': {'common': 50, 'uncommon': 35, 'rare': 15}, 'level': [0, 6]},
+            'knife': {'chance': 20, 'rarety': {'common': 50, 'uncommon': 35, 'rare': 15}, 'level': [0, 6]},
+            'sheald':{'chance':20, 'rarety': {'common':50, 'uncommon':35,'rare':15}, 'level':[0,6]},
+            'chestplate':{'chance':20, 'rarety': {'common':50, 'uncommon':35,'rare':15}, 'level':[0,6]},
+            'pants':{'chance':20, 'rarety': {'common':50, 'uncommon':35,'rare':15}, 'level':[0,6]}
+            }
+        },
+    'Orc Warlord':{
+        'stats': {'min_move': 1, 'max_move': 5, 'max_hp': 200, 'max_mp': 50, 'atk': 22, 'sp_atk': 12, 'def_': 20, 'sp_def':12, 'xp': 35, 'gold': 30, 'crit_chance': 10, 'crit_bonus': 20},
+        'Attacks': {'Brutal Smash':40, 'Axe Swing':30, 'War Cry':20, 'Shadow Strike':10, 'Earthquake':50, 'Bone Crush':45, 'Wind Slash':35},
+        'Items': {
+            'sword':{'chance':25, 'rarety': {'common':40, 'uncommon':40,'rare':20}, 'level':[1,7]},
+            'spear':{'chance':25, 'rarety': {'common':40, 'uncommon':40,'rare':20}, 'level':[1,7]},
+            'chestplate':{'chance':25, 'rarety': {'common':40, 'uncommon':40,'rare':20}, 'level':[1,7]},
+            'helmet':{'chance':20, 'rarety': {'common':40, 'uncommon':40,'rare':20}, 'level':[1,7]},
+            'sheald':{'chance':20, 'rarety': {'common':40, 'uncommon':40,'rare':20}, 'level':[1,7]}
+            }
+        },
+    'Lich King':{
+        'stats': {'min_move': 1, 'max_move': 6, 'max_hp': 180, 'max_mp': 120, 'atk': 12, 'sp_atk': 24, 'def_': 14, 'sp_def':20, 'xp': 40, 'gold': 35, 'crit_chance': 12, 'crit_bonus': 18},
+        'Attacks': {'Death Coil':30, 'Dark Bolt':25, 'Ice Shard':20, 'Shadow Strike':15, 'Lightning Strike':10, 'Soul Drain':40, 'Poison Dart':35},
+        'Items': {
+            'stafe':{'chance':30, 'rarety': {'common':30, 'uncommon':40,'rare':30}, 'level':[2,8]},
+            'bow':{'chance':20, 'rarety': {'common':30, 'uncommon':40,'rare':30}, 'level':[2,8]},
+            'gloves':{'chance':20, 'rarety': {'common':30, 'uncommon':40,'rare':30}, 'level':[2,8]},
+            'helmet':{'chance':20, 'rarety': {'common':30, 'uncommon':40,'rare':30}, 'level':[2,8]},
+            'consumable':{'chance':25, 'rarety': {'common':30, 'uncommon':40,'rare':30}, 'level':[2,8]}
+            }
+        },
+    'Dragon':{
+        'stats': {'min_move': 1, 'max_move': 8, 'max_hp': 300, 'max_mp': 100, 'atk': 25, 'sp_atk': 28, 'def_': 22, 'sp_def':18, 'xp': 60, 'gold': 50, 'crit_chance': 15, 'crit_bonus': 25},
+        'Attacks': {'Fireball':30, 'Lightning Strike':25, 'Brutal Smash':20, 'War Cry':15, 'Death Coil':10, 'Earthquake':40, 'Wind Slash':35, 'Venom Bite':30},
+        'Items': {
+            'sword':{'chance':30, 'rarety': {'common':20, 'uncommon':40,'rare':40}, 'level':[3,9]},
+            'stafe':{'chance':30, 'rarety': {'common':20, 'uncommon':40,'rare':40}, 'level':[3,9]},
+            'chestplate':{'chance':30, 'rarety': {'common':20, 'uncommon':40,'rare':40}, 'level':[3,9]},
+            'helmet':{'chance':25, 'rarety': {'common':20, 'uncommon':40,'rare':40}, 'level':[3,9]},
+            'sheald':{'chance':25, 'rarety': {'common':20, 'uncommon':40,'rare':40}, 'level':[3,9]}
+            }
+        }
+    }
+
+
+layers = {
+    'layer 1': {
+        'level': 3,
+        'mob' :{'Zomby': 40,'Skelet': 40, 'Goblin': 20},
+        'boss': 'Goblin King'
+    },
+    'layer 2': {
+        'level': 8,
+        'mob' :{'Orc': 35, 'Dark Elf': 35, 'Giant Spider': 30},
+        'boss': 'Orc Warlord'
+    },
+    'layer 3': {
+        'level': 15,
+        'mob' :{'Dark Elf': 40, 'Orc': 30, 'Goblin': 20, 'Giant Spider': 10},
+        'boss': 'Lich King'
+    },
+    'layer 4': {
+        'level': 22,
+        'mob' :{'Wraith': 35, 'Minotaur': 35, 'Dark Elf': 20, 'Orc': 10},
+        'boss': 'Lich King'
+    },
+    'layer 5': {
+        'level': 30,
+        'mob' :{'Wraith': 40, 'Minotaur': 30, 'Dark Elf': 20, 'Giant Spider': 10},
+        'boss': 'Dragon'
+    },
+    'layer 6': {
+        'level': 40,
+        'mob' :{'Wraith': 50, 'Minotaur': 30, 'Dark Elf': 20},
+        'boss': 'Dragon'
+    },
+    'layer 7': {
+        'level': 50,
+        'mob' :{'Wraith': 40, 'Minotaur': 40, 'Dark Elf': 20},
+        'boss': 'Dragon'
+    },
+    'layer 8': {
+        'level': 60,
+        'mob' :{'Wraith': 50, 'Minotaur': 50},
+        'boss': 'Lich King'
+    },
+    'layer 9': {
+        'level': 75,
+        'mob' :{'Wraith': 60, 'Minotaur': 40},
+        'boss': 'Dragon'
+    },
+    'layer 10': {
+        'level': 90,
+        'mob' :{'Wraith': 70, 'Minotaur': 30},
+        'boss': 'Dragon'
+    }
+}
+
+
+dungeons_preset = {
+    'Standerd' : ['layer 1','layer 2','layer 3','layer 4','layer 5','layer 6','layer 7','layer 8','layer 9','layer 10']
+}

@@ -48,7 +48,7 @@ class GameItem:
         stats = data["stats"]
         self.item_type = data["type"]
         for k, v in stats.items():
-            setattr(self, k, v * (1 + self.level / 20))
+            setattr(self, k, v * (1 + self.level / 10))
 
     # ---- NAME GENERATION ----
     def generate_name(self):
