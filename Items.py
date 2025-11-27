@@ -48,7 +48,7 @@ class GameItem:
         stats = data["stats"]
         self.item_type = data["type"]
         for k, v in stats.items():
-            setattr(self, k, v * (1 + self.level / 10))
+            setattr(self, k, int(v * (1 + self.level / 3)))
 
     # ---- NAME GENERATION ----
     def generate_name(self):
@@ -211,7 +211,7 @@ class GameItem:
 
         stats = {}
         for stat, (low, high) in stat_ranges.items():
-            value = random.uniform(low, high) * grade_multiplier * (1 + self.level / 20)
+            value = random.uniform(low, high) * grade_multiplier * (1 + self.level / 5)
             stats[stat] = round(value, 2)
 
         # Apply the generated stats to the object
