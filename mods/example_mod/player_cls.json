@@ -1,0 +1,27 @@
+{
+  "Moder": {
+    "stats": {
+      "max_move": 10,
+      "min_move": 3,
+      "max_hp": 200,
+      "max_mp": 300,
+      "atk": 12,
+      "sp_atk": 20,
+      "def_": 10,
+      "sp_def": 25,
+      "crit_chance": 10,
+      "crit_bonus": 15
+    },
+    "item": [
+      "rare",
+      "stafe",
+      30
+    ],
+    "attacks": [
+      "Mod slash",
+      "Mod Swing",
+      "Mod Coil",
+      "Mod Bite"
+    ]
+  }
+}

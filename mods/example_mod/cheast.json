@@ -1,0 +1,29 @@
+{
+  "Mod": {
+        "rarety": {
+            "common": 20,
+            "uncommon": 20,
+            "rare": 20,
+            "epic": 20,
+            "legendary": 20
+        },
+        "level": [
+            -3,
+            15
+        ],
+        "item type": {
+            "sword": 8,
+            "stafe": 8,
+            "sheald": 8,
+            "knife": 8,
+            "spear": 8,
+            "helmet": 8,
+            "pants": 8,
+            "boots": 8,
+            "bow": 8,
+            "gloves": 8,
+            "pans": 8,
+            "Gold": 12
+        }
+    }
+}

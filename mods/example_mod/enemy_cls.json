@@ -1,0 +1,98 @@
+{
+  "Modmon": {
+        "stats": {
+            "min_move": 3,
+            "max_move": 8,
+            "max_hp": 130,
+            "max_mp": 150,
+            "atk": 12,
+            "sp_atk": 15,
+            "def_": 12,
+            "sp_def": 14,
+            "xp": 10,
+            "gold": 8,
+            "crit_chance": 10,
+            "crit_bonus": 10
+        },
+        "Attacks": {
+            "Mod slash": 100,
+            "Mod Swing": 100,
+            "Mod Coil": 100,
+            "Mod Bite": 100
+        },
+        "Items": {
+            "stafe": {
+                "chance": 10,
+                "rarety": {
+                    "common": 70,
+                    "uncommon": 25,
+                    "rare": 5
+                },
+                "level": [
+                    -3,
+                    3
+                ]
+            },
+            "sword": {
+                "chance": 10,
+                "rarety": {
+                    "common": 70,
+                    "uncommon": 25,
+                    "rare": 5
+                },
+                "level": [
+                    -3,
+                    3
+                ]
+            },
+            "knife": {
+                "chance": 10,
+                "rarety": {
+                    "common": 70,
+                    "uncommon": 25,
+                    "rare": 5
+                },
+                "level": [
+                    -3,
+                    3
+                ]
+            },
+            "sheald": {
+                "chance": 10,
+                "rarety": {
+                    "common": 70,
+                    "uncommon": 25,
+                    "rare": 5
+                },
+                "level": [
+                    -3,
+                    3
+                ]
+            },
+            "chestplate": {
+                "chance": 10,
+                "rarety": {
+                    "common": 70,
+                    "uncommon": 25,
+                    "rare": 5
+                },
+                "level": [
+                    -3,
+                    3
+                ]
+            },
+            "pants": {
+                "chance": 10,
+                "rarety": {
+                    "common": 70,
+                    "uncommon": 25,
+                    "rare": 5
+                },
+                "level": [
+                    -3,
+                    3
+                ]
+            }
+        }
+    }
+}

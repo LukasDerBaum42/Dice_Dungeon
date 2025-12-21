@@ -1,0 +1,17 @@
+{
+  "Mod Staffe": {
+    "type": "stafe",
+    "stats":{
+      "max_hp": 200,
+      "max_mp": 300,
+      "atk": 30,
+      "sp_atk": 80,
+      "def_": 30,
+      "sp_def": 50,
+      "crit_chance": 15,
+      "crit_bonus": 5,
+      "price": 500
+    },
+    "flavor": "A Magic Stafe that alows you the change reality. Creat new items, enemy, layer and even dungeons, as if this world is just a game."
+  }
+}

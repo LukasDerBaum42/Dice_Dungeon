@@ -1,0 +1,33 @@
+{
+  "Mod Shop": {
+        "level": [
+            -15,
+            15
+        ],
+        "price": 0,
+        "size": [
+            12,
+            36
+        ],
+        "rarety": {
+            "common": 20,
+            "uncommon": 20,
+            "rare": 20,
+            "epic": 20,
+            "legendary": 20
+        },
+        "item type": {
+            "sword": 10,
+            "stafe": 9,
+            "sheald": 9,
+            "knife": 9,
+            "spear": 9,
+            "helmet": 9,
+            "pants": 9,
+            "boots": 9,
+            "bow": 9,
+            "gloves": 9,
+            "pans": 9
+        }
+    }
+}

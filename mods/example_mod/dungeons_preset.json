@@ -1,0 +1,20 @@
+{
+  "Mod Dungeon": {
+        "layers": [
+            "layer Mod",
+            "layer Mod",
+            "layer Mod",
+            "layer Mod",
+            "layer Mod",
+            "layer Mod",
+            "layer Mod",
+            "layer Mod",
+            "layer Mod",
+            "layer Mod"
+        ],
+        "size": [
+            100,
+            160
+        ]
+    }
+}

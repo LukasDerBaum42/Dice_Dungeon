@@ -1,0 +1,113 @@
+{
+  "Mod King": {
+        "stats": {
+            "min_move": 1,
+            "max_move": 6,
+            "max_hp": 250,
+            "max_mp": 120,
+            "atk": 25,
+            "sp_atk": 20,
+            "def_": 20,
+            "sp_def": 20,
+            "xp": 40,
+            "gold": 30,
+            "crit_chance": 10,
+            "crit_bonus": 20
+        },
+        "Attacks": {
+            "Axe Swing": 30,
+            "War Cry": 25,
+            "Brutal Smash": 20,
+            "Poison Dart": 15,
+            "Shadow Strike": 10,
+            "Venom Bite": 40,
+            "Earthquake": 35
+        },
+        "Items": {
+            "stafe": {
+                "chance": 20,
+                "rarety": {
+                    "common": 20,
+                    "uncommon": 20,
+                    "rare": 20,
+                    "epic": 20,
+                    "legendary": 20
+                },
+                "level": [
+                    0,
+                    10
+                ]
+            },
+            "sword": {
+                "chance": 20,
+                "rarety": {
+                    "common": 20,
+                    "uncommon": 20,
+                    "rare": 20,
+                    "epic": 20,
+                    "legendary": 20
+                },
+                "level": [
+                    0,
+                    10
+                ]
+            },
+            "knife": {
+                "chance": 20,
+                "rarety": {
+                    "common": 20,
+                    "uncommon": 20,
+                    "rare": 20,
+                    "epic": 20,
+                    "legendary": 20
+                },
+                "level": [
+                    0,
+                    10
+                ]
+            },
+            "sheald": {
+                "chance": 20,
+                "rarety": {
+                    "common": 20,
+                    "uncommon": 20,
+                    "rare": 20,
+                    "epic": 20,
+                    "legendary": 20
+                },
+                "level": [
+                    0,
+                    10
+                ]
+            },
+            "chestplate": {
+                "chance": 20,
+                "rarety": {
+                    "common": 20,
+                    "uncommon": 20,
+                    "rare": 20,
+                    "epic": 20,
+                    "legendary": 20
+                },
+                "level": [
+                    0,
+                    10
+                ]
+            },
+            "pants": {
+                "chance": 20,
+                "rarety": {
+                    "common": 20,
+                    "uncommon": 20,
+                    "rare": 20,
+                    "epic": 20,
+                    "legendary": 20
+                },
+                "level": [
+                    0,
+                    10
+                ]
+            }
+        }
+    }
+}

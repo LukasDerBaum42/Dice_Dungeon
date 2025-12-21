@@ -1,0 +1,50 @@
+{
+  "Mod slash": {
+        "stats": {
+            "atk": 100,
+            "sp_atk": 20,
+            "mp": 0,
+            "max_use": 20,
+            "crit_chance": 0,
+            "crit_bonus": 10,
+            "adv": 0
+        },
+        "discription": "A slash with a sword"
+  },
+  "Mod Swing": {
+        "stats": {
+            "atk": 120,
+            "sp_atk": 50,
+            "mp": 0,
+            "max_use": 15,
+            "crit_chance": 5,
+            "crit_bonus": 15,
+            "adv": 0
+        },
+        "discription": "A powerful swing with a heavy axe"
+  },
+  "Mod Coil": {
+        "stats": {
+            "atk": 10,
+            "sp_atk": 130,
+            "mp": 8,
+            "max_use": 6,
+            "crit_chance": 10,
+            "crit_bonus": 20,
+            "adv": 0
+        },
+        "discription": "Unleashes a coil of death energy"
+  },
+  "Mod Bite": {
+        "stats": {
+            "atk": 75,
+            "sp_atk": 55,
+            "mp": 3,
+            "max_use": 15,
+            "crit_chance": 12,
+            "crit_bonus": 18,
+            "adv": -1
+        },
+        "discription": "A poisonous bite that drains strength"
+  }
+}

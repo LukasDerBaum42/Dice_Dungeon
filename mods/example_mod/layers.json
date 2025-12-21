@@ -1,0 +1,25 @@
+{
+  "layer Mod": {
+        "level": 100,
+        "mob": {
+            "Modmon": 100
+        },
+        "boss": "Mod King",
+        "size": [
+            60,
+            60
+        ],
+        "traps": {
+            "Mod Bomb": 100
+        },
+        "cheasts": {
+            "Mod": 100
+        },
+        "shops": {
+            "Mod Shop": 100
+        },
+        "rooms": {
+            "merchant": 0.1
+        }
+    }
+}
