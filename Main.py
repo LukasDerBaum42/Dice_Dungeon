@@ -733,7 +733,7 @@ class Dungeon:
         self.room_pos = [(0, 0)]
         next_id = 1
 
-        SPECIAL_ROOMS = GTD.layers["layer"]["rooms"]  # Easy to add more
+        SPECIAL_ROOMS = GTD.layers[layer]["rooms"]  # Easy to add more
 
         while next_id < num_rooms and todo:
             current = rooms[todo.pop(0)]

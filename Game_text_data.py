@@ -1,3 +1,7 @@
+import json
+import os
+import time
+
 help_txt = {
     "page 0": """ --- HOW TO PLAY ---
 - You roll a dice to move across the dungeon.
@@ -1293,7 +1297,9 @@ bosses = {
         },
     },
 }
-
+# type 0 a set amount of instent damage that cant be avoided
+# type 1 a set amount of damage that can be decreast be rolling
+# type 2 a procentage amount of damage that can be reduced be rolling
 traps = {
     "Mimic": {
         "text": "You found a chest but as you were about to open it, it turned out to just be a mimic... Oh fuck!!!"
@@ -1562,3 +1568,40 @@ dungeons_preset = {
         "size": [100, 160],
     },
 }
+
+
+
+# loads mods
+
+def load_json_as_variable(path):
+    name = os.path.splitext(os.path.basename(path))[0]
+
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # Dict existiert schon → mergen
+    if name in globals():
+        if not isinstance(globals()[name], dict):
+            raise TypeError(f"{name} exists but is not a dict")
+        globals()[name].update(data)
+    else:
+        # Falls es doch noch nicht existiert
+        globals()[name] = data
+
+try:
+    mods = os.listdir('mods')
+    print(mods)
+    velid_mods = [f for f in mods if f.lower().endswith(('_mod'))]
+    for mod in mods:
+        files = os.listdir(f'mods/{mod}')
+        mod_files = [f for f in files if f.lower().endswith(('.json'))]
+        for file in mod_files:
+            try:
+                load_json_as_variable(f"mods/{mod}/{file}")
+            except:
+                print("error while loading mod")
+                time.sleep(1)
+except:
+    pass
+
+
