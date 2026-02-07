@@ -28,7 +28,7 @@ UNIQUE_ITEMS = {
         "flavor": "Forged by forgotten gods in the heart of a dying star, this blade hums with the wisdom of ages. Legends say it can cut through reality itself.",
     },
     "Pan of Doom": {
-        "type": "pans",
+        "type": "pan",
         "stats": {
             "atk": 60,
             "sp_atk": 0,
@@ -53,6 +53,16 @@ UNIQUE_ITEMS = {
     },
 }
 
+wappon_sub_typse = [
+    "sword",
+    "knife",
+    "bow",
+    "stafe",
+    "spear",
+    "pan",
+    "gloves",
+]
+
 stat_value = {
     "max_hp": 0.4,
     "max_mp": 0.4,
@@ -64,9 +74,59 @@ stat_value = {
     "crit_bonus": 0.5,
 }
 
+
+elementare = {
+    "fire": {
+        "atk": ["plant", "ice", "metal"],
+        "def": ["wind", "plant"],
+        "color": "#E25822",
+    },
+    "water": {"atk": ["fire", "stone"], "def": ["fire", "ice"], "color": "#1CA3EC"},
+    "ice": {"atk": ["stone", "wind", "water"], "def": ["water"], "color": "#AEEBFF"},
+    "plant": {
+        "atk": ["water", "stone"],
+        "def": ["water", "electric", "stone"],
+        "color": "#3CB043",
+    },
+    "stone": {
+        "atk": ["fire", "electric", "poison"],
+        "def": ["poison", "fire", "wind"],
+        "color": "#8B7D6B",
+    },
+    "poison": {
+        "atk": ["plant", "light"],
+        "def": ["plant", "light"],
+        "color": "#7A1FA2",
+    },
+    "electric": {
+        "atk": ["water", "wind", "metal"],
+        "def": ["wind"],
+        "color": "#FFD700",
+    },
+    "wind": {"atk": ["plant", "poison"], "def": ["plant"], "color": "#B0E0E6"},
+    "light": {"atk": ["dark", "poison"], "def": ["dark"], "color": "#FFF4B1"},
+    "dark": {"atk": ["light", "psychic"], "def": ["light"], "color": "#2B2B2B"},
+    # --- extended stuff ---
+    "metal": {"atk": ["ice", "plant"], "def": ["plant", "poison"], "color": "#9EA7AD"},
+    "psychic": {"atk": ["dark", "poison"], "def": ["poison"], "color": "#FF4FD8"},
+    "sound": {"atk": ["psychic", "wind"], "def": ["psychic"], "color": "#6F42C1"},
+    "lava": {"atk": ["stone", "metal", "ice"], "def": ["fire"], "color": "#CF1020"},
+    "steam": {"atk": ["ice", "plant"], "def": ["fire", "water"], "color": "#D6EAF8"},
+}
+
+
+def update_ele_list():
+    ele_list = []
+    for i in elementare:
+        ele_list.append(i)
+    return ele_list
+
+
+ele_list = update_ele_list()
+
 fight_art = {
-    "player": ["  `o^     ", "^\/0\_+---", "  /O\     ", " _| /_    ", ""],
-    "Zomby": ["   @      ", "  ==|     ", "    |     ", "   / \    ", ""],
+    "player": ["  `o^     ", "^\\/0\\_+---", "  /O\\     ", " _| /_    ", ""],
+    "Zomby": ["   @      ", "  ==|     ", "    |     ", "   / \\    ", ""],
     "Mimic": [
         "._____.__.",
         "| O O |\33[9m°°\33[0m|",
@@ -74,17 +134,17 @@ fight_art = {
         "|_____|__|",
         "",
     ],
-    "Skelet": ["  _@@_    ", "  \__/    ", "   ||     ", "  _||_    ", ""],
-    "Goblin": ["   o      ", "  /0\     ", "  / \     ", " /   \    ", ""],
-    "Orc": ["  /@\     ", " _|||_    ", "  | |     ", " /   \    ", ""],
-    "Dark Elf": ["   @      ", "  /|\     ", "  \|/     ", "  / \     ", ""],
-    "Giant Spider": ["  /@\     ", " /@@@\    ", "  / \     ", " /   \    ", ""],
-    "Goblin King": ["  \@/     ", " __|__    ", "  / \     ", " /   \    ", ""],
-    "Orc Warlord": ["  \@/     ", " _|||_    ", " / | \    ", "/  |  \   ", ""],
-    "Lich King": ["  \@/     ", "  /|\     ", "  \|/     ", "  / \     ", ""],
-    "Wraith": ["   @      ", "  / \     ", "  \ /     ", '   "      ', ""],
-    "Minotaur": ["  \@/     ", " _|||_    ", " / | \    ", "/  \  \   ", ""],
-    "Dragon": ["  \@/     ", " /@@@\    ", "<@@@@@>   ", "  / \     ", ""],
+    "Skelet": ["  _@@_    ", "  \\__/    ", "   ||     ", "  _||_    ", ""],
+    "Goblin": ["   o      ", "  /0\\     ", "  / \\     ", " /   \\    ", ""],
+    "Orc": ["  /@\\     ", " _|||_    ", "  | |     ", " /   \\    ", ""],
+    "Dark Elf": ["   @      ", "  /|\\     ", "  \\|/     ", "  / \\     ", ""],
+    "Giant Spider": ["  /@\\     ", " /@@@\\    ", "  / \\     ", " /   \\    ", ""],
+    "Goblin King": ["  \\@/     ", " __|__    ", "  / \\     ", " /   \\    ", ""],
+    "Orc Warlord": ["  \\@/     ", " _|||_    ", " / | \\    ", "/  |  \\   ", ""],
+    "Lich King": ["  \\@/     ", "  /|\\     ", "  \\|/     ", "  / \\     ", ""],
+    "Wraith": ["   @      ", "  / \\     ", "  \\ /     ", '   "      ', ""],
+    "Minotaur": ["  \\@/     ", " _|||_    ", " / | \\    ", "/  \\  \\   ", ""],
+    "Dragon": ["  \\@/     ", " /@@@\\    ", "<@@@@@>   ", "  / \\     ", ""],
 }
 
 
@@ -122,7 +182,7 @@ trap_art = {
             "     ___________  ",
             "    /__/|______/___",
             "   /___|_______|__/  ",
-            "      /  |   |  \  ",
+            "      /  |   |  \\  ",
             "",
             "",
             "",
@@ -189,13 +249,17 @@ player_cls = {
             "crit_bonus": 10,
         },
         "item": ("common", "sword", 1),
+        "affiliations": {
+                "elements": {"fire": 150, "wind": 90, "water": 90, "stone": 70},
+                "wapons": {"sword": 120, "bow": 95, "stafe": 90}
+            },
         # the item types are
         "attacks": ("Sword slash", "Sword thrust", "Flame sword", "Fireball"),
     },
     "Tester": {
         "stats": {
-            "max_move": 20,
-            "min_move": 10,
+            "max_move": 30,
+            "min_move": 15,
             "max_hp": 500,
             "max_mp": 400,
             "atk": 50,
@@ -206,6 +270,7 @@ player_cls = {
             "crit_bonus": 10,
         },
         "item": ("common", "sword", 10),
+        "affiliations": {"elements": {}, "wapons": {}},
         # the item types are
         "attacks": ("Sword slash", "Axe Swing", "Flame sword", "Fireball"),
     },
@@ -223,6 +288,10 @@ player_cls = {
             "crit_bonus": 15,
         },
         "item": ("uncommon", "sword", 2),
+        "affiliations": {
+                "elements": {"stone": 140, "metal": 130, "fire": 110, "sound": 105, "dark": 85, "ice": 85, "wind": 85},
+                "wapons": {"sword": 140, "sheald": 120, "hammer": 110, "axe": 100, "bow": 80, "stafe": 70, "knife": 70}
+            },
         "attacks": ("Sword slash", "Axe Swing", "War Cry", "Brutal Smash"),
     },
     "Mage": {
@@ -239,6 +308,10 @@ player_cls = {
             "crit_bonus": 12,
         },
         "item": ("uncommon", "stafe", 2),
+        "affiliations": {
+                "elements": {"fire": 130, "dark": 130, "ice": 120, "elecric": 120, "psychic": 110, "water": 95, "wind": 95, "stone": 80, "plant": 80},
+                "wapons": {"stafe": 150, "sword": 85, "bow": 85, "knife": 80, "sheald": 70, "hammer": 70}
+            },
         "attacks": ("Fireball", "Dark Bolt", "Shadow Strike", "Death Coil"),
     },
     "Rogue": {
@@ -255,6 +328,10 @@ player_cls = {
             "crit_bonus": 20,
         },
         "item": ("uncommon", "knife", 2),
+        "affiliations": {
+                "elements": {"dark": 140, "poisen": 130, "wind": 110, "plant": 105, "fire": 90, "ice": 90, "sound": 90, "light": 75, "stone": 75},
+                "wapons": {"knife": 150, "bow": 110, "sword": 95, "stafe": 80, "hammer": 75, "sheald": 70}
+            },
         "attacks": ("Sword thrust", "Shadow Strike", "Web Shot", "Dark Bolt"),
     },
     "Ranger": {
@@ -271,6 +348,10 @@ player_cls = {
             "crit_bonus": 15,
         },
         "item": ("uncommon", "bow", 2),
+        "affiliations": {
+                "elements": {"plant": 130, "wind": 125, "fire": 115, "dark": 110, "poisen": 105, "water": 95, "ice": 95, "stone": 90, "light": 85, "metal": 80},
+                "wapons": {"bow": 150, "knife": 110, "sword": 95, "stafe": 85, "hammer": 80, "sheald": 75}
+            },
         "attacks": ("Shadow Strike", "Web Shot", "Dark Bolt", "Fireball"),
     },
     "Paladin": {
@@ -287,6 +368,10 @@ player_cls = {
             "crit_bonus": 12,
         },
         "item": ("uncommon", "sheald", 2),
+        "affiliations": {
+                "elements": {"light": 150, "fire": 130, "sound": 120, "metal": 110, "stone": 105, "dark": 75, "poisen": 75, "ice": 85, "wind": 85},
+                "wapons": {"sheald": 140, "sword": 130, "hammer": 100, "bow": 85, "stafe": 80, "knife": 75}
+            },
         "attacks": ("Sword slash", "War Cry", "Healing Light", "Fireball"),
     },
     "Necromancer": {
@@ -303,6 +388,10 @@ player_cls = {
             "crit_bonus": 18,
         },
         "item": ("rare", "stafe", 3),
+        "affiliations": {
+                "elements": {"dark": 160, "poisen": 145, "psychic": 120, "ice": 95, "fire": 80, "light": 60, "stone": 90, "wind": 85},
+                "wapons": {"stafe": 150, "knife": 105, "sword": 85, "bow": 80, "hammer": 75, "sheald": 70}
+            },
         "attacks": ("Dark Bolt", "Death Coil", "Shadow Strike", "Poison Dart"),
     },
 }
@@ -319,6 +408,8 @@ attacks = {
             "crit_bonus": 10,
             "adv": 0,
         },
+        "wapon": ["sword"],
+        "ele": None,
         "discription": "A slash with a sword",
     },
     "Sword thrust": {
@@ -331,6 +422,8 @@ attacks = {
             "crit_bonus": 20,
             "adv": 1,
         },
+        "wapon": ["sword"],
+        "ele": None,
         "discription": "A thrust with a sword",
     },
     "Flame sword": {
@@ -343,6 +436,8 @@ attacks = {
             "crit_bonus": 10,
             "adv": 0,
         },
+        "wapon": ["sword"],
+        "ele": "fire",
         "discription": "A slash with a flaming sword",
     },
     "Fireball": {
@@ -355,6 +450,8 @@ attacks = {
             "crit_bonus": 10,
             "adv": 0,
         },
+        "wapon": [],
+        "ele": "fire",
         "discription": "You throw a ball of fire at your enemy",
     },
     "Axe Swing": {
@@ -367,6 +464,8 @@ attacks = {
             "crit_bonus": 15,
             "adv": 0,
         },
+        "wapon": [],
+        "ele": None,
         "discription": "A powerful swing with a heavy axe",
     },
     "Dark Bolt": {
@@ -379,6 +478,8 @@ attacks = {
             "crit_bonus": 12,
             "adv": 0,
         },
+        "wapon": [],
+        "ele": "dark",
         "discription": "A bolt of dark energy",
     },
     "Shadow Strike": {
@@ -391,6 +492,8 @@ attacks = {
             "crit_bonus": 18,
             "adv": 1,
         },
+        "wapon": [],
+        "ele": "dark",
         "discription": "A strike from the shadows",
     },
     "Web Shot": {
@@ -403,6 +506,8 @@ attacks = {
             "crit_bonus": 0,
             "adv": -2,
         },
+        "wapon": [],
+        "ele": "plant",
         "discription": "Shoots sticky webs to immobilize",
     },
     "War Cry": {
@@ -415,6 +520,8 @@ attacks = {
             "crit_bonus": 20,
             "adv": 2,
         },
+        "wapon": [],
+        "ele": "sound",
         "discription": "A terrifying battle cry",
     },
     "Brutal Smash": {
@@ -427,6 +534,8 @@ attacks = {
             "crit_bonus": 25,
             "adv": -1,
         },
+        "wapon": [],
+        "ele": None,
         "discription": "A devastating smash attack",
     },
     "Death Coil": {
@@ -439,6 +548,8 @@ attacks = {
             "crit_bonus": 20,
             "adv": 0,
         },
+        "wapon": [],
+        "ele": "dark",
         "discription": "Unleashes a coil of death energy",
     },
     "Ice Shard": {
@@ -451,6 +562,8 @@ attacks = {
             "crit_bonus": 10,
             "adv": -1,
         },
+        "wapon": [],
+        "ele": "ice",
         "discription": "Launches sharp shards of ice",
     },
     "Lightning Strike": {
@@ -463,6 +576,8 @@ attacks = {
             "crit_bonus": 25,
             "adv": 0,
         },
+        "wapon": [],
+        "ele": "elecric",
         "discription": "Calls down a powerful lightning bolt",
     },
     "Poison Dart": {
@@ -475,6 +590,8 @@ attacks = {
             "crit_bonus": 15,
             "adv": 0,
         },
+        "wapon": [],
+        "ele": "poisen",
         "discription": "A poisoned dart that weakens enemies",
     },
     "Healing Light": {
@@ -487,6 +604,8 @@ attacks = {
             "crit_bonus": 0,
             "adv": 0,
         },
+        "wapon": [],
+        "ele": "light",
         "discription": "Restores health to the caster",
     },
     "Bone Crush": {
@@ -499,6 +618,8 @@ attacks = {
             "crit_bonus": 15,
             "adv": 0,
         },
+        "wapon": [],
+        "ele": "stone",
         "discription": "A crushing blow that breaks bones",
     },
     "Venom Bite": {
@@ -511,6 +632,8 @@ attacks = {
             "crit_bonus": 18,
             "adv": -1,
         },
+        "wapon": [],
+        "ele": "poisen",
         "discription": "A poisonous bite that drains strength",
     },
     "Soul Drain": {
@@ -523,6 +646,8 @@ attacks = {
             "crit_bonus": 20,
             "adv": 1,
         },
+        "wapon": [],
+        "ele": "dark",
         "discription": "Drains the life force from enemies",
     },
     "Earthquake": {
@@ -535,6 +660,8 @@ attacks = {
             "crit_bonus": 15,
             "adv": -2,
         },
+        "wapon": [],
+        "ele": "stone",
         "discription": "Shakes the ground beneath enemies",
     },
     "Wind Slash": {
@@ -547,7 +674,234 @@ attacks = {
             "crit_bonus": 20,
             "adv": 2,
         },
+        "wapon": [],
+        "ele": "wind",
         "discription": "A swift slash empowered by wind",
+    },
+    # FIRE
+    "Inferno Wave": {
+        "stats": {
+            "atk": 0,
+            "sp_atk": 120,
+            "mp": 7,
+            "max_use": 6,
+            "crit_chance": 5,
+            "crit_bonus": 15,
+            "adv": -1,
+        },
+        "wapon": [],
+        "ele": "fire",
+        "discription": "A wave of intense flames scorches everything ahead",
+    },
+    # WATER
+    "Tidal Bash": {
+        "stats": {
+            "atk": 70,
+            "sp_atk": 40,
+            "mp": 4,
+            "max_use": 12,
+            "crit_chance": 8,
+            "crit_bonus": 15,
+            "adv": 0,
+        },
+        "wapon": [],
+        "ele": "water",
+        "discription": "A crushing surge of water slams into the enemy",
+    },
+    # ICE
+    "Frozen Bind": {
+        "stats": {
+            "atk": 30,
+            "sp_atk": 60,
+            "mp": 4,
+            "max_use": 10,
+            "crit_chance": 0,
+            "crit_bonus": 0,
+            "adv": -2,
+        },
+        "wapon": [],
+        "ele": "ice",
+        "discription": "Freezes the enemy in place",
+    },
+    # PLANT
+    "Thorn Whip": {
+        "stats": {
+            "atk": 75,
+            "sp_atk": 25,
+            "mp": 3,
+            "max_use": 15,
+            "crit_chance": 10,
+            "crit_bonus": 15,
+            "adv": 1,
+        },
+        "wapon": [],
+        "ele": "plant",
+        "discription": "Lashes the enemy with razor-sharp vines",
+    },
+    # STONE
+    "Rock Spear": {
+        "stats": {
+            "atk": 90,
+            "sp_atk": 0,
+            "mp": 0,
+            "max_use": 14,
+            "crit_chance": 5,
+            "crit_bonus": 10,
+            "adv": 0,
+        },
+        "wapon": [],
+        "ele": "stone",
+        "discription": "Launches a hardened spear of stone",
+    },
+    # POISON
+    "Toxic Cloud": {
+        "stats": {
+            "atk": 20,
+            "sp_atk": 70,
+            "mp": 5,
+            "max_use": 8,
+            "crit_chance": 0,
+            "crit_bonus": 0,
+            "adv": -1,
+        },
+        "wapon": [],
+        "ele": "poison",
+        "discription": "Envelops enemies in a poisonous fog",
+    },
+    # ELECTRIC
+    "Volt Dash": {
+        "stats": {
+            "atk": 60,
+            "sp_atk": 40,
+            "mp": 3,
+            "max_use": 14,
+            "crit_chance": 15,
+            "crit_bonus": 20,
+            "adv": 2,
+        },
+        "wapon": [],
+        "ele": "electric",
+        "discription": "A lightning-fast electrified dash attack",
+    },
+    # WIND
+    "Gale Burst": {
+        "stats": {
+            "atk": 0,
+            "sp_atk": 95,
+            "mp": 5,
+            "max_use": 10,
+            "crit_chance": 10,
+            "crit_bonus": 15,
+            "adv": 1,
+        },
+        "wapon": [],
+        "ele": "wind",
+        "discription": "A violent burst of compressed air",
+    },
+    # LIGHT
+    "Radiant Spear": {
+        "stats": {
+            "atk": 40,
+            "sp_atk": 80,
+            "mp": 6,
+            "max_use": 8,
+            "crit_chance": 10,
+            "crit_bonus": 20,
+            "adv": 0,
+        },
+        "wapon": [],
+        "ele": "light",
+        "discription": "A spear of pure light pierces the enemy",
+    },
+    # DARK
+    "Void Rend": {
+        "stats": {
+            "atk": 85,
+            "sp_atk": 35,
+            "mp": 4,
+            "max_use": 10,
+            "crit_chance": 12,
+            "crit_bonus": 20,
+            "adv": 1,
+        },
+        "wapon": [],
+        "ele": "dark",
+        "discription": "Tears into the enemy with void energy",
+    },
+    # METAL
+    "Steel Breaker": {
+        "stats": {
+            "atk": 110,
+            "sp_atk": 0,
+            "mp": 0,
+            "max_use": 10,
+            "crit_chance": 8,
+            "crit_bonus": 15,
+            "adv": -1,
+        },
+        "wapon": ["hammer"],
+        "ele": "metal",
+        "discription": "A crushing metallic strike that dents armor",
+    },
+    # PSYCHIC
+    "Mind Spike": {
+        "stats": {
+            "atk": 0,
+            "sp_atk": 100,
+            "mp": 5,
+            "max_use": 10,
+            "crit_chance": 10,
+            "crit_bonus": 20,
+            "adv": 0,
+        },
+        "wapon": [],
+        "ele": "psychic",
+        "discription": "A piercing attack directly on the mind",
+    },
+    # SOUND
+    "Sonic Screech": {
+        "stats": {
+            "atk": 50,
+            "sp_atk": 50,
+            "mp": 4,
+            "max_use": 12,
+            "crit_chance": 5,
+            "crit_bonus": 10,
+            "adv": 1,
+        },
+        "wapon": [],
+        "ele": "sound",
+        "discription": "A deafening screech that rattles enemies",
+    },
+    # LAVA
+    "Magma Crash": {
+        "stats": {
+            "atk": 100,
+            "sp_atk": 30,
+            "mp": 6,
+            "max_use": 8,
+            "crit_chance": 5,
+            "crit_bonus": 15,
+            "adv": -1,
+        },
+        "wapon": [],
+        "ele": "lava",
+        "discription": "Molten rock smashes into the enemy",
+    },
+    # STEAM
+    "Scalding Mist": {
+        "stats": {
+            "atk": 20,
+            "sp_atk": 80,
+            "mp": 4,
+            "max_use": 12,
+            "crit_chance": 0,
+            "crit_bonus": 0,
+            "adv": -2,
+        },
+        "wapon": [],
+        "ele": "steam",
+        "discription": "A burning mist that scalds everything nearby",
     },
 }
 
@@ -566,6 +920,14 @@ enemy_cls = {
             "gold": 10,
             "crit_chance": 8,
             "crit_bonus": 20,
+        },
+        "affiliations": {
+            "fire": 80,
+            "water": 120,
+            "stone": 150,
+            "metal": 130,
+            "dark": 60,
+            "light": 40,
         },
         "Attacks": {
             "Brutal Smash": 50,
@@ -641,7 +1003,7 @@ enemy_cls = {
                 },
                 "level": [-1, 5],
             },
-            "pans": {
+            "pan": {
                 "chance": 5,
                 "rarety": {
                     "common": 40,
@@ -724,6 +1086,14 @@ enemy_cls = {
             "crit_chance": 0,
             "crit_bonus": 0,
         },
+        "affiliations": {
+            "dark": 160,
+            "poison": 140,
+            "fire": 60,
+            "light": 30,
+            "plant": 70,
+            "ice": 90,
+        },
         "Attacks": {
             "Sword slash": 80,
             "Axe Swing": 20,
@@ -773,6 +1143,14 @@ enemy_cls = {
             "crit_chance": 0,
             "crit_bonus": 0,
         },
+        "affiliations": {
+            "dark": 150,
+            "ice": 140,
+            "stone": 120,
+            "fire": 50,
+            "light": 40,
+            "wind": 90,
+        },
         "Attacks": {
             "Dark Bolt": 70,
             "Ice Shard": 30,
@@ -816,6 +1194,14 @@ enemy_cls = {
             "gold": 4,
             "crit_chance": 5,
             "crit_bonus": 10,
+        },
+        "affiliations": {
+            "poison": 130,
+            "dark": 120,
+            "plant": 110,
+            "fire": 80,
+            "light": 70,
+            "electric": 90,
         },
         "Attacks": {
             "Sword slash": 40,
@@ -872,6 +1258,14 @@ enemy_cls = {
             "crit_chance": 3,
             "crit_bonus": 15,
         },
+        "affiliations": {
+            "stone": 150,
+            "sound": 140,
+            "metal": 130,
+            "fire": 90,
+            "ice": 70,
+            "electric": 80,
+        },
         "Attacks": {
             "Axe Swing": 50,
             "War Cry": 30,
@@ -922,6 +1316,14 @@ enemy_cls = {
             "crit_chance": 8,
             "crit_bonus": 12,
         },
+        "affiliations": {
+            "dark": 160,
+            "wind": 140,
+            "ice": 130,
+            "poison": 120,
+            "light": 40,
+            "fire": 70,
+        },
         "Attacks": {
             "Dark Bolt": 40,
             "Shadow Strike": 30,
@@ -968,6 +1370,14 @@ enemy_cls = {
             "crit_chance": 6,
             "crit_bonus": 8,
         },
+        "affiliations": {
+            "poison": 170,
+            "plant": 150,
+            "dark": 130,
+            "fire": 50,
+            "ice": 60,
+            "sound": 70,
+        },
         "Attacks": {
             "Web Shot": 60,
             "Poison Dart": 30,
@@ -1007,6 +1417,14 @@ enemy_cls = {
             "gold": 8,
             "crit_chance": 10,
             "crit_bonus": 15,
+        },
+        "affiliations": {
+            "dark": 180,
+            "ice": 140,
+            "psychic": 130,
+            "light": 20,
+            "fire": 60,
+            "stone": 80,
         },
         "Attacks": {
             "Death Coil": 40,
@@ -1049,6 +1467,14 @@ enemy_cls = {
             "crit_chance": 8,
             "crit_bonus": 20,
         },
+        "affiliations": {
+            "stone": 160,
+            "metal": 150,
+            "fire": 120,
+            "water": 80,
+            "ice": 70,
+            "electric": 90,
+        },
         "Attacks": {
             "Brutal Smash": 50,
             "Axe Swing": 30,
@@ -1079,6 +1505,308 @@ enemy_cls = {
             },
         },
     },
+    # NEW ENEMIES
+    "Fire Elemental": {
+        "stats": {
+            "min_move": 1,
+            "max_move": 5,
+            "max_hp": 100,
+            "max_mp": 80,
+            "atk": 14,
+            "sp_atk": 18,
+            "def_": 10,
+            "sp_def": 16,
+            "xp": 9,
+            "gold": 7,
+            "crit_chance": 7,
+            "crit_bonus": 15,
+        },
+        "affiliations": {
+            "fire": 200,
+            "lava": 180,
+            "steam": 150,
+            "water": 40,
+            "ice": 30,
+            "stone": 90,
+        },
+        "Attacks": {
+            "Fireball": 60,
+            "Inferno Wave": 40,
+            "Magma Crash": 50,
+            "Flame sword": 30,
+            "Scalding Mist": 20,
+        },
+        "Items": {
+            "stafe": {
+                "chance": 15,
+                "rarety": {"common": 60, "uncommon": 30, "rare": 10},
+                "level": [-2, 4],
+            },
+            "gloves": {
+                "chance": 10,
+                "rarety": {"common": 70, "uncommon": 25, "rare": 5},
+                "level": [-3, 3],
+            },
+        },
+    },
+    "Ice Golem": {
+        "stats": {
+            "min_move": 1,
+            "max_move": 4,
+            "max_hp": 140,
+            "max_mp": 40,
+            "atk": 16,
+            "sp_atk": 14,
+            "def_": 22,
+            "sp_def": 18,
+            "xp": 11,
+            "gold": 9,
+            "crit_chance": 5,
+            "crit_bonus": 12,
+        },
+        "affiliations": {
+            "ice": 180,
+            "water": 150,
+            "stone": 130,
+            "fire": 50,
+            "lava": 40,
+            "metal": 110,
+        },
+        "Attacks": {
+            "Ice Shard": 60,
+            "Frozen Bind": 40,
+            "Rock Spear": 50,
+            "Bone Crush": 30,
+            "Tidal Bash": 20,
+        },
+        "Items": {
+            "chestplate": {
+                "chance": 15,
+                "rarety": {"common": 60, "uncommon": 30, "rare": 10},
+                "level": [-2, 4],
+            },
+            "gloves": {
+                "chance": 10,
+                "rarety": {"common": 70, "uncommon": 25, "rare": 5},
+                "level": [-3, 3],
+            },
+        },
+    },
+    "Forest Treant": {
+        "stats": {
+            "min_move": 1,
+            "max_move": 3,
+            "max_hp": 130,
+            "max_mp": 70,
+            "atk": 15,
+            "sp_atk": 16,
+            "def_": 20,
+            "sp_def": 15,
+            "xp": 10,
+            "gold": 8,
+            "crit_chance": 6,
+            "crit_bonus": 10,
+        },
+        "affiliations": {
+            "plant": 180,
+            "water": 160,
+            "earth": 140,
+            "fire": 40,
+            "ice": 70,
+            "poison": 110,
+        },
+        "Attacks": {
+            "Thorn Whip": 60,
+            "Web Shot": 40,
+            "Rock Spear": 30,
+            "Earthquake": 50,
+            "Toxic Cloud": 20,
+        },
+        "Items": {
+            "stafe": {
+                "chance": 15,
+                "rarety": {"common": 60, "uncommon": 30, "rare": 10},
+                "level": [-2, 4],
+            },
+        },
+    },
+    "Thunder Wolf": {
+        "stats": {
+            "min_move": 1,
+            "max_move": 8,
+            "max_hp": 85,
+            "max_mp": 50,
+            "atk": 16,
+            "sp_atk": 14,
+            "def_": 12,
+            "sp_def": 10,
+            "xp": 8,
+            "gold": 6,
+            "crit_chance": 12,
+            "crit_bonus": 18,
+        },
+        "affiliations": {
+            "electric": 180,
+            "wind": 160,
+            "metal": 140,
+            "earth": 70,
+            "water": 60,
+            "stone": 80,
+        },
+        "Attacks": {
+            "Lightning Strike": 60,
+            "Volt Dash": 50,
+            "Wind Slash": 40,
+            "Gale Burst": 30,
+            "Shadow Strike": 20,
+        },
+        "Items": {
+            "gloves": {
+                "chance": 15,
+                "rarety": {"common": 60, "uncommon": 30, "rare": 10},
+                "level": [-2, 4],
+            },
+            "boots": {
+                "chance": 15,
+                "rarety": {"common": 60, "uncommon": 30, "rare": 10},
+                "level": [-2, 4],
+            },
+        },
+    },
+    "Water Nymph": {
+        "stats": {
+            "min_move": 1,
+            "max_move": 7,
+            "max_hp": 70,
+            "max_mp": 90,
+            "atk": 10,
+            "sp_atk": 17,
+            "def_": 9,
+            "sp_def": 16,
+            "xp": 9,
+            "gold": 7,
+            "crit_chance": 9,
+            "crit_bonus": 14,
+        },
+        "affiliations": {
+            "water": 180,
+            "ice": 160,
+            "plant": 140,
+            "electric": 60,
+            "fire": 70,
+            "stone": 90,
+        },
+        "Attacks": {
+            "Tidal Bash": 60,
+            "Ice Shard": 40,
+            "Scalding Mist": 30,
+            "Healing Light": 20,
+            "Thorn Whip": 25,
+        },
+        "Items": {
+            "stafe": {
+                "chance": 20,
+                "rarety": {"common": 60, "uncommon": 30, "rare": 10},
+                "level": [-2, 4],
+            },
+            "gloves": {
+                "chance": 10,
+                "rarety": {"common": 70, "uncommon": 25, "rare": 5},
+                "level": [-3, 3],
+            },
+        },
+    },
+    "Earth Drake": {
+        "stats": {
+            "min_move": 1,
+            "max_move": 6,
+            "max_hp": 150,
+            "max_mp": 50,
+            "atk": 19,
+            "sp_atk": 12,
+            "def_": 24,
+            "sp_def": 14,
+            "xp": 15,
+            "gold": 12,
+            "crit_chance": 7,
+            "crit_bonus": 16,
+        },
+        "affiliations": {
+            "stone": 190,
+            "metal": 170,
+            "lava": 150,
+            "water": 60,
+            "plant": 80,
+            "ice": 70,
+        },
+        "Attacks": {
+            "Earthquake": 70,
+            "Rock Spear": 60,
+            "Magma Crash": 50,
+            "Brutal Smash": 40,
+            "Steel Breaker": 30,
+        },
+        "Items": {
+            "chestplate": {
+                "chance": 20,
+                "rarety": {"common": 50, "uncommon": 35, "rare": 15},
+                "level": [-1, 5],
+            },
+            "helmet": {
+                "chance": 15,
+                "rarety": {"common": 50, "uncommon": 35, "rare": 15},
+                "level": [-1, 5],
+            },
+            "sheald": {
+                "chance": 15,
+                "rarety": {"common": 50, "uncommon": 35, "rare": 15},
+                "level": [-1, 5],
+            },
+        },
+    },
+    "Psychic Specter": {
+        "stats": {
+            "min_move": 1,
+            "max_move": 7,
+            "max_hp": 65,
+            "max_mp": 110,
+            "atk": 8,
+            "sp_atk": 20,
+            "def_": 7,
+            "sp_def": 18,
+            "xp": 11,
+            "gold": 9,
+            "crit_chance": 11,
+            "crit_bonus": 17,
+        },
+        "affiliations": {
+            "psychic": 200,
+            "dark": 160,
+            "sound": 140,
+            "metal": 70,
+            "stone": 60,
+            "fire": 80,
+        },
+        "Attacks": {
+            "Mind Spike": 70,
+            "Soul Drain": 50,
+            "Sonic Screech": 40,
+            "Death Coil": 30,
+            "Shadow Strike": 20,
+        },
+        "Items": {
+            "stafe": {
+                "chance": 25,
+                "rarety": {"common": 50, "uncommon": 35, "rare": 15},
+                "level": [-1, 5],
+            },
+            "gloves": {
+                "chance": 15,
+                "rarety": {"common": 50, "uncommon": 35, "rare": 15},
+                "level": [-1, 5],
+            },
+        },
+    },
 }
 
 bosses = {
@@ -1096,6 +1824,14 @@ bosses = {
             "gold": 20,
             "crit_chance": 8,
             "crit_bonus": 15,
+        },
+        "affiliations": {
+            "poison": 180,
+            "dark": 160,
+            "stone": 140,
+            "fire": 60,
+            "light": 50,
+            "ice": 70,
         },
         "Attacks": {
             "Axe Swing": 30,
@@ -1154,6 +1890,14 @@ bosses = {
             "crit_chance": 10,
             "crit_bonus": 20,
         },
+        "affiliations": {
+            "stone": 190,
+            "metal": 170,
+            "sound": 160,
+            "fire": 70,
+            "ice": 60,
+            "water": 80,
+        },
         "Attacks": {
             "Brutal Smash": 40,
             "Axe Swing": 30,
@@ -1205,6 +1949,14 @@ bosses = {
             "gold": 35,
             "crit_chance": 12,
             "crit_bonus": 18,
+        },
+        "affiliations": {
+            "dark": 200,
+            "ice": 180,
+            "psychic": 170,
+            "light": 30,
+            "fire": 60,
+            "plant": 80,
         },
         "Attacks": {
             "Death Coil": 30,
@@ -1258,6 +2010,14 @@ bosses = {
             "crit_chance": 15,
             "crit_bonus": 25,
         },
+        "affiliations": {
+            "fire": 200,
+            "lava": 190,
+            "electric": 180,
+            "wind": 170,
+            "ice": 60,
+            "water": 70,
+        },
         "Attacks": {
             "Fireball": 30,
             "Lightning Strike": 25,
@@ -1290,6 +2050,162 @@ bosses = {
                 "level": [3, 9],
             },
             "sheald": {
+                "chance": 25,
+                "rarety": {"common": 20, "uncommon": 40, "rare": 40},
+                "level": [3, 9],
+            },
+        },
+    },
+    # NEW BOSSES
+    "Elemental Archon": {
+        "stats": {
+            "min_move": 1,
+            "max_move": 7,
+            "max_hp": 250,
+            "max_mp": 150,
+            "atk": 20,
+            "sp_atk": 28,
+            "def_": 18,
+            "sp_def": 22,
+            "xp": 50,
+            "gold": 45,
+            "crit_chance": 12,
+            "crit_bonus": 20,
+        },
+        "affiliations": {
+            "fire": 180,
+            "water": 180,
+            "ice": 180,
+            "electric": 180,
+            "stone": 180,
+            "wind": 180,
+            "dark": 100,
+            "light": 100,
+        },
+        "Attacks": {
+            "Inferno Wave": 30,
+            "Tidal Bash": 30,
+            "Ice Shard": 25,
+            "Lightning Strike": 25,
+            "Earthquake": 30,
+            "Wind Slash": 20,
+            "Radiant Spear": 20,
+            "Void Rend": 20,
+        },
+        "Items": {
+            "stafe": {
+                "chance": 30,
+                "rarety": {"common": 20, "uncommon": 40, "rare": 40},
+                "level": [3, 9],
+            },
+            "chestplate": {
+                "chance": 30,
+                "rarety": {"common": 20, "uncommon": 40, "rare": 40},
+                "level": [3, 9],
+            },
+            "gloves": {
+                "chance": 25,
+                "rarety": {"common": 20, "uncommon": 40, "rare": 40},
+                "level": [3, 9],
+            },
+        },
+    },
+    "Ancient Treant King": {
+        "stats": {
+            "min_move": 1,
+            "max_move": 4,
+            "max_hp": 320,
+            "max_mp": 100,
+            "atk": 22,
+            "sp_atk": 20,
+            "def_": 26,
+            "sp_def": 22,
+            "xp": 55,
+            "gold": 48,
+            "crit_chance": 10,
+            "crit_bonus": 18,
+        },
+        "affiliations": {
+            "plant": 200,
+            "water": 190,
+            "earth": 180,
+            "poison": 170,
+            "fire": 40,
+            "ice": 80,
+            "dark": 110,
+        },
+        "Attacks": {
+            "Thorn Whip": 40,
+            "Toxic Cloud": 35,
+            "Earthquake": 45,
+            "Rock Spear": 30,
+            "Web Shot": 25,
+            "Venom Bite": 30,
+            "Healing Light": 20,
+        },
+        "Items": {
+            "stafe": {
+                "chance": 30,
+                "rarety": {"common": 20, "uncommon": 40, "rare": 40},
+                "level": [3, 9],
+            },
+            "chestplate": {
+                "chance": 25,
+                "rarety": {"common": 20, "uncommon": 40, "rare": 40},
+                "level": [3, 9],
+            },
+            "helmet": {
+                "chance": 20,
+                "rarety": {"common": 20, "uncommon": 40, "rare": 40},
+                "level": [3, 9],
+            },
+        },
+    },
+    "Storm Titan": {
+        "stats": {
+            "min_move": 1,
+            "max_move": 6,
+            "max_hp": 280,
+            "max_mp": 120,
+            "atk": 24,
+            "sp_atk": 26,
+            "def_": 20,
+            "sp_def": 18,
+            "xp": 52,
+            "gold": 46,
+            "crit_chance": 14,
+            "crit_bonus": 22,
+        },
+        "affiliations": {
+            "electric": 200,
+            "wind": 190,
+            "water": 180,
+            "ice": 170,
+            "earth": 70,
+            "fire": 80,
+            "metal": 140,
+        },
+        "Attacks": {
+            "Lightning Strike": 40,
+            "Gale Burst": 35,
+            "Volt Dash": 30,
+            "Tidal Bash": 30,
+            "Ice Shard": 25,
+            "Wind Slash": 30,
+            "Sonic Screech": 20,
+        },
+        "Items": {
+            "gloves": {
+                "chance": 30,
+                "rarety": {"common": 20, "uncommon": 40, "rare": 40},
+                "level": [3, 9],
+            },
+            "boots": {
+                "chance": 30,
+                "rarety": {"common": 20, "uncommon": 40, "rare": 40},
+                "level": [3, 9],
+            },
+            "chestplate": {
                 "chance": 25,
                 "rarety": {"common": 20, "uncommon": 40, "rare": 40},
                 "level": [3, 9],
@@ -1336,7 +2252,7 @@ cheast = {
             "boots": 8,
             "bow": 8,
             "gloves": 8,
-            "pans": 8,
+            "pan": 8,
             "Gold": 12,
         },
     }
@@ -1359,7 +2275,7 @@ shops = {
             "boots": 9,
             "bow": 9,
             "gloves": 9,
-            "pans": 9,
+            "pan": 9,
         },
     },
     "uncommon": {
@@ -1384,7 +2300,7 @@ shops = {
             "boots": 9,
             "bow": 9,
             "gloves": 9,
-            "pans": 9,
+            "pan": 9,
         },
     },
     "rare": {
@@ -1409,7 +2325,7 @@ shops = {
             "boots": 9,
             "bow": 9,
             "gloves": 9,
-            "pans": 9,
+            "pan": 9,
         },
     },
 }
@@ -1422,7 +2338,7 @@ layers: dict[
         "level": 5,
         "mob": {"Zomby": 40, "Skelet": 40, "Goblin": 20},
         "boss": "Goblin King",
-        "size": [10, 20],
+        "size": [1, 1],
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
@@ -1432,7 +2348,7 @@ layers: dict[
         "level": 10,
         "mob": {"Orc": 35, "Dark Elf": 35, "Giant Spider": 30},
         "boss": "Orc Warlord",
-        "size": [10, 20],
+        "size": [1, 1],
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
@@ -1442,7 +2358,7 @@ layers: dict[
         "level": 15,
         "mob": {"Dark Elf": 40, "Orc": 30, "Goblin": 20, "Giant Spider": 10},
         "boss": "Lich King",
-        "size": [10, 20],
+        "size": [1, 1],
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
@@ -1452,7 +2368,7 @@ layers: dict[
         "level": 25,
         "mob": {"Wraith": 35, "Minotaur": 35, "Dark Elf": 20, "Orc": 10},
         "boss": "Lich King",
-        "size": [10, 20],
+        "size": [1, 1],
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
@@ -1462,7 +2378,7 @@ layers: dict[
         "level": 30,
         "mob": {"Wraith": 40, "Minotaur": 30, "Dark Elf": 20, "Giant Spider": 10},
         "boss": "Dragon",
-        "size": [10, 20],
+        "size": [1, 1],
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
@@ -1472,7 +2388,7 @@ layers: dict[
         "level": 40,
         "mob": {"Wraith": 50, "Minotaur": 30, "Dark Elf": 20},
         "boss": "Dragon",
-        "size": [10, 20],
+        "size": [1, 1],
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
@@ -1482,7 +2398,7 @@ layers: dict[
         "level": 50,
         "mob": {"Wraith": 40, "Minotaur": 40, "Dark Elf": 20},
         "boss": "Dragon",
-        "size": [10, 20],
+        "size": [1, 1],
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
@@ -1492,7 +2408,7 @@ layers: dict[
         "level": 60,
         "mob": {"Wraith": 50, "Minotaur": 50},
         "boss": "Lich King",
-        "size": [10, 20],
+        "size": [1, 1],
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
@@ -1502,7 +2418,7 @@ layers: dict[
         "level": 75,
         "mob": {"Wraith": 60, "Minotaur": 40},
         "boss": "Dragon",
-        "size": [10, 20],
+        "size": [1, 1],
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
@@ -1512,7 +2428,7 @@ layers: dict[
         "level": 90,
         "mob": {"Wraith": 70, "Minotaur": 30},
         "boss": "Dragon",
-        "size": [10, 20],
+        "size": [1, 1],
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
@@ -1523,55 +2439,90 @@ layers: dict[
 
 dungeons_preset = {
     "Standerd": {
-        "layers": [
-            "layer 1",
-            "layer 2",
-            "layer 3",
-            "layer 4",
-            "layer 5",
-            "layer 6",
-            "layer 7",
-            "layer 8",
-            "layer 9",
-            "layer 10",
-        ],
-        "size": [10, 20],
+        "L_size": 10,
+        "liniar": {
+            "layers": [
+                {"layer": "layer 1", "level": 5, "Size": [10, 20]},
+                {"layer": "layer 2", "level": 10, "Size": [10, 20]},
+                {"layer": "layer 3", "level": 15, "Size": [10, 20]},
+                {"layer": "layer 4", "level": 25, "Size": [10, 20]},
+                {"layer": "layer 5", "level": 30, "Size": [10, 20]},
+                {"layer": "layer 6", "level": 40, "Size": [10, 20]},
+                {"layer": "layer 7", "level": 50, "Size": [10, 20]},
+                {"layer": "layer 8", "level": 60, "Size": [10, 20]},
+                {"layer": "layer 9", "level": 75, "Size": [10, 20]},
+                {"layer": "layer 10", "level": 90, "Size": [10, 20]},
+            ]
+        },
+        "endless": {
+            "layers": [
+                "layer 8",
+                "layer 9",
+                "layer 10",
+            ],
+            "start_level": 100,
+            "Size": [10, 20],
+            "Skale": 1.1,
+        },
     },
     "Large": {
-        "layers": [
-            "layer 1",
-            "layer 2",
-            "layer 3",
-            "layer 4",
-            "layer 5",
-            "layer 6",
-            "layer 7",
-            "layer 8",
-            "layer 9",
-            "layer 10",
-        ],
-        "size": [20, 40],
+        "L_size": 10,
+        "liniar": {
+            "layers": [
+                {"layer": "layer 1", "level": 5, "Size": [30, 40]},
+                {"layer": "layer 2", "level": 10, "Size": [30, 40]},
+                {"layer": "layer 3", "level": 15, "Size": [30, 40]},
+                {"layer": "layer 4", "level": 25, "Size": [30, 40]},
+                {"layer": "layer 5", "level": 30, "Size": [30, 40]},
+                {"layer": "layer 6", "level": 40, "Size": [30, 40]},
+                {"layer": "layer 7", "level": 50, "Size": [30, 40]},
+                {"layer": "layer 8", "level": 60, "Size": [30, 40]},
+                {"layer": "layer 9", "level": 75, "Size": [30, 40]},
+                {"layer": "layer 10", "level": 90, "Size": [30, 40]},
+            ]
+        },
+        "endless": {
+            "layers": [
+                "layer 8",
+                "layer 9",
+                "layer 10",
+            ],
+            "start_level": 100,
+            "Size": [10, 20],
+            "Skale": 1.1,
+        },
     },
     "Very Large": {
-        "layers": [
-            "layer 1",
-            "layer 2",
-            "layer 3",
-            "layer 4",
-            "layer 5",
-            "layer 6",
-            "layer 7",
-            "layer 8",
-            "layer 9",
-            "layer 10",
-        ],
-        "size": [100, 160],
+        "liniar": {
+            "layers": [
+                {"layer": "layer 1", "level": 5, "Size": [50, 60]},
+                {"layer": "layer 2", "level": 10, "Size": [50, 60]},
+                {"layer": "layer 3", "level": 15, "Size": [50, 60]},
+                {"layer": "layer 4", "level": 25, "Size": [50, 60]},
+                {"layer": "layer 5", "level": 30, "Size": [50, 60]},
+                {"layer": "layer 6", "level": 40, "Size": [50, 60]},
+                {"layer": "layer 7", "level": 50, "Size": [50, 60]},
+                {"layer": "layer 8", "level": 60, "Size": [50, 60]},
+                {"layer": "layer 9", "level": 75, "Size": [50, 60]},
+                {"layer": "layer 10", "level": 90, "Size": [50, 60]},
+            ]
+        },
+        "endless": {
+            "layers": [
+                "layer 8",
+                "layer 9",
+                "layer 10",
+            ],
+            "start_level": 100,
+            "Size": [10, 20],
+            "Skale": 1.1,
+        },
     },
 }
 
 
-
 # loads mods
+
 
 def load_json_as_variable(path):
     name = os.path.splitext(os.path.basename(path))[0]
@@ -1588,20 +2539,23 @@ def load_json_as_variable(path):
         # Falls es doch noch nicht existiert
         globals()[name] = data
 
+
+test_for_mods = False
 try:
-    mods = os.listdir('mods')
+    mods = os.listdir("mods")
     print(mods)
-    velid_mods = [f for f in mods if f.lower().endswith(('_mod'))]
+    velid_mods = [f for f in mods if f.lower().endswith(("_mod"))]
+    test_for_mods = True
+except:
+    print("no mods found")
+if test_for_mods:
     for mod in mods:
-        files = os.listdir(f'mods/{mod}')
-        mod_files = [f for f in files if f.lower().endswith(('.json'))]
+        files = os.listdir(f"mods/{mod}")
+        mod_files = [f for f in files if f.lower().endswith((".json"))]
         for file in mod_files:
             try:
                 load_json_as_variable(f"mods/{mod}/{file}")
             except:
                 print("error while loading mod")
                 time.sleep(1)
-except:
-    pass
-
-
+ele_list = update_ele_list()

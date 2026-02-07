@@ -20,7 +20,8 @@ class GameItem:
 
     def __init__(self, grade: str, item_type: str, level: int, name=None):
         self.grade: str = grade.lower()
-        self.item_type: str = item_type.lower()
+        self.main_type = "wapon" if item_type in GTD.wappon_sub_typse else "wareable"
+        self.sub_type: str = item_type.lower()
         self.level: int = level
         self.max_level: int = self.GRADE_INFO[grade]["max_level"]
         self.prefix: str = ""
@@ -36,7 +37,11 @@ class GameItem:
         self.crit_bonus: int = 0
         self.price: int = 0
         self.is_equiped: bool = False
-
+        self.is_fav: bool = False
+        if random.randint(0,10)< 11:
+            self.ele = random.choice(GTD.ele_list)
+        else:
+            self.ele = None
         if self.grade == "unique":
             self.load_unique(name)
         else:
@@ -84,7 +89,8 @@ class GameItem:
             data = self.UNIQUE_ITEMS[name]
         self.flavor = data["flavor"]
         stats = data["stats"]
-        self.item_type = data["type"]
+        self.sub_type = data["type"]
+        self.main_type = "wapon" if self.sub_type in GTD.wappon_sub_typse else "wareable"
         for k, v in stats.items():
             setattr(self, k, int(v * (1 + self.level / 3)))
 
@@ -309,7 +315,7 @@ class GameItem:
                     "Fate's Weave",
                 ],
             },
-            "pans": {
+            "pan": {
                 "common": ["Greasy", "Old", "Burnt", "Cracked"],
                 "uncommon": ["Iron", "Balanced", "Polished", "Steel"],
                 "rare": ["Chef's", "Blessed", "Arcane", "Refined", "Cook's"],
@@ -393,7 +399,7 @@ class GameItem:
             "helmet": ["Helm", "Crown", "Mask"],
             "boots": ["Boots", "Greaves", "Treads"],
             "pants": ["Pants", "Trousers", "Leggings"],
-            "pans": ["Pan", "Skillet", "Frying Pan"],
+            "pan": ["Pan", "Skillet", "Frying Pan"],
             "consumable": ["Potion", "Elixir", "Brew"],
             "gloves": ["Gloves", "Gauntlets", "Hands"],
             "sheald": ["Shield", "Guard", "Aegis"],
@@ -413,8 +419,8 @@ class GameItem:
             ],
         }
 
-        prefix_list = prefixes.get(self.item_type, {}).get(self.grade, ["Mysterious"])
-        self.base = random.choice(bases.get(self.item_type, ["Item"]))
+        prefix_list = prefixes.get(self.sub_type, {}).get(self.grade, ["Mysterious"])
+        self.base = random.choice(bases.get(self.sub_type, ["Item"]))
         suffix_list = suffixes.get(self.grade, [""])
 
         self.prefix = random.choice(prefix_list)
@@ -442,13 +448,13 @@ class GameItem:
             "helmet": {"def_": (4, 8), "sp_def": (2, 5)},
             "boots": {"max_hp": (5, 10), "def_": (2, 5)},
             "pants": {"def_": (3, 7), "max_hp": (8, 15)},
-            "pans": {"atk": (1, 5), "crit_chance": (10, 15), "crit_bonus": (50, 100)},
+            "pan": {"atk": (1, 5), "crit_chance": (10, 15), "crit_bonus": (50, 100)},
             "consumable": {"max_mp": (20, 40)},
             "gloves": {"atk": (2, 5), "sp_atk": (2, 5)},
             "sheald": {"def_": (8, 16), "sp_def": (6, 12)},
         }
 
-        stat_ranges = base_stat.get(self.item_type, {"mystery": (0, 1)})
+        stat_ranges = base_stat.get(self.sub_type, {"mystery": (0, 1)})
         grade_multiplier = {
             "common": 1.0,
             "uncommon": 1.5,
@@ -522,7 +528,7 @@ class GameItem:
                     "A simple pair that {physical_description}. They offer {practical_benefit} for everyday wear.",
                     "Standard trousers that {historical_significance}. They {practical_quality} and {mobility_feature}.",
                 ],
-                "pans": [
+                "pan": [
                     "This pan {cooking_performance} with {heat_distribution}. The handle {grip_comfort}.",
                     "A kitchen tool that {food_quality}. The surface {nonstick_feature} while the weight {balance_characteristic}.",
                     "Made in {creation_kitchen}, it {versatile_cooking}. The metal {heat_retention} and it bears {kitchen_reputation}.",
@@ -589,7 +595,7 @@ class GameItem:
                     "A reliable pair that {historical_significance}. They offer {practical_benefit} and {comfort_feature}.",
                     "Well-made trousers that {mobility_feature}. They {special_quality} and {durability_description}.",
                 ],
-                "pans": [
+                "pan": [
                     "This pan {cooking_performance} with {heat_distribution}. The handle {grip_comfort} and it has {culinary_history}.",
                     "A quality kitchen tool that {food_quality}. The surface {nonstick_feature} while the weight {balance_characteristic} for {cooking_style}.",
                     "Forged in {creation_kitchen}, it {versatile_cooking}. The metal {heat_retention} and it bears {kitchen_reputation}.",
@@ -656,7 +662,7 @@ class GameItem:
                     "An exceptional pair that {historical_significance}. They {mobility_feature} and {special_quality}.",
                     "Superior trousers that {wielder_experience}. They {magical_property} and {comfort_feature}.",
                 ],
-                "pans": [
+                "pan": [
                     "This master-crafted pan {cooking_performance} with {heat_distribution}. The handle {grip_comfort} and it has {culinary_history}.",
                     "A chef's prized tool that {food_quality}. The surface {nonstick_feature} while the weight {balance_characteristic} for {cooking_style}.",
                     "Expertly forged in {creation_kitchen}, it {versatile_cooking}. The metal {heat_retention} and it bears {kitchen_reputation}.",
@@ -723,7 +729,7 @@ class GameItem:
                     "A legendary pair that {historical_significance}. They {mobility_feature} and {special_quality}.",
                     "Mythic trousers that {wielder_experience}. They {magical_property} and {defensive_feature}.",
                 ],
-                "pans": [
+                "pan": [
                     "This legendary pan {cooking_performance} with {heat_distribution}. The handle {grip_comfort} and it has {culinary_history}.",
                     "A legendary kitchen weapon that {food_quality}. The surface {nonstick_feature} while the weight {balance_characteristic} for {cooking_style}.",
                     "Legendarily forged in {creation_kitchen}, it {versatile_cooking}. The metal {heat_retention} and it bears {kitchen_reputation}.",
@@ -790,7 +796,7 @@ class GameItem:
                     "An artifact pair that {historical_significance}. They {mobility_feature} and {special_quality}.",
                     "Divine trousers that {wielder_experience}. They {magical_property} and {reality_feature}.",
                 ],
-                "pans": [
+                "pan": [
                     "This mythical pan {cooking_performance} with {heat_distribution}. The handle {grip_comfort} and it has {culinary_history}.",
                     "A mythical kitchen weapon that {food_quality}. The surface {nonstick_feature} while the weight {balance_characteristic} for {cooking_style}.",
                     "Mythically forged in {creation_kitchen}, it {versatile_cooking}. The metal {heat_retention} and it bears {kitchen_reputation}.",
@@ -4730,7 +4736,7 @@ class GameItem:
 
         # Get template for this specific item type, or use default
         templates = grade_templates.get(
-            self.item_type,
+            self.sub_type,
             default_templates.get(self.grade, default_templates["common"]),
         )
         template = random.choice(templates)
@@ -4761,7 +4767,7 @@ class GameItem:
             replacements[placeholder] = chosen_phrase
 
         # Add item_type to replacements for default templates
-        replacements["item_type"] = self.item_type
+        replacements["item_type"] = self.sub_type
 
         # Replace all placeholders in the template
         try:
@@ -4847,7 +4853,7 @@ if __name__ == "__main__":
                         "helmet",
                         "boots",
                         "pants",
-                        "pans",
+                        "pan",
                         "gloves",
                         "sheald",
                     ]
