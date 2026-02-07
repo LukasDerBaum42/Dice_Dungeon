@@ -1,12 +1,14 @@
+from ast import Return
 import math
 import os
 import random
 import time
 from random import Random, choice, randint
+from tkinter import TclError
 
 import Game_text_data as GTD
 import Graphic
-from Graphic import inputT, printr
+from Graphic import inputT, printr, clear
 from Items import GameItem
 
 # from collections import deque
@@ -14,9 +16,6 @@ from Items import GameItem
 OPPOSITE = {"top": "bottom", "bottom": "top", "left": "right", "right": "left"}
 SIDES = ["top", "bottom", "left", "right"]
 
-
-def clear():
-    os.system("cls" if os.name == "nt" else "clear")
 
 
 def wrap_text(text: str, width: int = 72):
@@ -78,12 +77,15 @@ class Player:
         self.sp_def: int = stats["sp_def"]
         self.crit_chance: int = stats["crit_chance"]
         self.crit_bonus: int = stats["crit_bonus"]
+        self.wapon_ele = None
         self.add_to_inv(GameItem(*GTD.player_cls[cls]["item"]))
         self.attacks: list[str] = []
         self.attacks_used: dict[str, int] = {}
         for i in GTD.player_cls[cls]["attacks"]:
             self.attacks.append(GTD.attacks[i])
             self.attacks_used[i] = 0
+        self.ele_afi = Afiliations(GTD.ele_list,GTD.player_cls[cls]["affiliations"]["elements"])
+        self.wapon_afi = Afiliations(GTD.wappon_sub_typse,GTD.player_cls[cls]["affiliations"]["wapons"])
 
         self.hp: int = self.max_hp
         self.mp: int = self.max_mp
@@ -93,7 +95,7 @@ class Player:
         return (math.floor((((math.log(level**2, 10)) ** 2) + 1) * 5)) * 3
 
     def roll_for_move(self):
-        roll = roll_dice(self.min_move, self.max_move)
+        roll = Graphic.roll_dice(self.min_move, self.max_move)
         self.moves = roll
         return roll
 
@@ -101,10 +103,10 @@ class Player:
         self.inventory.append(item)
 
     def equip_item(self, item: GameItem):
-        if item.item_type in self.equipt_slots:
-            slot: str = item.item_type
-        elif item.item_type == "consumable":
-            slot = item.item_type
+        if item.sub_type in self.equipt_slots:
+            slot: str = item.sub_type
+        elif item.sub_type == "consumable":
+            slot = item.sub_type
         else:
             slot = "wappon"
         if item in self.equiped_items:
@@ -116,7 +118,7 @@ class Player:
             if self.equipt_slots[slot][0]:
                 printr(f"You have laredy a {slot} equipped")
                 choice = inputT("Do you want to swape? [y/n]>")
-                if choice == "y":
+                if choice == "Y" or choice == "E":
                     self.equiped_items.remove(self.equipt_slots[slot][1])
                     self.equipt_slots[slot][1].is_equiped = False
                     self.equiped_items.append(item)
@@ -139,7 +141,7 @@ class Player:
 
     def show_inventory(self, is_shop=False):
         def items_per_page(is_selected: bool) -> int:
-            return 4 if is_selected else 6
+            return 4 if is_selected else 8
 
         is_item_selected: bool = False
         page: int = 0
@@ -149,12 +151,13 @@ class Player:
         selected_item: None | GameItem = None
         selected_num = None
         show_inv = True
+        curser = [0, 0, 0, 0]
         while show_inv:
             # clear()
             per_page = items_per_page(is_item_selected)
             max_page = max(0, (len(item_fillter) - 1) // per_page)
 
-            Graphic.show_inventory(
+            choice, curser = Graphic.show_inventory(
                 page,
                 per_page,
                 max_page,
@@ -163,9 +166,10 @@ class Player:
                 selected_item,
                 is_shop,
                 self.gold,
+                curser,
             )
 
-            choice = inputT("> ").upper().strip()
+            # choice = inputT("> ", True).upper().strip()
             if choice == "Q":
                 show_inv = False
                 break
@@ -188,7 +192,7 @@ class Player:
                             self.gold += selected_item.value
                             selected_item = None
                             is_item_selected = False
-                            page = selected_num // 6
+                            page = selected_num // items_per_page(is_item_selected)
                             selected_num = None
                     else:
                         self.equip_item(selected_item)
@@ -211,8 +215,10 @@ class Player:
                 if is_item_selected:
                     if selected_item in self.favorit:
                         self.favorit.remove(selected_item)
+                        selected_item.is_fav = False
                     else:
                         self.favorit.append(selected_item)
+                        selected_item.is_fav = True
             elif choice == "SF":
                 is_equ = False
                 if is_fav:
@@ -226,7 +232,7 @@ class Player:
                     page = 0
                     selected_num = None
             elif choice == "PAGE":
-                choice = inputT("Selacte page > ").upper().strip()
+                choice = inputT("Selacte page > ", True, True).upper().strip()
                 try:
                     if (int(choice) - 1) >= 0 and (int(choice) - 1) <= max_page:
                         page = int(choice) - 1
@@ -236,7 +242,7 @@ class Player:
             elif is_item_selected and (choice == ""):
                 selected_item = None
                 is_item_selected = False
-                page = selected_num // 6
+                page = selected_num // items_per_page(is_item_selected)
                 selected_num = None
 
             else:
@@ -248,12 +254,22 @@ class Player:
                             selected_item = None
                             is_item_selected = False
                             selected_num = None
-                            page = choice // 6
+                            page = choice // items_per_page(is_item_selected)
+                            curser[2] = curser[0]
+                            curser[3] = curser[1]
+                            temp = choice % items_per_page(is_item_selected)
+                            curser[1] = temp % 2
+                            curser[0] = temp // 2
                         else:
                             selected_item = item_fillter[choice]
                             is_item_selected = True
                             selected_num = choice
-                            page = choice // 4
+                            page = choice // items_per_page(is_item_selected)
+                            curser[2] = curser[0]
+                            curser[3] = curser[1]
+                            temp = choice % items_per_page(is_item_selected)
+                            curser[1] = temp % 2
+                            curser[0] = temp // 2
                 except:
                     printr("Invalid inputT")
                     time.sleep(1)
@@ -268,14 +284,30 @@ class Player:
         self.crit_chance_items: int = 0
         self.crit_bonus_items: int = 0
         for item in self.equiped_items:
-            self.max_hp_items += item.max_hp
-            self.max_mp_items += item.max_mp
-            self.atk_items += item.atk
-            self.sp_atk_items += item.sp_atk
-            self.def_items += item.def_
-            self.sp_def_items += item.sp_def
-            self.crit_chance_items += item.crit_chance
-            self.crit_bonus_items += item.crit_bonus
+            if item.main_type == "wareable":
+                self.max_hp_items += item.max_hp
+                self.max_mp_items += item.max_mp
+                self.atk_items += item.atk
+                self.sp_atk_items += item.sp_atk
+                self.def_items += item.def_
+                self.sp_def_items += item.sp_def
+                self.crit_chance_items += item.crit_chance
+                self.crit_bonus_items += item.crit_bonus
+            elif item.main_type == "wapon":
+                afi = (self.wapon_afi.afi[item.sub_type] / 100)
+                self.max_hp_items += int(item.max_hp * afi)
+                self.max_mp_items += int(item.max_mp * afi)
+                self.atk_items += int(item.atk * afi)
+                self.sp_atk_items += int(item.sp_atk * afi)
+                self.def_items += int(item.def_ * afi)
+                self.sp_def_items += int(item.sp_def * afi)
+                self.crit_chance_items += int(item.crit_chance * afi)
+                self.crit_bonus_items += int(item.crit_bonus * afi)
+        
+        if self.equipt_slots["wappon"][1]:
+            self.wapon_ele = self.equipt_slots["wappon"][1].ele
+        else:
+            self.wapon_ele = None
 
         if self.hp > self.max_hp + self.max_hp_items:
             self.hp = self.max_hp + self.max_hp_items
@@ -290,35 +322,35 @@ class Player:
                 Graphic.show_stats_level(self)
                 choice = inputT("> ").strip()
                 if choice == "1":
-                    rand = roll_dice(1, 6, -1)
+                    rand = Graphic.roll_dice(1, 6, -1)
                     self.max_hp += rand
                     self.hp += rand
                     loop_levelup = False
                 elif choice == "2":
-                    rand = roll_dice(1, 6, -1)
+                    rand = Graphic.roll_dice(1, 6, -1)
                     self.max_mp += rand
                     self.mp += rand
                     loop_levelup = False
                 elif choice == "3":
-                    self.atk += roll_dice(1, 6, -1)
+                    self.atk += Graphic.roll_dice(1, 6, -1)
                     loop_levelup = False
                 elif choice == "4":
-                    self.sp_atk += roll_dice(1, 6, -1)
+                    self.sp_atk += Graphic.roll_dice(1, 6, -1)
                     loop_levelup = False
                 elif choice == "5":
-                    self.def_ += roll_dice(1, 6, -1)
+                    self.def_ += Graphic.roll_dice(1, 6, -1)
                     loop_levelup = False
                 elif choice == "6":
-                    self.sp_def += roll_dice(1, 6, -1)
+                    self.sp_def += Graphic.roll_dice(1, 6, -1)
                     loop_levelup = False
                 elif choice == "7":
-                    self.crit_chance += roll_dice(1, 6, -1)
+                    self.crit_chance += Graphic.roll_dice(1, 6, -1)
                     loop_levelup = False
                 elif choice == "8":
-                    self.crit_bonus += roll_dice(1, 6, -1)
+                    self.crit_bonus += Graphic.roll_dice(1, 6, -1)
                     loop_levelup = False
                 elif choice == "9":
-                    rand = roll_dice(1, 6, -1)
+                    rand = Graphic.roll_dice(1, 6, -1)
                     self.min_move += rand
                     self.max_move += rand
                     loop_levelup = False
@@ -356,6 +388,7 @@ class Player:
                 self.moves -= 1
             else:
                 printr("Move in valed")
+                printr(room.map[y - 1][x])
                 return "brake"
         elif dir == "S":
             if y + 1 >= len(room.map):
@@ -366,6 +399,7 @@ class Player:
                 self.moves -= 1
             else:
                 printr("Move in valed")
+                printr(room.map[y + 1][x])
                 return "brake"
         elif dir == "D":
             if x + 1 >= len(room.map[0]):
@@ -376,6 +410,7 @@ class Player:
                 self.moves -= 1
             else:
                 printr("Move in valed")
+                printr(room.map[y][x + 1])
                 return "brake"
         elif dir == "A":
             if x - 1 < 0:
@@ -386,6 +421,7 @@ class Player:
                 self.moves -= 1
             else:
                 printr("Move in valed")
+                printr(room.map[y][x - 1])
                 return "brake"
         x, y = self.x, self.y
         if room.map[y][x] == "D":
@@ -448,8 +484,10 @@ class Enemy:
         self.level: int = level
         if is_boss:
             stats: dict[str, int] = GTD.bosses[mob]["stats"]
+            self.ele_afi = Afiliations(GTD.ele_list,GTD.bosses[mob]["affiliations"])
         else:
             stats: dict[str, int] = GTD.enemy_cls[mob]["stats"]
+            self.ele_afi = Afiliations(GTD.ele_list,GTD.enemy_cls[mob]["affiliations"])
         self.max_move: int = stats["max_move"]
         self.min_move: int = stats["min_move"]
         self.max_hp: int = stats["max_hp"]
@@ -462,12 +500,15 @@ class Enemy:
         self.crit_bonus: int = stats["crit_bonus"]
         self.xp: int = stats["xp"]
         self.gold: int = stats["gold"]
+        self.wapon_ele = None
         self.level_up()
         self.hp: int = self.max_hp
         self.mp: int = self.max_mp
+        self.wapon_afi = Afiliations(GTD.wappon_sub_typse)
         self.get_attack_stats()
         self.items: list[GameItem] = []
         self.get_items()
+        self.equiped_items = self.items
         self.item_stats_add()
 
     def level_up(self) -> None:
@@ -480,19 +521,39 @@ class Enemy:
         self.gold += 2 * (self.level - 1)
         self.xp += 2 * (self.level - 1)
 
-    def item_stats_add(self) -> None:
-        for item in self.items:
-            self.max_hp += item.max_hp
-            self.max_mp += item.max_mp
-            self.atk += item.atk
-            self.sp_atk += item.sp_atk
-            self.def_ += item.def_
-            self.sp_def += item.sp_def
-            self.crit_chance += item.crit_chance
-            self.crit_bonus += item.crit_bonus
+    def item_stats_add(self):
+        self.max_hp_items: int = 0
+        self.max_mp_items: int = 0
+        self.atk_items: int = 0
+        self.sp_atk_items: int = 0
+        self.def_items: int = 0
+        self.sp_def_items: int = 0
+        self.crit_chance_items: int = 0
+        self.crit_bonus_items: int = 0
+        for item in self.equiped_items:
+            if item.main_type == "wareable":
+                self.max_hp_items += item.max_hp
+                self.max_mp_items += item.max_mp
+                self.atk_items += item.atk
+                self.sp_atk_items += item.sp_atk
+                self.def_items += item.def_
+                self.sp_def_items += item.sp_def
+                self.crit_chance_items += item.crit_chance
+                self.crit_bonus_items += item.crit_bonus
+            elif item.main_type == "wapon":
+                afi = (self.wapon_afi.afi[item.sub_type] / 100)
+                self.wapon_ele = item.ele
+                self.max_hp_items += int(item.max_hp * afi)
+                self.max_mp_items += int(item.max_mp * afi)
+                self.atk_items += int(item.atk * afi)
+                self.sp_atk_items += int(item.sp_atk * afi)
+                self.def_items += int(item.def_ * afi)
+                self.sp_def_items += int(item.sp_def * afi)
+                self.crit_chance_items += int(item.crit_chance * afi)
+                self.crit_bonus_items += int(item.crit_bonus * afi)
 
-        self.hp = self.max_hp
-        self.mp = self.max_mp
+            self.hp = self.max_hp + self.max_hp_items
+            self.mp = self.max_mp + self.max_mp_items
 
     def get_items(self):
         if self.is_boss:
@@ -637,25 +698,138 @@ class Enemy:
         except:
             pass
         del (
-            self.room,
-            self.mob,
-            self.level,
-            self.max_move,
-            self.min_move,
-            self.max_hp,
-            self.max_mp,
-            self.atk,
-            self.sp_atk,
-            self.def_,
-            self.sp_def,
-            self.crit_chance,
-            self.crit_bonus,
-            self.xp,
-            self.gold,
-            self.hp,
-            self.mp,
-            self.items,
+            self.room,self.mob,self.level,self.max_move,self.min_move,self.max_hp,self.max_mp,self.atk,self.sp_atk,self.def_,self.sp_def,self.crit_chance,self.crit_bonus,self.xp,self.gold,self.hp,self.mp,self.items,
         )
+
+
+
+class Afiliations:
+    
+    def __init__(self,els:list[str],stats:dict[str,int]={}, bonus: int = 0) -> None:
+        self.afi = {}
+        self.temp_afi = {}
+        self.len = len(self.afi)
+        self.bonus = bonus
+        self.main_afi = ""
+        for i in els:
+            self.afi[i] = 100
+        add_l, sub_l, unblock_l = self.split_new(stats)
+        #print(add_l)
+        #print(sub_l)
+        #print(unblock_l)
+        #print(self)
+        self.bonus = self.sub(stats,sub_l,unblock_l,self.bonus)
+        self.bonus = self.add(stats,add_l, unblock_l, self.bonus)
+        self.fin_afi = {}
+        self.add_temp()
+        
+    def change(self,stats,bonus):
+        self.bonus += bonus
+        add_l, sub_l, unblock_l = self.split_new(stats)
+        #print(add_l)
+        #print(sub_l)
+        #print(unblock_l)
+        #print(self)
+        self.bonus = self.sub(stats,sub_l,unblock_l,self.bonus)
+        self.bonus = self.add(stats,add_l, unblock_l, self.bonus)
+        self.add_temp()
+        
+    def update_temp_afi(self,stats):
+        self.temp_afi = stats
+        self.add_temp()
+        
+    def add_temp(self):
+        for i in self.afi:
+            if i in  self.temp_afi:
+                self.fin_afi[i] = self.afi[i] + self.temp_afi[i]
+            else:
+                self.fin_afi[i] = self.afi[i]
+        self.main_afi = max(self.fin_afi,key=self.fin_afi.get)
+        
+    
+    def split_new(self,stats:dict[str,int]):
+        add_l = []
+        sub_l = []
+        unblock_l = []
+        for i in self.afi:
+            if i in stats:
+                if self.afi[i] > stats[i]:
+                    sub_l.append(i)
+                elif self.afi[i] < stats[i]:
+                    add_l.append(i)
+            else:
+                unblock_l.append(i)
+        return add_l, sub_l, unblock_l
+            
+    def sub(self,stats,sub_l,unblock_l,bonus:int = 0):
+        for i in sub_l:
+            temp = self.afi[i] - stats[i]
+            bonus += temp
+            self.afi[i] = stats[i]
+            
+        #print(self)
+        return bonus
+    
+    def compute_subtraction(self,afi: dict[str, int],unblock_l: list[str],needed: int):
+        keys = [k for k in unblock_l if k in afi and afi[k] > 0]
+        result = {k: 0 for k in keys}
+    
+        remaining = needed
+        active = keys.copy()
+    
+        while remaining > 0 and active:
+            share = max(1, remaining // len(active))
+            new_active = []
+    
+            for k in active:
+                take = min(share, afi[k] - result[k])
+                result[k] += take
+                remaining -= take
+    
+                if result[k] < afi[k]:
+                    new_active.append(k)
+    
+                if remaining == 0:
+                    break
+    
+            active = new_active
+    
+        return result, remaining
+    
+    def add(self,stats,add_l, unblock_l,bonus:int = 0):
+        needed = 0
+        for i in add_l:
+            temp = stats[i] - self.afi[i]
+            needed += temp
+        #print(needed)
+        needed -= bonus
+        if needed > 0:
+            print("not enough points")
+            sub_ele, missing = self.compute_subtraction(self.afi, unblock_l, needed)
+            for i in sub_ele:
+                self.afi[i] -= sub_ele[i]
+                bonus += sub_ele[i]
+        
+        for i in add_l:
+            temp = stats[i] - self.afi[i]
+            if bonus >= temp:
+                bonus -= temp
+            elif bonus < temp:
+                temp = int(bonus)
+                #print(temp,bonus)
+                bonus = 0
+                #print(temp,bonus)
+            self.afi[i] = self.afi[i] + temp
+        
+        #print(self)
+        return bonus
+        
+    #def __repr__(self) -> str:
+    #    out = ''
+    #    for i in self.afi:
+    #        out += f'{i} = {self.afi[i]}  '
+    #    
+    #    return out
 
 
 class Dungeon:
@@ -670,14 +844,37 @@ class Dungeon:
             ["#", "#", "#", "#", "#", "#"],
         ]
         self.no_child = ["boss", "start"]
-        self.layer = GTD.dungeons_preset[type]["layers"][layer]
-        size_a = (
-            GTD.dungeons_preset[type]["size"][0] + GTD.layers[self.layer]["size"][0]
-        ) // 2
-        size_b = (
-            GTD.dungeons_preset[type]["size"][1] + GTD.layers[self.layer]["size"][1]
-        ) // 2
-        rand = random.randint(size_a, size_b)
+        l_size = len(GTD.dungeons_preset[type]["liniar"]["layers"])
+        gentype = "liniar" if layer < l_size else "endless"
+        print(gentype)
+        # self.layer_set = GTD.dungeons_preset[type][gentype]["layers"][layer]
+         # self.layer = self.layer_set["layer"]
+        if gentype == "liniar":
+            self.layer_set = GTD.dungeons_preset[type][gentype]["layers"][layer]
+            self.layer = self.layer_set["layer"]
+            size_a = (
+                self.layer_set["Size"][0] * GTD.layers[self.layer]["size"][0]
+            ) 
+            size_b = (
+                self.layer_set["Size"][1] * GTD.layers[self.layer]["size"][1]
+            ) 
+            self.level = self.layer_set["level"]
+        else:
+            e_size = len(GTD.dungeons_preset[type]["endless"]["layers"])
+            e_layer = (layer - l_size)
+            self.layer = GTD.dungeons_preset[type][gentype]["layers"][e_layer % e_size]
+            size_a = (
+                GTD.dungeons_preset[type][gentype]["Size"][0]
+                * GTD.layers[self.layer]["size"][0]
+            )
+            size_b = (
+                GTD.dungeons_preset[type][gentype]["Size"][1]
+                * GTD.layers[self.layer]["size"][1]
+            )
+            base_level = GTD.dungeons_preset[type][gentype]["start_level"]
+            skale = GTD.dungeons_preset[type][gentype]["Skale"]
+            self.level = int(base_level * (skale**e_layer))
+        rand = random.randint(min(size_a, size_b),max(size_a, size_b))
         self.room_pos = []
         self.rooms = self.gen_dungeon(num_rooms=rand, layer=self.layer)
         self.rooms[0].show_on_map = True
@@ -775,7 +972,7 @@ class Dungeon:
                 avail_sides = current.free_sides
                 if current.id != 0:
                     if not avail_sides:
-                        if random.randint(0, 3) == 0:
+                        if random.randint(0, 5) == 0:
                             current, rooms = self.conect_rooms(current, rooms)
                             break
                         else:
@@ -797,7 +994,7 @@ class Dungeon:
 
                 # Create and connect room
 
-                new_room = Room(next_id, room_type, layer=layer)
+                new_room = Room(next_id, room_type, layer=layer,level=self.level)
                 rooms[next_id] = new_room
 
                 dir_a = random.choice(avail_sides)
@@ -843,8 +1040,10 @@ class Room:
         width=None,
         height=None,
         layer="layer 1",
+        level= 5
     ):
         self.id = room_id
+        self.level = level
         self.type = room_type
         self.pos = (x, y)
         self.layer = layer
@@ -853,6 +1052,7 @@ class Room:
         self.traps = []
         self.cheasts = []
         self.shops = []
+        self.used_pos = []
         self.map = self.generate_room(room_type, width, height)
         self.door_positions = []  # [(x, y), ...]
         self.spawn_positions = []
@@ -883,16 +1083,17 @@ class Room:
             rarety_temp_1 = rarety_temp_2
             rarety_temp_2 += p
             if (rarety_temp_1 < rand_num) and (rand_num <= rarety_temp_2):
-                e_level = layer["level"] + random.randint(-3, 3)
+                e_level = self.level + random.randint(-3, 3)
                 if e_level <= 0:
                     e_level = 1
                 self.enemys.append(Enemy(j, e_level, self, x, y))
+                self.used_pos.append((x, y))
 
     def place_boss(self, width, height, layer="layer 1"):
         x = width
         y = height
         layer = GTD.layers[layer]
-        e_level = layer["level"] + random.randint(-3, 3)
+        e_level = self.level + random.randint(-3, 3)
         if e_level <= 0:
             e_level = 1
         self.enemys.append(Enemy(layer["boss"], e_level, self, x, y, True))
@@ -908,7 +1109,7 @@ class Room:
             rarety_temp_1 = rarety_temp_2
             rarety_temp_2 += p
             if (rarety_temp_1 < rand_num) and (rand_num <= rarety_temp_2):
-                self.traps.append(Trape(width, height, j))
+                self.traps.append(Trape(width, height, j,self))
 
     def place_cheast(self, x, y):
         self.cheasts.append(Cheast(self, x, y))
@@ -953,33 +1154,39 @@ class Room:
                     elif rand_2 == 1:
                         x = random.randint(2, width - 1)
                         y = random.randint(2, height - 1)
-                        if self.map[y][x] == ".":
+                        if self.map[y][x] == "." and (x, y) not in self.used_pos:
+                            self.used_pos.append((x, y))
                             self.map[y][x] = "#"
 
                     elif rand_2 == 6:
                         x = random.randint(2, width - 1)
                         y = random.randint(2, height - 1)
-                        if self.map[y][x] == ".":
+                        if self.map[y][x] == "." and (x, y) not in self.used_pos:
+                            self.used_pos.append((x, y))
                             self.map[y][x] = "#"
                     elif rand_2 == 5:
                         x = random.randint(2, width - 1)
                         y = random.randint(2, height - 1)
-                        if self.map[y][x] == ".":
+                        if self.map[y][x] == "." and (x, y) not in self.used_pos:
+                            self.used_pos.append((x, y))
                             self.map[y][x] = "#"
                     elif rand_2 == 2:
                         x = random.randint(1, width)
                         y = random.randint(1, height)
-                        if self.map[y][x] == ".":
+                        if self.map[y][x] == "." and (x, y) not in self.used_pos:
+                            self.used_pos.append((x, y))
                             self.place_cheast(x, y)
                     elif rand_2 == 3:
                         x = random.randint(1, width)
                         y = random.randint(1, height)
-                        if self.map[y][x] == ".":
+                        if self.map[y][x] == "." and (x, y) not in self.used_pos:
+                            self.used_pos.append((x, y))
                             self.place_trap(x, y, layer)
                     elif rand_2 == 4:
                         x = random.randint(1, width)
                         y = random.randint(1, height)
-                        if self.map[y][x] == ".":
+                        if self.map[y][x] == "." and (x, y) not in self.used_pos:
+                            self.used_pos.append((x, y))
                             self.map[y][x] = " "
                 printr("add assets")
 
@@ -1054,12 +1261,13 @@ class Room:
 
 
 class Trape:
-    def __init__(self, x, y, type):
+    def __init__(self, x, y, type,room):
         self.x = x
         self.y = y
         self.show = False
         self.coldown = 0
         self.type = type
+        self.room = room
 
     def triger(self, player):
         clear()
@@ -1085,10 +1293,11 @@ class Trape:
                     temp += " "
                 temp += player_art[i - trap_art["player"][1]]
             temp += trap_art["art"][i]
+            Graphic.fixed_width(temp, 28)
             printr(temp)
         if self.type == "Mimic":
             inputT("\nPress Enter to return...")
-            level = GTD.layers[Layers[Curent_Layer].layer]["level"]
+            level = self.room.level
             enemy = Enemy("Mimic", level, None, 0, 0)
             player = fight_loop(player, enemy, False)
         else:
@@ -1097,13 +1306,13 @@ class Trape:
                 player.hp -= GTD.traps[self.type]["damage"]
             elif GTD.traps[self.type]["damage_type"] == 1:
                 base = GTD.traps[self.type]["damage"]
-                roll = roll_dice(1, 6, 0)
+                roll = Graphic.roll_dice(1, 6, 0)
                 damage = int((base / 5) * (6 - roll))
                 player.hp -= damage
             elif GTD.traps[self.type]["damage_type"] == 2:
                 base = GTD.traps[self.type]["damage"]
                 base = int((player.max_hp / 100) * base)
-                roll = roll_dice(1, 6, 0)
+                roll = Graphic.roll_dice(1, 6, 0)
                 damage = int((base / 5) * (6 - roll))
                 player.hp -= damage
         self.show = True
@@ -1137,7 +1346,7 @@ class Cheast:
         del rarety_temp_1, rarety_temp_2
         printr(posbil_types)
         cheast = GTD.cheast[cheast_type]
-        level = GTD.layers[layer]["level"] + random.randint(*cheast["level"])
+        level = self.room.level + random.randint(*cheast["level"])
         rarety_temp_1 = 0
         rarety_temp_2 = 0
         rand_num = random.randint(0, 100)
@@ -1199,14 +1408,14 @@ class Merchent:
         for _ in range(size):
             item_type = p_chois(self.gtd_shop["item type"])
             item_rarety = p_chois(self.gtd_shop["rarety"])
-            level = self.layer["level"] + randint(*self.gtd_shop["level"])
+            level = self.room.level + randint(*self.gtd_shop["level"])
             items.append(GameItem(item_rarety, item_type, level))
 
         return items
 
     def shop_buy(self, player):
         def items_per_page(is_selected: bool) -> int:
-            return 4 if is_selected else 6
+            return 4 if is_selected else 8
 
         is_item_selected: bool = False
         page: int = 0
@@ -1214,11 +1423,12 @@ class Merchent:
         selected_item: None | GameItem = None
         selected_num = None
         show_inv = True
+        curser = [0, 0, 0, 0]
         while show_inv:
             per_page = items_per_page(is_item_selected)
             max_page = max(0, (len(item_fillter) - 1) // per_page)
 
-            Graphic.shop_buy_page(
+            choice, curser = Graphic.shop_buy_page(
                 page,
                 per_page,
                 max_page,
@@ -1226,8 +1436,9 @@ class Merchent:
                 item_fillter,
                 selected_item,
                 player.gold,
+                curser,
             )
-            choice = inputT("> ").upper().strip()
+            # choice = inputT("> ", True).upper().strip()
             if choice == "Q":
                 show_inv = False
                 break
@@ -1252,7 +1463,7 @@ class Merchent:
                             self.items.remove(selected_item)
                             selected_item = None
                             is_item_selected = False
-                            page = selected_num // 6
+                            page = selected_num // items_per_page(is_item_selected)
                             selected_num = None
                     else:
                         printr("You don’t have enough gold to buy this item")
@@ -1262,7 +1473,7 @@ class Merchent:
                     time.sleep(1)
 
             elif choice == "PAGE":
-                choice = inputT("Selacte page > ").upper().strip()
+                choice = inputT("Selacte page > ", True, True).upper().strip()
                 try:
                     if (int(choice) - 1) >= 0 and (int(choice) - 1) <= max_page:
                         page = int(choice) - 1
@@ -1272,7 +1483,7 @@ class Merchent:
             elif is_item_selected and (choice == ""):
                 selected_item = None
                 is_item_selected = False
-                page = selected_num // 6
+                page = selected_num // items_per_page(is_item_selected)
                 selected_num = None
 
             else:
@@ -1284,29 +1495,37 @@ class Merchent:
                             selected_item = None
                             is_item_selected = False
                             selected_num = None
-                            page = choice // 6
+                            page = choice // items_per_page(is_item_selected)
+                            curser[2] = curser[0]
+                            curser[3] = curser[1]
+                            temp = choice % items_per_page(is_item_selected)
+                            curser[1] = temp % 2
+                            curser[0] = temp // 2
                         else:
                             selected_item = item_fillter[choice]
                             is_item_selected = True
                             selected_num = choice
-                            page = choice // 4
+                            page = choice // items_per_page(is_item_selected)
+                            curser[2] = curser[0]
+                            curser[3] = curser[1]
+                            temp = choice % items_per_page(is_item_selected)
+                            curser[1] = temp % 2
+                            curser[0] = temp // 2
                 except:
                     printr("Invalid inputT")
                     time.sleep(1)
 
     def interact_player(self, player):
         is_in_shop: bool = True
+        struc = {"buy": "Buy Items", "sell": "Sell Items", "Q": "Leave"}
         while is_in_shop:
-            Graphic.shop_start_page()
-            choice = inputT("> ").upper().strip()
-            if choice == "Q" or choice == "3":
+            choice = Graphic.select_menu_page("Merchent", struc, {"Q": "Q"})
+            if choice == "Q":
                 is_in_shop = False
-            elif choice == "2":
+            elif choice == "sell":
                 player.show_inventory(True)
-            elif choice == "1":
+            elif choice == "buy":
                 self.shop_buy(player)
-            else:
-                printr("Invalid inputT")
 
 
 def update_player(player, room):
@@ -1371,65 +1590,25 @@ def print_room_options(player):
     if player.moves == -2:
         if player.cls == "Roghe":
             printr("R = Roll dice to move | F = Roll to check for traps")
-        printr("R = Roll dice to move | P = Make a pause and restr")
+        printr("R = Roll dice to move | P = Make a pause and rest")
     elif player.moves > 0:
         printr(f"Moves {player.moves} left")
     else:
         player.moves = -1
 
 
-def roll_dice(start, end, advan=0):
-    rand = 0
-    for i in range(10):
-        rand_o = rand
-        while rand == rand_o:
-            rand = random.randint(start, end)
-        rand += advan
-        if rand < start:
-            rand = start
-        elif rand > end:
-            rand = end
-        rand_str = str(rand)
-        if len(rand_str) == 1:
-            rand_str = " " + rand_str
-        if len(rand_str) == 2:
-            rand_str = rand_str + " "
-        clear()
-        printr(f"""
-=========================
-        Dice Roll
-         –––––––
-        |       |
-        |  {rand_str}  |
-        |       |
-         –––––––
-
-=========================
-""")
-        time.sleep((i + 1) / 50)
-    inputT("\nPress Enter to return...")
-    return rand
-
-
 def main_menu():
+    struc = {"start": "Start Game", "help": "How to Play", "exit": "Quit"}
     while True:
-        clear()
-        printr("""
-===================================
-       DICE DUNGEON: DESCENT
-===================================
- [1] Start Game
- [2] How to Play
- [3] Quit
-""")
-        choice = inputT("> ").upper().strip()
-        if choice == "1":
+        choice = Graphic.select_menu_page("DICE DUNGEON: DESCENT", struc, {"Q": "exit"})
+        # printr(choice)
+        if choice == "start":
             return "start"
-        elif choice == "2":
+        elif choice == "help":
             show_help_new()
-        elif choice == "3" or "Q":
+        elif choice == "exit":
             printr("Goodbye, hero...")
-            time.sleep(1)
+            time.sleep(0.1)
             return "exit"
         else:
             printr("Invalid option.")
@@ -1457,30 +1636,7 @@ P = Privios Page | N = Next """)
 
 
 def game_menu(player, dungeon):
-    hp: str = f"HP {player.hp}/{player.max_hp + player.max_hp_items}"
-    mp: str = f"MP {player.mp}/{player.max_mp + player.max_mp_items}"
-    gold: str = f"Gold {player.gold}"
-    xp: str = f"XP {player.xp}/{player.max_xp}"
-    level: str = f"Level {player.level}"
-    while len(hp) < 13:
-        hp += " "
-    while len(mp) < 13:
-        mp += " "
-    while len(gold) < 13:
-        gold += " "
-    while len(xp) < 13:
-        xp += " "
-    while len(level) < 13:
-        level += " "
-    clear()
-    printr(f"""
-========================================
-              Dice Dungeon
-{hp}  {mp}  {gold}
-{level}  {xp}
-H = Help | I = Invetory | T = Stats
-Q = Quit
-========================================""")
+    Graphic.game_menu(player)
     if GAME_STATE == "map":
         dungeon.print_room(player)
     return player
@@ -1490,168 +1646,25 @@ def select_player_class():
     cls = []
     for i in GTD.player_cls:
         cls.append(i)
-    while True:
-        clear()
-        printr("""
-======================
-Selacte a player class
-======================""")
-        for i in range(len(cls)):
-            printr(f"[{i}] {cls[i]}")
-        choice = inputT("> ").strip().upper()
+    struc = {f"{cls[i]}": f"{cls[i]}" for i in range(len(cls))}
 
-        if choice == "Q":
-            return "Q"
-        try:
-            if int(choice) >= 0 and int(choice) < len(cls):
-                return cls[int(choice)]
-            else:
-                printr("Invalid option.")
-                time.sleep(1)
-        except:
-            printr("Invalid option.")
-            time.sleep(1)
+    while True:
+        choice = Graphic.select_menu_page("Selacte a player class", struc, {"Q": "Q"})
+        return choice
 
 
 def select_dungeon():
     d_type = []
     for i in GTD.dungeons_preset:
         d_type.append(i)
+    struc = {f"{d_type[i]}": f"{d_type[i]}" for i in range(len(d_type))}
     while True:
-        clear()
-        printr("""
-======================
-Selacte a dungeon
-======================""")
-        for i in range(len(d_type)):
-            printr(f"[{i}] {d_type[i]}")
-        choice = inputT("> ").strip().upper()
-
-        if choice == "Q":
-            return "Q"
-        try:
-            if int(choice) >= 0 and int(choice) < len(d_type):
-                return d_type[int(choice)]
-            else:
-                printr("Invalid option.")
-                time.sleep(1)
-        except:
-            printr("Invalid option.")
-            time.sleep(1)
+        choice = Graphic.select_menu_page("Selacte a dungeon", struc, {"Q": "Q"})
+        return choice
 
 
 def print_dungeon_map(dungeon, spacing=1, room_size=2):
-    # 1. BFS: relative Positionen bestimmen
-    rooms = dungeon.rooms
-    printr(rooms)
-    if len(str(rooms[len(rooms) - 1].id)) > room_size:
-        room_size = len(str(rooms[len(rooms) - 1].id))
-    clear()
-    positions = [room.pos for room in dungeon.rooms.values()]
-
-    # printr('conn:',conn,' px,py:',px,py,' w,h:',w,h,' dx,dy:',dx,dy)
-
-    # 2. Grid vorbereiten
-    xs = [p[0] for p in positions]
-    ys = [p[1] for p in positions]
-    minx, maxx = min(xs), max(xs)
-    miny, maxy = min(ys), max(ys)
-
-    width = (maxx - minx + 1) * (room_size + (spacing * 2)) - spacing
-    height = (maxy - miny + 1) * (room_size + spacing) - spacing
-
-    grid = [[" " for _ in range(width)] for _ in range(height)]
-
-    # 3. Räume zeichnen
-    room_coords = {}
-    for room in dungeon.rooms.values():
-        # if room.show_on_map == False:
-        # continue
-        gx, gy = room.pos
-        gx = (gx - minx) * (room_size + (spacing * 2))
-        gy = (gy - miny) * (room_size + spacing)
-
-        rid_str = str(room.id)
-        if room.show_on_map or CHEATS_ON:
-            if room.id == dungeon.room:
-                if len(rid_str) < room_size:
-                    for i in range(room_size - len(rid_str)):
-                        grid[gy][gx + len(rid_str) + i] = "\33[32m#\33[0m"
-                grid[gy][gx : gx + len(rid_str)] = [
-                    f"\33[32m{i}\33[0m" for i in rid_str
-                ]
-                for i in range(room_size - 1):
-                    for j in range(room_size):
-                        grid[gy + 1 + i][gx + j] = "\33[32m#\33[0m"
-            elif room.type == "boss":
-                if len(rid_str) < room_size:
-                    for i in range(room_size - len(rid_str)):
-                        grid[gy][gx + len(rid_str) + i] = "\33[31m#\33[0m"
-                grid[gy][gx : gx + len(rid_str)] = [
-                    f"\33[31m{i}\33[0m" for i in rid_str
-                ]
-                for i in range(room_size - 1):
-                    for j in range(room_size):
-                        grid[gy + 1 + i][gx + j] = "\33[31m#\33[0m"
-            elif room.type == "merchant":
-                if len(rid_str) < room_size:
-                    for i in range(room_size - len(rid_str)):
-                        grid[gy][gx + len(rid_str) + i] = "\33[34m#\33[0m"
-                grid[gy][gx : gx + len(rid_str)] = [
-                    f"\33[34m{i}\33[0m" for i in rid_str
-                ]
-                for i in range(room_size - 1):
-                    for j in range(room_size):
-                        grid[gy + 1 + i][gx + j] = "\33[34m#\33[0m"
-            else:
-                if len(rid_str) < room_size:
-                    for i in range(room_size - len(rid_str)):
-                        grid[gy][gx + len(rid_str) + i] = "#"
-                grid[gy][gx : gx + len(rid_str)] = list(rid_str)
-                for i in range(room_size - 1):
-                    for j in range(room_size):
-                        grid[gy + 1 + i][gx + j] = "#"
-        room_coords[room.id] = (gx, gy)
-
-    # 4. Linien nur zwischen Räumen in Zwischenzellen
-    # printr(rooms)
-    for room in dungeon.rooms.values():
-        if room.show_on_map == False and CHEATS_ON == False:
-            continue
-        gx, gy = room_coords[room.id]
-        for i, conn in enumerate(room.doors):
-            cgx, cgy = room_coords[conn]
-            # Vertikal
-            if gx == cgx:
-                start = min(gy + room_size, cgy)
-                end = max(gy, cgy + room_size)
-                for y_pos in range(start, end):
-                    if grid[y_pos][gx] == " ":
-                        grid[y_pos][gx] = "|"
-            # Horizontal
-            elif gy == cgy:
-                start = min(gx + room_size, cgx)
-                end = max(gx + 1, cgx)
-                for x_pos in range(start, end):
-                    if grid[gy][x_pos] == " ":
-                        grid[gy][x_pos] = "–"
-
-    # 5. Ausgabe
-    # clear()
-    # printr(dungeon.room_pos)
-    printr("=" * width)
-    text = "Dungeon Map"
-    while len(text) < width:
-        text += " "
-        if len(text) < width:
-            text = " " + text
-    printr(text)
-    for row in grid:
-        if any(i != " " for i in row):
-            printr("".join(row))
-    # for i in rooms:
-    # printr('room:',i,'doors',rooms[i].doors)
-
+    Graphic.print_dungeon_map(dungeon, spacing, room_size, CHEATS_ON)
     inputT("\nPress Enter to return...")
 
 
@@ -1663,6 +1676,8 @@ def game_loop_room(player):
         game_menu(player, dungeon)
         print_room_options(player)
         choice = inputT("> ").upper().strip()
+        if choice == "/":
+            choice = inputT("> ", True).upper().strip()
         if choice == "H":
             show_help_new()
             continue
@@ -1670,6 +1685,7 @@ def game_loop_room(player):
             player.show_stats()
             continue
         elif choice == "I":
+            time.sleep(3)
             player.show_inventory()
             continue
         elif choice == "M":
@@ -1716,7 +1732,7 @@ def game_loop_room(player):
                 player.add_to_inv(GameItem("common", "sword", 10))
                 continue
             elif choice == "FIGHT":
-                enemy = Enemy("zomby", random.randint(1, 5), 0, 5, 5)
+                enemy = Enemy("Zomby", random.randint(1, 5), 0, 5, 5)
                 player, loop_room = fight_loop(player, enemy)
                 continue
             elif choice == "TP":
@@ -1752,157 +1768,9 @@ def game_loop_room(player):
             time.sleep(1)
 
 
-def fight_selact_attack(player, enemy):
-    clear()
-    Graphic.print_fight_UI(player, enemy)
-
-
 def p_chance(chance):
     rand = random.randint(1, 100)
     return True if rand <= chance else False
-
-
-def fight_roll_dice(player, enemy, start, end, sel=0, advan=0, atk=True):
-    rand = 0
-    if atk:
-        advan += player.attacks[sel]["stats"]["adv"]
-        player.mp -= player.attacks[sel]["stats"]["mp"]
-        for i in range(20):
-            clear()
-            Graphic.print_fight_UI(player, enemy, False)
-            Graphic.fight_roll_dice(player, enemy, start, end, advan, atk, False)
-            time.sleep((i + 1) / 50)
-        clear()
-        Graphic.print_fight_UI(player, enemy, False)
-        rand, rand_e = Graphic.fight_roll_dice(
-            player, enemy, start, end, advan, atk, False
-        )
-
-        p_crit = (
-            player.crit_chance
-            + player.crit_chance_items
-            + player.attacks[sel]["stats"]["crit_chance"]
-        )
-        p_crit = p_chance(p_crit)
-        if p_crit:
-            printr("Crit")
-
-        p_atk = player.atk + player.atk_items
-        p_atk = int(p_atk * (player.attacks[sel]["stats"]["atk"] / 100))
-        p_crit_bonus = (
-            player.crit_bonus
-            + player.crit_bonus_items
-            + player.attacks[sel]["stats"]["crit_bonus"]
-        )
-        p_atk += int(p_atk * (p_crit_bonus / 100)) if p_crit else 0
-        stranth = p_atk * rand
-        printr("stranth", stranth)
-
-        p_sp_atk = player.sp_atk + player.sp_atk_items
-        p_sp_atk = int(p_sp_atk * (player.attacks[sel]["stats"]["sp_atk"] / 100))
-        p_crit_bonus = (
-            player.crit_bonus
-            + player.crit_bonus_items
-            + player.attacks[sel]["stats"]["crit_bonus"]
-        )
-        p_sp_atk += int(p_sp_atk * (p_crit_bonus / 100)) if p_crit else 0
-        sp_stranth = p_sp_atk * rand
-        printr("sp_stranth", sp_stranth)
-
-        e_def = enemy.def_
-        e_def = e_def * rand_e
-        printr("e_def", e_def)
-
-        e_sp_def = enemy.sp_def
-        e_sp_def = e_sp_def * rand_e
-        printr("e_sp_def", e_sp_def)
-
-        demage = stranth - e_def
-        if demage < 0:
-            demage = 0
-        sp_damage = sp_stranth - e_sp_def
-        if sp_damage < 0:
-            sp_damage = 0
-        demage += sp_damage
-        printr(f"Damage {demage}")
-        enemy.hp -= demage
-
-        inputT("\nPress Enter to return...")
-        return player, enemy
-    else:
-        advan_e = 0
-        e_attack_num = random.randint(0, 3)
-        e_attack_used = list(enemy.attacks_used)[e_attack_num]
-        printr(enemy.attacks)
-        printr(type(enemy.attacks))
-        e_attack_mp_use = enemy.attacks[e_attack_num]["stats"]["mp"]
-        e_attack_max_used = enemy.attacks[e_attack_num]["stats"]["max_use"]
-        while (enemy.attacks_used[e_attack_used] >= e_attack_max_used) or (
-            enemy.mp < e_attack_mp_use
-        ):
-            e_attack_num = random.randint(0, 3)
-            e_attack_used = list(enemy.attacks_used)[e_attack_num]
-            e_attack_mp_use = enemy.attacks[e_attack_num]["stats"]["mp"]
-            e_attack_max_used = enemy.attacks[e_attack_num]["stats"]["max_use"]
-        e_attack = enemy.attacks[e_attack_num]["stats"]
-        enemy.attacks_used[e_attack_used] += 1
-        printr(e_attack)
-        advan_e = e_attack["adv"]
-        advan += player.attacks[sel]["stats"]["adv"]
-        for i in range(20):
-            clear()
-            Graphic.print_fight_UI(player, enemy, False)
-            Graphic.fight_roll_dice(
-                player, enemy, start, end, advan, advan_e, atk, True
-            )
-            time.sleep((i + 1) / 50)
-        clear()
-        Graphic.print_fight_UI(player, enemy, False)
-        rand, rand_e = Graphic.fight_roll_dice(
-            player, enemy, start, end, advan, advan_e, atk, True
-        )
-
-        e_crit = enemy.crit_chance + e_attack["crit_chance"]
-        e_crit = p_chance(e_crit)
-        if e_crit:
-            printr("Enemy Crit")
-
-        e_atk = enemy.atk
-        e_atk = int(e_atk * (e_attack["atk"] / 100))
-        e_crit_bonus = enemy.crit_bonus + e_attack["crit_bonus"]
-        e_atk += int(e_atk * (e_crit_bonus / 100)) if e_crit else 0
-        stranth = e_atk * rand_e
-        printr("stranth", stranth)
-
-        e_sp_atk = enemy.sp_atk
-        e_sp_atk = int(e_sp_atk * (e_attack["sp_atk"] / 100))
-        e_crit_bonus = enemy.crit_bonus + e_attack["crit_bonus"]
-        e_sp_atk += int(e_sp_atk * (e_crit_bonus / 100)) if e_crit else 0
-        sp_stranth = e_sp_atk * rand_e
-        printr("sp_stranth", sp_stranth)
-
-        p_def = player.def_ + player.def_items
-        p_def = p_def * rand
-        printr("p_def", p_def)
-
-        p_sp_def = player.sp_def + player.sp_def_items
-        p_sp_def = p_sp_def * rand
-        printr("p_sp_def", p_sp_def)
-
-        demage = stranth - p_def
-        if demage < 0:
-            demage = 0
-        sp_damage = sp_stranth - p_sp_def
-        if sp_damage < 0:
-            sp_damage = 0
-        demage += sp_damage
-        printr(f"Damage {demage}")
-        player.hp -= demage
-        enemy.mp -= e_attack_mp_use
-
-        inputT("\nPress Enter to return...")
-        return player, enemy
-
 
 def fight_won(player, enemy):
     gold_gain = f"{enemy.gold} Gold"
@@ -1918,7 +1786,7 @@ def fight_won(player, enemy):
     stats_gain = gold_gain + " " + xp_gain
 
     clear()
-    Graphic.print_fight_UI(player, enemy, False)
+    Graphic.print_fight_UI(player, enemy)
     printr(stats_gain)
     printr("                          ITEMS                            ")
     for item in enemy.items:
@@ -1934,10 +1802,132 @@ def you_died():
     printr("You died")
     inputT("\nPress Enter to return...")
 
+def fight_selact_attack(player, enemy, curser):
+    clear()
+    choice, curser = Graphic.fight_selact_attack(player, enemy,curser)
+    return choice, curser
+
+    
+    
+def get_attaker_stats(attaker,defender, sel):
+    attake = attaker.attacks[sel]
+    atk_ele = attake["ele"]
+    p_crit = (
+        attaker.crit_chance
+        + attaker.crit_chance_items
+        + attake["stats"]["crit_chance"]
+    )
+    p_crit_bonus = (
+        attaker.crit_bonus
+        + attaker.crit_bonus_items
+        + attake["stats"]["crit_bonus"]
+    )
+    
+    crit = p_chance(p_crit)
+    atk = attaker.atk + attaker.atk_items
+    atk = int(atk * (attake["stats"]["atk"] / 100))
+    sp_atk = attaker.sp_atk + attaker.sp_atk_items
+    sp_atk = int(sp_atk * (attake["stats"]["sp_atk"] / 100))
+    if atk_ele:
+        afi_stat = attaker.ele_afi.fin_afi[atk_ele] / 100
+        atk = int(atk * afi_stat)
+        sp_atk = int(sp_atk * afi_stat)
+        
+        if attaker.wapon_ele == atk_ele:
+            atk = int(atk * 1.5)
+            sp_atk = int(sp_atk * 1.5)
+        
+        if defender.ele_afi.main_afi in GTD.elementare[atk_ele]["atk"]:
+            atk = int(atk * 2)
+            sp_atk = int(sp_atk * 2)
+    atk += int(atk * (p_crit_bonus / 100)) if crit else 0
+    sp_atk += int(sp_atk * (p_crit_bonus / 100)) if crit else 0
+    return atk, sp_atk, crit
+        
+
+def get_deffender_stats(attaker,defender, sel):
+    attake = attaker.attacks[sel]
+    atk_ele = attake["ele"]
+    
+    def_ = defender.def_ + defender.def_items
+    sp_def = defender.sp_def + defender.sp_def_items
+    if atk_ele:
+        afi_stat = defender.ele_afi.fin_afi[atk_ele] / 100
+        def_ = int(def_ * afi_stat)
+        sp_def = int(sp_def * afi_stat)
+        
+        if defender.ele_afi.main_afi in GTD.elementare[atk_ele]["def"]:
+            def_ = int(def_ * 2)
+            sp_def = int(sp_def * 2)
+    return def_, sp_def
+
+
+def enemy_fight_ai(attacker,deffender):
+    rand = random.randint(0,3)
+    return rand
+
+    
+def fight_roll_dice(player, enemy, start, end, sel=0, advan=0, atk=True):
+    rand = 0
+    advan_e = 0
+    if atk:
+        attaker = player
+        deffender = enemy
+    else:
+        attaker = enemy
+        deffender = player
+        sel = enemy_fight_ai(attaker,deffender)
+    for i in range(15):
+        clear()
+        Graphic.print_fight_UI(player,enemy)
+        Graphic.fight_roll_dice(player,enemy,start,end,advan,advan_e, not(atk))
+        time.sleep((i + 1) / 50)
+    clear()
+    Graphic.print_fight_UI(player,enemy)
+    rand, rand_e = Graphic.fight_roll_dice(player,enemy,start,end,advan,advan_e, not(atk))
+    
+    
+    if atk:
+        rand_a = rand
+        rand_d = rand_e
+    else:
+        rand_a = rand_e
+        rand_d = rand
+    
+    base_atk, base_sp_atk, crit = get_attaker_stats(attaker,deffender,sel)
+    base_def, base_sp_def = get_deffender_stats(attaker,deffender,sel)
+    # print("base atk:",base_atk)
+    # print("base sp atk:",base_sp_atk)
+    base_atk *= rand_a
+    base_sp_atk *= rand_a
+    # print("base def:",base_def)
+    # print("base sp def:",base_sp_def)
+    base_def *= rand_d
+    base_sp_def *= rand_d
+    # print("base atk:",base_atk)
+    # print("base sp atk:",base_sp_atk)
+    # print("base def:",base_def)
+    # print("base sp def:",base_sp_def)
+    strangth = base_atk - base_def
+    sp_strangth = base_sp_atk - base_sp_def
+    strangth = 0 if strangth < 0 else strangth
+    sp_strangth = 0 if sp_strangth < 0 else sp_strangth
+    # print("strangth:", strangth)
+    # print("sp strangth:", sp_strangth)
+    damage = strangth + sp_strangth
+    #print("damage:",damage)
+    deffender.hp -= damage
+    sel_atk = list(attaker.attacks_used)[sel]
+    Graphic.print_atk_damage(sel_atk,base_atk,base_sp_atk,base_def,base_sp_def,crit,damage,atk)
+    inputT("\nPress Enter to return...")
+    
+
+    return player, enemy
 
 def fight_loop(player, enemy, player_start=True):
     global loop_fight, loop_room
     loop_fight = True
+    curser = [0, 0, 0, 0]
     turn = 1 if player_start else 0
     first_turn = True
     while loop_fight:
@@ -1945,16 +1935,16 @@ def fight_loop(player, enemy, player_start=True):
             fight_won(player, enemy)
             loop_fight = False
             loop_room = True
-            return player
+            return player, True
         elif player.hp <= 0:
             you_died()
             loop_fight = False
             loop_room = False
-            return player
-
+            return player, False
+        # printr(turn)
         if turn == 0:
             clear()
-            Graphic.print_fight_UI(player, enemy, False)
+            Graphic.print_fight_UI(player, enemy)
             choice = inputT("\nPress Enter to continue...").upper().strip()
             if choice == "Q":
                 loop_fight = False
@@ -1969,8 +1959,8 @@ def fight_loop(player, enemy, player_start=True):
                 turn = 1
                 first_turn = False
         elif turn == 1:
-            fight_selact_attack(player, enemy)
-            choice = inputT(">").upper().strip()
+            choice, curser = fight_selact_attack(player, enemy, curser)
+            # choice = inputT(">").upper().strip()
             try:
                 if choice == "Q":
                     loop_fight = False
@@ -1982,6 +1972,23 @@ def fight_loop(player, enemy, player_start=True):
                     attack_num = int(choice)
                     attack_used = list(player.attacks_used)[attack_num]
                     attack_max_used = player.attacks[attack_num]["stats"]["max_use"]
+                    wappon = player.equipt_slots["wappon"]
+                    needed_wappon = player.attacks[attack_num]["wapon"]
+                    if needed_wappon == []:
+                        pass
+                    else:
+                        if wappon[1] == None:
+                            printr('You dont have a wapon')
+                            print(needed_wappon)
+                            print(wappon[1])
+                            time.sleep(10)
+                            continue
+                        elif not wappon[1].sub_type in needed_wappon:
+                            printr('You dont have the requred wapon')
+                            print(needed_wappon)
+                            print(wappon[1].sub_type)
+                            time.sleep(10)
+                            continue
                     if player.attacks_used[attack_used] >= attack_max_used:
                         printr("No more uses of selected attack left")
                         time.sleep(1)
@@ -1990,13 +1997,14 @@ def fight_loop(player, enemy, player_start=True):
                         time.sleep(1)
                     else:
                         player.attacks_used[attack_used] += 1
+                        player.mp -= player.attacks[attack_num]["stats"]["mp"]
                         player, enemy = fight_roll_dice(
                             player, enemy, 1, 6, attack_num, 1 if first_turn else 0
                         )
                         turn = 0
                         first_turn = False
             except:
-                printr("Invalid inputT")
+                printr("Invalid inputT lol")
                 time.sleep(1)
 
 
@@ -2004,7 +2012,7 @@ if __name__ == "__main__":
     main_loop = True
     loop_room = False
     loop_fight = False
-    CHEATS_ON = False
+    CHEATS_ON = True
     Layers = []
     Curent_Layer = 0
     while main_loop:
@@ -2014,9 +2022,15 @@ if __name__ == "__main__":
             if cls == "Q":
                 continue
             Dungeon_type = select_dungeon()
+            Layers = []
+            Curent_Layer = 0
             if Dungeon_type == "Q":
                 continue
             Layers.append(Dungeon(Curent_Layer, Dungeon_type))
+            #for _ in range(0):
+            #    Curent_Layer += 1
+            #    Layers.append(Dungeon(Curent_Layer, Dungeon_type))
+            print(len(Layers))
             DUNGEON = Layers[Curent_Layer]
             player = Player(cls)
             player.add_to_inv(GameItem("legendary", "sword", 75))

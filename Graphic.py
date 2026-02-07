@@ -5,11 +5,11 @@ import select
 import shutil
 import sys
 import termios
-import textwrap
 import time
 import tty
 from copy import deepcopy
 from math import ceil
+from types import LambdaType
 
 import Game_text_data as GTD
 
@@ -44,15 +44,16 @@ WIDTH, HEIGHT = shutil.get_terminal_size(fallback=(80, 30))
 def get_size():
     global WIDTH, HEIGHT
     WIDTH, HEIGHT = shutil.get_terminal_size(fallback=(80, 30))
-    while WIDTH < 80 or HEIGHT < 30:
-        printr("WINDOW TO SMALL")
-        printr(f"min height is 30 curent is {HEIGHT}","red" if HEIGHT < 30 else "green")
-        printr(f"min width is 80 curent is {WIDTH}","red" if WIDTH < 80 else "green")
+    while WIDTH < 80 or HEIGHT < 30:#
+        WIDTH, HEIGHT = shutil.get_terminal_size(fallback=(80, 30))
+        os.system("cls" if os.name == "nt" else "clear")
+        print("WINDOW TO SMALL")
+        color = "red" if HEIGHT < 30 else "green"
+        print(f"{get_color_code(color)}min height is 30 curent is {HEIGHT}{get_color_code("none")}")
+        color = "red" if WIDTH < 80 else "green"
+        print(f"{get_color_code(color)}min width is 80 curent is {WIDTH}{get_color_code("none")}")
         time.sleep(0.1)
-        try:
-            clear()
-        except:
-            pass
+
 
 
 ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;]*m")
@@ -63,7 +64,7 @@ def plen(s: str) -> int:
     return len(clean)
 
 
-class TerminalInput:
+class TerminalInputUNIX:
     def __init__(self):
         self.fd = sys.stdin.fileno()
         self.old = termios.tcgetattr(self.fd)
@@ -71,13 +72,18 @@ class TerminalInput:
         self.buf = ""
 
     def poll(self):
+        global PRINT_BUFFER
         events = []
 
         while select.select([sys.stdin], [], [], 0)[0]:
             self.buf += sys.stdin.read(1)
+            
 
         while self.buf:
-            # printr(self.buf)
+            while select.select([sys.stdin], [], [], 0)[0]:
+                self.buf += sys.stdin.read(1)
+            
+            
             if self.buf.startswith("\x1b"):
                 self.buf += sys.stdin.read(1)
                 self.buf += sys.stdin.read(1)
@@ -95,30 +101,79 @@ class TerminalInput:
                 self.buf = self.buf[1:]
                 events.append("BACKSPACE")
                 continue
-
-            events.append(self.buf[0])
-            self.buf = self.buf[1:]
-
+            else:
+                events.append(self.buf[0])
+                self.buf = self.buf[1:]
+                
+        update()
         return [e for e in events if e]
+        
+
+
+class TerminalInputWIN:
+    def __init__(self):
+        self.buf = ""
+
+    def poll(self):
+        events = []
+
+        # drain keyboard buffer (non-blocking)
+        while msvcrt.kbhit():
+            ch = msvcrt.getwch()
+
+            # special key prefix
+            if ch in ("\x00", "\xe0"):
+                key = msvcrt.getwch()
+                events.append({
+                    "H": "UP",
+                    "P": "DOWN",
+                    "K": "LEFT",
+                    "M": "RIGHT",
+                }.get(key))
+                continue
+
+            if ch == "\r":
+                events.append("ENTER")
+            elif ch == "\b":
+                events.append("BACKSPACE")
+            else:
+                events.append(ch)
+
+        update()
+        return [e for e in events if e]
+
 
     def close(self):
         termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old)
 
 
-input_lol = TerminalInput()
+if os.name == "nt":
+    import msvcrt
+    input_lol = TerminalInputWIN()
+else:
+    input_lol = TerminalInputUNIX()
 
 
 def inputT(text="", wait_for_enter: bool = False, num_only: bool = False):
+    global PRINT_BUFFER
     printr("")
     if wait_for_enter:
         out = ""
         while True:
             buffer = " " * (len(f"Enter to confirm {text}") - len(out))
-            printr(f"Enter to confirm {text}{out}{buffer}", end="", start="\r")
+            #printr(f"Enter to confirm {text}{out}{buffer}", end="", start="\r")
+            PRINT_BUFFER[-1] = []
+            PRINT_BUFFER[-1].append(lambda: f"Enter to confirm {text}{out}{get_color_code(bonus=["bg"]) if int(time.time() * 2) % 2 else ""} {get_color_code("none")}{buffer}")
+
+            
             while True:
                 keys = input_lol.poll()
                 if keys:
-                    key = keys[0]
+                    #printr(keys)
+                    key = keys[-1]
+                    #printr(key)
+                    update()
+                    #time.sleep(1)
                     # print(keys)
                     break
                 time.sleep(0.005)
@@ -149,23 +204,117 @@ def inputT(text="", wait_for_enter: bool = False, num_only: bool = False):
                         return key.upper().strip()
                     else:
                         out += key.upper().strip()
+                        
+            update()
     else:
         printr(text)
         while True:
             keys = input_lol.poll()
             if keys:
-                key = keys[0]
+                #printr(keys)
+                key = keys[-1]
+                #printr(key)
+                update()
+                #time.sleep(1)
                 break
             time.sleep(0.005)  # ← IMPORTANT
         # printr(keys)
         # printr(str(keys[0].upper().strip()))
-        return keys[0].upper().strip()
+        update()
+        return key.upper().strip()
 
 
 def clear():
-    os.system("cls" if os.name == "nt" else "clear")
+    global PRINT_BUFFER
+    update()
+    PRINT_BUFFER = []
+    #os.system("cls" if os.name == "nt" else "clear")
     get_size()
+    
+    
 
+
+def update():
+    get_size()
+    print_replace(PRINT_BUFFER)
+
+
+FRAMR_RATE = []
+
+def up_frame_rate():
+    global FRAMR_RATE
+    if len(FRAMR_RATE) > 10:
+        _ = FRAMR_RATE.pop(0)
+        
+    FRAMR_RATE.append(time.time())
+    
+    if len(FRAMR_RATE) >= 2:
+        temp = []
+        for i in range(1,len(FRAMR_RATE)):
+            fps = FRAMR_RATE[i] - FRAMR_RATE[i -1]
+            if i == 1:
+                ft = int(fps * 100000)
+            fps = 1 / fps
+            temp.append(fps)
+        out = int(sum(temp)/ len(temp))
+        return f"{out} {ft}cs"
+    else:
+        return ""
+
+def print_replace(lines):
+    """
+    Prints a list of strings and replaces them in-place
+    on subsequent calls.
+    """
+    
+    # Move cursor up for previously printed lines
+    sys.stdout.write("\033[u")
+    
+    # Clear from cursor to end of screen
+    sys.stdout.write("\033[J")
+    
+    #print(PRINT_BUFFER)
+    out_1 = []
+    for line_s in lines:
+        out_2 = []
+        if type(line_s) == LambdaType:
+            text = line_s()
+            if str(text).startswith("\n"):
+                text = text[1:]
+        
+            lines_2 = str(text).split("\n")
+            out = []
+            
+            for line in lines_2:
+                out.append(line)
+            
+            for line in out:
+                if type(line) == LambdaType:
+                    line = line()
+                    #pass
+                out_2.append(center_text(str(line), WIDTH))
+        
+        else:    
+            for line in line_s:
+                if type(line) == LambdaType:
+                    line = line()
+                    #pass
+                out_2.append(center_text(str(line), WIDTH))
+        #temp = "".join(out_2)
+        #temp2 = center_text(str(temp), WIDTH)
+        out_1.append("".join(out_2))
+        #out_1.append(temp2)
+
+    sys.stdout.write("\033[2K")
+    fps = str(up_frame_rate())
+    sys.stdout.write("fps " + fps + "\n")
+    for line in out_1:
+        # Clear line + write new content
+        sys.stdout.write("\033[2K")   # clear entire line
+        temp = str(center_text(line, WIDTH))
+        sys.stdout.write(temp + "\n")
+
+    sys.stdout.flush()
 
 def fixed_width(text: str, width: int) -> str:
     if plen(text) > width:
@@ -234,6 +383,8 @@ def get_color_code(color: str = "white",bonus:list = []):
     return out
 
 
+PRINT_BUFFER = []
+
 def printr(
     text,
     color: str | None = None,
@@ -241,7 +392,12 @@ def printr(
     end: str = "\r\n",
     start: str = "",
 ):
+    global PRINT_BUFFER
     # print(type(text))
+    if type(text) == LambdaType:
+        PRINT_BUFFER.append(text)
+        return
+    
     if type(text) == tuple:
         temp = ""
         for i in text:
@@ -250,25 +406,29 @@ def printr(
     if color:
         color_code = get_color_code(color)
         if color_code:
-            text = color_code + str(text) + "\033[0m"
+            text = color_code + text + "\033[0m"
         else:
-            text = str(text)
+            text = text
     else:
-        text = str(text)
+        text = text
     # text = textwrap.dedent(text)
 
-    if text.startswith("\n"):
+    if str(text).startswith("\n"):
         text = text[1:]
 
-    lines = text.split("\n")
+    lines = str(text).split("\n")
     out = []
-
+    
     for line in lines:
-        out.append(center_text(line, WIDTH, strip=strip))
+        #out.append(center_text(line, WIDTH, strip=strip))
+        out.append(line)
 
-    fixed_text = start + ("\r\n".join(out)) + end
-    sys.stdout.write(fixed_text)
-    sys.stdout.flush()
+    PRINT_BUFFER.append(out)
+    #fixed_text = start + ("\r\n".join(out)) + end
+    #PRINT_BUFFER.append(fixed_text)
+    #PRINT_BUFFER += out
+    #sys.stdout.write(fixed_text)
+    #sys.stdout.flush()
 
 
 def wrap_text(text: str, width: int = 72, buffer: int = 4):
@@ -349,7 +509,7 @@ def roll_dice(start, end, advan=0):
         if len(rand_str) == 2:
             rand_str = rand_str + " "
         clear()
-        printr(f"""
+        printr(lambda : f"""
 =========================
 Dice Roll
 ╭───────╮
