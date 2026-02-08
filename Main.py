@@ -116,7 +116,9 @@ class Player:
             self.equipt_slots[slot][1] = None
         else:
             if self.equipt_slots[slot][0]:
-                printr(f"You have laredy a {slot} equipped")
+                #printr("\033[u")
+
+                printr(f"You have laredy a {slot} equipped",pos=-1)
                 choice = inputT("Do you want to swape? [y/n]>")
                 if choice == "Y" or choice == "E":
                     self.equiped_items.remove(self.equipt_slots[slot][1])

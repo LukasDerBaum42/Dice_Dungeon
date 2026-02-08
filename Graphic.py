@@ -4,9 +4,7 @@ import re
 import select
 import shutil
 import sys
-import termios
 import time
-import tty
 from copy import deepcopy
 from math import ceil
 from types import LambdaType
@@ -14,7 +12,7 @@ from types import LambdaType
 import Game_text_data as GTD
 
 FPS = 60
-
+os.system("cls" if os.name == "nt" else "clear")
 hex_codes = [
     "0",
     "1",
@@ -44,11 +42,12 @@ WIDTH, HEIGHT = shutil.get_terminal_size(fallback=(80, 30))
 
 
 def get_size():
-    global WIDTH, HEIGHT
+    global WIDTH, HEIGHT, FRAME_BUFER
     WIDTH, HEIGHT = shutil.get_terminal_size(fallback=(80, 30))
     while WIDTH < 80 or HEIGHT < 30:#
         WIDTH, HEIGHT = shutil.get_terminal_size(fallback=(80, 30))
         os.system("cls" if os.name == "nt" else "clear")
+        FRAME_BUFER = []
         print("WINDOW TO SMALL")
         color = "red" if HEIGHT < 30 else "green"
         print(f"{get_color_code(color)}min height is 30 curent is {HEIGHT}{get_color_code("none")}")
@@ -153,6 +152,8 @@ if os.name == "nt":
     import msvcrt
     input_lol = TerminalInputWIN()
 else:
+    import termios
+    import tty
     input_lol = TerminalInputUNIX()
 
 
@@ -165,6 +166,7 @@ def inputT(text="", wait_for_enter: bool = False, num_only: bool = False):
             buffer = " " * (len(f"Enter to confirm {text}") - len(out))
             #printr(f"Enter to confirm {text}{out}{buffer}", end="", start="\r")
             PRINT_BUFFER[-1] = []
+            PRINT_BUFFER[-1].append("")
             PRINT_BUFFER[-1].append(lambda: f"Enter to confirm {text}{out}{get_color_code(bonus=["bg"]) if int(time.time() * 2) % 2 else ""} {get_color_code("none")}{buffer}")
 
             
@@ -227,10 +229,11 @@ def inputT(text="", wait_for_enter: bool = False, num_only: bool = False):
 
 
 def clear():
-    global PRINT_BUFFER
+    global PRINT_BUFFER, FRAME_BUFER
     update()
     PRINT_BUFFER = []
     #os.system("cls" if os.name == "nt" else "clear")
+    #FRAME_BUFER = []
     get_size()
     
     
@@ -259,23 +262,22 @@ def up_frame_rate():
             fps = 1 / fps
             temp.append(fps)
         out = int(sum(temp)/ len(temp))
-        return f"{out} {ft}cs"
+        return out, ft
     else:
-        return ""
+        return 0 ,0
+
+FRAME_BUFER = []
 
 def print_replace(lines,prio = True):
     """
     Prints a list of strings and replaces them in-place
     on subsequent calls.
     """
-    if 1 / (time.time() - FRAMR_RATE[-1]) > FPS and not prio:
+    global FRAME_BUFER
+    if 1 // (time.time() - FRAMR_RATE[-1]) > FPS and not prio:
+        #time.sleep((time.time() - FRAMR_RATE[-1]) * ((1 / (time.time() - FRAMR_RATE[-1])) / (FPS + 10)))
         return
-    # Move cursor up for previously printed lines
-    sys.stdout.write("\033[u")
-    
-    # Clear from cursor to end of screen
-    sys.stdout.write("\033[J")
-    
+
     #print(PRINT_BUFFER)
     out_1 = []
     for line_s in lines:
@@ -303,19 +305,35 @@ def print_replace(lines,prio = True):
                     line = line()
                     #pass
                 out_2.append(center_text(str(line), WIDTH))
-        #temp = "".join(out_2)
-        #temp2 = center_text(str(temp), WIDTH)
-        out_1.append("".join(out_2))
-        #out_1.append(temp2)
 
-    sys.stdout.write("\033[2K")
+        out_1 += out_2
+
+    # Clear from cursor to end of screen
+
     fps = str(up_frame_rate())
-    sys.stdout.write("fps " + fps + "\n")
-    for line in out_1:
-        # Clear line + write new content
-        sys.stdout.write("\033[2K")   # clear entire line
-        temp = str(center_text(line, WIDTH))
-        sys.stdout.write(temp + "\n")
+    #print(out_1)
+    sys.stdout.write("\033[Hfps " + fps + "\033[E")
+    for i, line in enumerate(out_1):
+        if i < len(FRAME_BUFER) and FRAME_BUFER[i] == line:
+            sys.stdout.write("\033[E")
+        else:
+            # Clear line + write new content
+            sys.stdout.write("\033[2K")  # clear line
+            sys.stdout.write(line)
+            sys.stdout.write("\033[E")
+            if i >= len(FRAME_BUFER)-1:
+                FRAME_BUFER.append(line)
+                FRAME_BUFER[i] = line
+            else:
+                FRAME_BUFER[i] = line
+    #sys.stdout.write(str(out_1))
+    #sys.stdout.write(str(FRAME_BUFER))
+    #FRAME_BUFER.append("")
+    if len(FRAME_BUFER) > len(out_1):
+        for _ in range(len(FRAME_BUFER) - len(out_1)):
+            sys.stdout.write("\033[2K")
+            sys.stdout.write("\033[E")
+        FRAME_BUFER.pop(-1)
 
     sys.stdout.flush()
 
@@ -394,6 +412,7 @@ def printr(
     strip: bool = False,
     end: str = "\r\n",
     start: str = "",
+    pos: int = 0,
 ):
     global PRINT_BUFFER
     # print(type(text))
@@ -426,7 +445,11 @@ def printr(
         #out.append(center_text(line, WIDTH, strip=strip))
         out.append(line)
 
-    PRINT_BUFFER.append(out)
+    if pos == 0:
+        PRINT_BUFFER.append(out)
+    else:
+        pos -= 1 if pos > 0 else 0
+        PRINT_BUFFER[pos] = out
     #fixed_text = start + ("\r\n".join(out)) + end
     #PRINT_BUFFER.append(fixed_text)
     #PRINT_BUFFER += out
