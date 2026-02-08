@@ -329,7 +329,7 @@ player_cls = {
         },
         "item": ("uncommon", "knife", 2),
         "affiliations": {
-                "elements": {"dark": 140, "poisen": 130, "wind": 110, "plant": 105, "fire": 90, "ice": 90, "sound": 90, "light": 75, "stone": 75},
+                "elements": {"dark": 140, "poison": 130, "wind": 110, "plant": 105, "fire": 90, "ice": 90, "sound": 90, "light": 75, "stone": 75},
                 "wapons": {"knife": 150, "bow": 110, "sword": 95, "stafe": 80, "hammer": 75, "sheald": 70}
             },
         "attacks": ("Sword thrust", "Shadow Strike", "Web Shot", "Dark Bolt"),
@@ -349,7 +349,7 @@ player_cls = {
         },
         "item": ("uncommon", "bow", 2),
         "affiliations": {
-                "elements": {"plant": 130, "wind": 125, "fire": 115, "dark": 110, "poisen": 105, "water": 95, "ice": 95, "stone": 90, "light": 85, "metal": 80},
+                "elements": {"plant": 130, "wind": 125, "fire": 115, "dark": 110, "poison": 105, "water": 95, "ice": 95, "stone": 90, "light": 85, "metal": 80},
                 "wapons": {"bow": 150, "knife": 110, "sword": 95, "stafe": 85, "hammer": 80, "sheald": 75}
             },
         "attacks": ("Shadow Strike", "Web Shot", "Dark Bolt", "Fireball"),
@@ -369,7 +369,7 @@ player_cls = {
         },
         "item": ("uncommon", "sheald", 2),
         "affiliations": {
-                "elements": {"light": 150, "fire": 130, "sound": 120, "metal": 110, "stone": 105, "dark": 75, "poisen": 75, "ice": 85, "wind": 85},
+                "elements": {"light": 150, "fire": 130, "sound": 120, "metal": 110, "stone": 105, "dark": 75, "poison": 75, "ice": 85, "wind": 85},
                 "wapons": {"sheald": 140, "sword": 130, "hammer": 100, "bow": 85, "stafe": 80, "knife": 75}
             },
         "attacks": ("Sword slash", "War Cry", "Healing Light", "Fireball"),
@@ -389,7 +389,7 @@ player_cls = {
         },
         "item": ("rare", "stafe", 3),
         "affiliations": {
-                "elements": {"dark": 160, "poisen": 145, "psychic": 120, "ice": 95, "fire": 80, "light": 60, "stone": 90, "wind": 85},
+                "elements": {"dark": 160, "poison": 145, "psychic": 120, "ice": 95, "fire": 80, "light": 60, "stone": 90, "wind": 85},
                 "wapons": {"stafe": 150, "knife": 105, "sword": 85, "bow": 80, "hammer": 75, "sheald": 70}
             },
         "attacks": ("Dark Bolt", "Death Coil", "Shadow Strike", "Poison Dart"),
@@ -591,7 +591,7 @@ attacks = {
             "adv": 0,
         },
         "wapon": [],
-        "ele": "poisen",
+        "ele": "poison",
         "discription": "A poisoned dart that weakens enemies",
     },
     "Healing Light": {
@@ -633,7 +633,7 @@ attacks = {
             "adv": -1,
         },
         "wapon": [],
-        "ele": "poisen",
+        "ele": "poison",
         "discription": "A poisonous bite that drains strength",
     },
     "Soul Drain": {

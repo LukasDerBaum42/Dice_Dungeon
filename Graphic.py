@@ -13,6 +13,8 @@ from types import LambdaType
 
 import Game_text_data as GTD
 
+FPS = 60
+
 hex_codes = [
     "0",
     "1",
@@ -105,7 +107,7 @@ class TerminalInputUNIX:
                 events.append(self.buf[0])
                 self.buf = self.buf[1:]
                 
-        update()
+        update(False)
         return [e for e in events if e]
         
 
@@ -139,7 +141,7 @@ class TerminalInputWIN:
             else:
                 events.append(ch)
 
-        update()
+        update(False)
         return [e for e in events if e]
 
 
@@ -176,7 +178,7 @@ def inputT(text="", wait_for_enter: bool = False, num_only: bool = False):
                     #time.sleep(1)
                     # print(keys)
                     break
-                time.sleep(0.005)
+                #time.sleep(0.005)
             # printr(out)
             # printr(key)
             if key == "ENTER" or key == " ":
@@ -217,7 +219,7 @@ def inputT(text="", wait_for_enter: bool = False, num_only: bool = False):
                 update()
                 #time.sleep(1)
                 break
-            time.sleep(0.005)  # ← IMPORTANT
+            #time.sleep(0.005)  # ← IMPORTANT
         # printr(keys)
         # printr(str(keys[0].upper().strip()))
         update()
@@ -234,12 +236,12 @@ def clear():
     
 
 
-def update():
+def update(prio = True):
     get_size()
-    print_replace(PRINT_BUFFER)
+    print_replace(PRINT_BUFFER,prio)
 
 
-FRAMR_RATE = []
+FRAMR_RATE = [time.time()]
 
 def up_frame_rate():
     global FRAMR_RATE
@@ -252,7 +254,7 @@ def up_frame_rate():
         temp = []
         for i in range(1,len(FRAMR_RATE)):
             fps = FRAMR_RATE[i] - FRAMR_RATE[i -1]
-            if i == 1:
+            if i == len(FRAMR_RATE)-1:
                 ft = int(fps * 100000)
             fps = 1 / fps
             temp.append(fps)
@@ -261,12 +263,13 @@ def up_frame_rate():
     else:
         return ""
 
-def print_replace(lines):
+def print_replace(lines,prio = True):
     """
     Prints a list of strings and replaces them in-place
     on subsequent calls.
     """
-    
+    if 1 / (time.time() - FRAMR_RATE[-1]) > FPS and not prio:
+        return
     # Move cursor up for previously printed lines
     sys.stdout.write("\033[u")
     
@@ -1003,6 +1006,7 @@ def fight_roll_dice(
 {center_text("┃", 59)}
 ===========================================================
 """)
+    update()
     return rand, rand_e
 
 

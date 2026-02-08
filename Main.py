@@ -374,7 +374,7 @@ class Player:
     def show_stats(self):
         Graphic.show_stats(self)
 
-    def move(self, dir: str, dungeon: Dungeon):
+    def move(self, dir: str, dungeon):
         global Curent_Layer, DUNGEON
         room = dungeon.rooms[dungeon.room]
         self.last_pos = [self.x, self.y]
@@ -473,7 +473,7 @@ class Player:
 
 class Enemy:
     def __init__(
-        self, mob: str, level: int, room: Room, x: int, y: int, is_boss: bool = False
+        self, mob: str, level: int, room, x: int, y: int, is_boss: bool = False
     ) -> None:
         self.room: Room = room
         self.mob: str = mob
@@ -1685,7 +1685,6 @@ def game_loop_room(player):
             player.show_stats()
             continue
         elif choice == "I":
-            time.sleep(3)
             player.show_inventory()
             continue
         elif choice == "M":
