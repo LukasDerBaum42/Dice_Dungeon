@@ -109,6 +109,8 @@ class TerminalInputUNIX:
         update(False)
         return [e for e in events if e]
         
+    def close(self):
+        termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old)
 
 
 class TerminalInputWIN:
@@ -144,8 +146,6 @@ class TerminalInputWIN:
         return [e for e in events if e]
 
 
-    def close(self):
-        termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old)
 
 
 if os.name == "nt":
@@ -312,11 +312,11 @@ def print_replace(lines,prio = True):
 
     fps = str(up_frame_rate())
     #print(out_1)
-    sys.stdout.write("\033[Hfps " + fps + "\033[E")
+    sys.stdout.write("\033[H\033[2Kfps " + fps + "\033[E")
     for i, line in enumerate(out_1):
-        if i < len(FRAME_BUFER) and FRAME_BUFER[i] == line:
-            sys.stdout.write("\033[E")
-        else:
+        #if i < len(FRAME_BUFER) and FRAME_BUFER[i] == line:
+            #sys.stdout.write("\033[E")
+            #else:
             # Clear line + write new content
             sys.stdout.write("\033[2K")  # clear line
             sys.stdout.write(line)
@@ -326,9 +326,7 @@ def print_replace(lines,prio = True):
                 FRAME_BUFER[i] = line
             else:
                 FRAME_BUFER[i] = line
-    #sys.stdout.write(str(out_1))
-    #sys.stdout.write(str(FRAME_BUFER))
-    #FRAME_BUFER.append("")
+
     if len(FRAME_BUFER) > len(out_1):
         for _ in range(len(FRAME_BUFER) - len(out_1)):
             sys.stdout.write("\033[2K")
@@ -793,20 +791,50 @@ Wapons: {self.wapon_afi}
 
 def show_stats_level(self) -> None:
     clear()
-    print_titelbar("Level Up", 28)
-    printr(f"""Level {self.level} => {self.level + 1}
-XP {self.xp}/{self.max_xp} => {self.xp - self.max_xp}/{self.next_level_xp(self.level + 1)}
-[1]Max HP {self.max_hp}+3 => {self.max_hp + 3}
-[2]Max MP {self.max_mp}+3 => {self.max_mp + 3}
-[3]ATK {self.atk}+1 => {self.atk + 1}
-[4]SP ATK {self.sp_atk}+1 => {self.sp_atk + 1}
-[5]DEF {self.def_}+1 => {self.def_ + 1}
-[6]SP DEF {self.sp_def}+1 => {self.sp_def + 1}
-[7]Crit Chance {self.crit_chance}+1 => {self.crit_chance + 1}
-[8]Crit Bounus {self.crit_bonus}+2 => {self.crit_bonus + 2}
-[9]Move {self.min_move}-{self.max_move}
-============================
-Select stat to level up""")
+    #print_titelbar("Level Up", 28)
+    printr(f"Level {self.level} => {self.level + 1}")
+    struc = {"1" :f"Max HP {self.max_hp}+3 => {self.max_hp + 3}",
+    "2":f"Max MP {self.max_mp}+3 => {self.max_mp + 3}",
+    "3":f"ATK {self.atk}+1 => {self.atk + 1}",
+    "4":f"SP ATK {self.sp_atk}+1 => {self.sp_atk + 1}",
+    "5":f"DEF {self.def_}+1 => {self.def_ + 1}",
+    "6":f"SP DEF {self.sp_def}+1 => {self.sp_def + 1}",
+    "7":f"Crit Chance {self.crit_chance}+1 => {self.crit_chance + 1}",
+    "8":f"Crit Bounus {self.crit_bonus}+2 => {self.crit_bonus + 2}",
+    "9":f"Move {self.min_move}-{self.max_move}",
+    "a":"a",
+    "b":"b",
+    "c":"c",
+    "d":"d",
+    "e":"e",
+    "f":"f",
+    "g":"g",
+    "h":"h",
+    "i":"i",
+    "j":"j",
+    "k":"k",
+    "l":"l",
+    "m":"m",
+    "n":"n",
+    "o":"o",
+    "p":"p",
+    }
+    other = f"Level {self.level} => {self.level + 1}\nSelect stat to level up\n"
+    choice = select_menu_page(title="Level Up",structure=struc,other = other)
+    return choice
+    #printr(f"""Level {self.level} => {self.level + 1}
+#XP {self.xp}/{self.max_xp} => {self.xp - self.max_xp}/{self.next_level_xp(self.level + 1)}
+#[1]Max HP {self.max_hp}+3 => {self.max_hp + 3}
+#[2]Max MP {self.max_mp}+3 => {self.max_mp + 3}
+#[3]ATK {self.atk}+1 => {self.atk + 1}
+#[4]SP ATK {self.sp_atk}+1 => {self.sp_atk + 1}
+#[5]DEF {self.def_}+1 => {self.def_ + 1}
+#[6]SP DEF {self.sp_def}+1 => {self.sp_def + 1}
+#[7]Crit Chance {self.crit_chance}+1 => {self.crit_chance + 1}
+#[8]Crit Bounus {self.crit_bonus}+2 => {self.crit_bonus + 2}
+#[9]Move {self.min_move}-{self.max_move}
+#============================
+#Select stat to level up""")
 
 
 def fight_art(player, enemy):
@@ -1148,26 +1176,54 @@ def shop_buy_page(
 
 
 def select_menu_page(
-    tile: str, structure: dict[str, str], special_key: dict[str, str] = {}
+    title: str|None, structure: dict[str, str], special_key: dict[str, str] = {} ,other = None
 ):
     coursr_pos = 0
     elements = [i for i in structure]
     max_el_len = max([len(structure[i]) for i in structure]) + 6
     el_len = len(elements)
+    temp = None
     while True:
         clear()
-        print_titelbar(tile, 35)
-        for i in range(el_len):
-            if i == coursr_pos:
-                printr(
-                    f"> {fixed_width(f'[{i + 1}] {structure[elements[i]]}', max_el_len)}",
-                    "yellow",
-                )
+        if title:
+            print_titelbar(title, 35)
+        if other:
+            printr(other)
+        if el_len < HEIGHT - 10:
+            for i in range(el_len):
+                if i == coursr_pos:
+                    printr(
+                        f"> {fixed_width(f'[{i + 1}] {structure[elements[i]]}', max_el_len)}",
+                        "yellow",
+                    )
+                else:
+                    printr(
+                        f"{fixed_width(f'[{i + 1}] {structure[elements[i]]}', max_el_len)}"
+                    )
+        else:
+            if temp:
+                if coursr_pos >= temp[1]:
+                    if temp[1]+1 <= el_len:
+                        temp[0] += 1
+                        temp[1] += 1
+                    else:
+                        temp = [0,HEIGHT - 10]
+                elif coursr_pos < temp[0] and temp[0]-1 >= 0:
+                    temp[0] -= 1
+                    temp[1] -= 1
             else:
-                printr(
-                    f"{fixed_width(f'[{i + 1}] {structure[elements[i]]}', max_el_len)}"
-                )
-
+                temp = [0,HEIGHT - 10]
+            for i in range(*temp):
+                if i == coursr_pos:
+                    printr(
+                        f"> {fixed_width(f'[{i + 1}] {structure[elements[i]]}', max_el_len)}",
+                        "yellow",
+                    )
+                else:
+                    printr(
+                        f"{fixed_width(f'[{i + 1}] {structure[elements[i]]}', max_el_len)}"
+                    )
+        update()
         choic = inputT("> ", True if el_len > 9 else False, True)
         if choic == "UP":
             coursr_pos = (coursr_pos - 1) % el_len
@@ -1185,9 +1241,11 @@ def select_menu_page(
                         return elements[choic - 1]
                     else:
                         printr("nop")
+                        update()
                         time.sleep(1)
                 except:
                     printr("nop nop")
+                    update()
                     time.sleep(1)
 
 

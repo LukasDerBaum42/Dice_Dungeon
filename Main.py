@@ -321,8 +321,8 @@ class Player:
         if self.xp >= self.max_xp:
             loop_levelup = True
             while loop_levelup:
-                Graphic.show_stats_level(self)
-                choice = inputT("> ").strip()
+                choice =  Graphic.show_stats_level(self)
+                #choice = inputT("> ").strip()
                 if choice == "1":
                     rand = Graphic.roll_dice(1, 6, -1)
                     self.max_hp += rand
@@ -630,6 +630,7 @@ class Enemy:
                 self.x += 1
             update_player(player, room)
             game_menu(player, dungeon)
+            Graphic.update()
             time.sleep(0.2)
 
     def find_path(
@@ -806,7 +807,7 @@ class Afiliations:
         #print(needed)
         needed -= bonus
         if needed > 0:
-            print("not enough points")
+            #print("not enough points")
             sub_ele, missing = self.compute_subtraction(self.afi, unblock_l, needed)
             for i in sub_ele:
                 self.afi[i] -= sub_ele[i]
@@ -1537,6 +1538,7 @@ def update_player(player, room):
     shops: list[Merchent] = room.shops
     px, py = player.x, player.y
     for e in enemys:
+        Graphic.update()
         if e.x == px and e.y == py:
             if player.moves < 0:
                 fight_loop(player, e, False)
@@ -1546,15 +1548,18 @@ def update_player(player, room):
                 player.x, player.y = player.last_pos
             e.del_()
     for t in traps:
+        Graphic.update()
         if t.coldown > 0:
             t.coldown -= 1
             continue
         elif t.x == px and t.y == py:
             t.triger(player)
     for c in cheasts:
+        Graphic.update()
         if c.x == px and c.y == py:
             c.give_player(player)
     for m in shops:
+        Graphic.update()
         if m.x == px and m.y == py:
             m.interact_player(player)
             player.x, player.y = player.last_pos
@@ -1597,6 +1602,7 @@ def print_room_options(player):
         printr(f"Moves {player.moves} left")
     else:
         player.moves = -1
+    Graphic.update()
 
 
 def main_menu():
@@ -1610,10 +1616,12 @@ def main_menu():
             show_help_new()
         elif choice == "exit":
             printr("Goodbye, hero...")
+            Graphic.update()
             time.sleep(0.1)
             return "exit"
         else:
             printr("Invalid option.")
+            Graphic.update()
             time.sleep(1)
 
 
@@ -1626,6 +1634,7 @@ def show_help_new(page=0):
     Help Page {page} / {max_page}
 P = Privios Page | N = Next """)
         printr(help_text[f"page {page}"])
+        Graphic.update()
         choice = inputT("Press Enter to return... > ").upper().strip()
         if choice == "N":
             if page < max_page:
@@ -1641,6 +1650,7 @@ def game_menu(player, dungeon):
     Graphic.game_menu(player)
     if GAME_STATE == "map":
         dungeon.print_room(player)
+    Graphic.update()
     return player
 
 
@@ -1651,7 +1661,8 @@ def select_player_class():
     struc = {f"{cls[i]}": f"{cls[i]}" for i in range(len(cls))}
 
     while True:
-        choice = Graphic.select_menu_page("Selacte a player class", struc, {"Q": "Q"})
+        choice = Graphic.select_menu_page("Selacte a player class", struc, {"Q": "Q"})#
+        Graphic.update()
         return choice
 
 
@@ -1662,11 +1673,13 @@ def select_dungeon():
     struc = {f"{d_type[i]}": f"{d_type[i]}" for i in range(len(d_type))}
     while True:
         choice = Graphic.select_menu_page("Selacte a dungeon", struc, {"Q": "Q"})
+        Graphic.update()
         return choice
 
 
 def print_dungeon_map(dungeon, spacing=1, room_size=2):
     Graphic.print_dungeon_map(dungeon, spacing, room_size, CHEATS_ON)
+    Graphic.update()
     inputT("\nPress Enter to return...")
 
 
@@ -1980,14 +1993,14 @@ def fight_loop(player, enemy, player_start=True):
                     else:
                         if wappon[1] == None:
                             printr('You dont have a wapon')
-                            print(needed_wappon)
-                            print(wappon[1])
+                            #print(needed_wappon)
+                            #print(wappon[1])
                             time.sleep(10)
                             continue
                         elif not wappon[1].sub_type in needed_wappon:
-                            printr('You dont have the requred wapon')
-                            print(needed_wappon)
-                            print(wappon[1].sub_type)
+                            printr(f'You dont have the requred wapon, you need a {needed_wappon}')
+                            #print(needed_wappon)
+                            #print(wappon[1].sub_type)
                             time.sleep(10)
                             continue
                     if player.attacks_used[attack_used] >= attack_max_used:
@@ -2031,7 +2044,7 @@ if __name__ == "__main__":
             #for _ in range(0):
             #    Curent_Layer += 1
             #    Layers.append(Dungeon(Curent_Layer, Dungeon_type))
-            print(len(Layers))
+            #print(len(Layers))
             DUNGEON = Layers[Curent_Layer]
             player = Player(cls)
             player.add_to_inv(GameItem("legendary", "sword", 75))
