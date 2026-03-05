@@ -8,7 +8,7 @@ from tkinter import TclError
 
 import Game_text_data as GTD
 import Graphic
-from Graphic import inputT, printr, clear
+from Graphic import inputT, printr, clear, wait
 from Items import GameItem
 
 # from collections import deque
@@ -142,8 +142,19 @@ class Player:
         self.inventory.remove(item)
 
     def show_inventory(self, is_shop=False):
-        def items_per_page(is_selected: bool) -> int:
-            return 4 if is_selected else 8
+        size = [2,4]
+        def items_per_page(is_selected: bool):
+            out = 4 if is_selected else 8
+            if out == 4:
+                size = [2,2]
+            else:
+                temp = Graphic.WIDTH // 40
+                temp2 = (Graphic.HEIGHT - 10) // 6
+                size = [temp,temp2]
+                out = temp * temp2
+                #size = [2,4]
+            return out, size
+        
 
         is_item_selected: bool = False
         page: int = 0
@@ -156,7 +167,7 @@ class Player:
         curser = [0, 0, 0, 0]
         while show_inv:
             # clear()
-            per_page = items_per_page(is_item_selected)
+            per_page,size  = items_per_page(is_item_selected)
             max_page = max(0, (len(item_fillter) - 1) // per_page)
 
             choice, curser = Graphic.show_inventory(
@@ -169,8 +180,9 @@ class Player:
                 is_shop,
                 self.gold,
                 curser,
+                size
             )
-
+            printr(choice)
             # choice = inputT("> ", True).upper().strip()
             if choice == "Q":
                 show_inv = False
@@ -194,13 +206,14 @@ class Player:
                             self.gold += selected_item.value
                             selected_item = None
                             is_item_selected = False
-                            page = selected_num // items_per_page(is_item_selected)
+                            per_page , size = items_per_page(is_item_selected)
+                            page = selected_num // per_page
                             selected_num = None
                     else:
                         self.equip_item(selected_item)
                 else:
                     printr("No item select")
-                    time.sleep(1)
+                    wait(1)
             elif choice == "SE":
                 is_fav = False
                 if is_equ:
@@ -240,11 +253,12 @@ class Player:
                         page = int(choice) - 1
                 except:
                     printr("Invalid inputT")
-                    time.sleep(1)
+                    wait(1)
             elif is_item_selected and (choice == ""):
                 selected_item = None
                 is_item_selected = False
-                page = selected_num // items_per_page(is_item_selected)
+                per_page , size = items_per_page(is_item_selected)
+                page = selected_num // per_page
                 selected_num = None
 
             else:
@@ -256,25 +270,31 @@ class Player:
                             selected_item = None
                             is_item_selected = False
                             selected_num = None
-                            page = choice // items_per_page(is_item_selected)
+                            per_page , size = items_per_page(is_item_selected) 
+                            page = choice // per_page
                             curser[2] = curser[0]
                             curser[3] = curser[1]
-                            temp = choice % items_per_page(is_item_selected)
+                            temp = choice % per_page
                             curser[1] = temp % 2
                             curser[0] = temp // 2
                         else:
                             selected_item = item_fillter[choice]
                             is_item_selected = True
                             selected_num = choice
-                            page = choice // items_per_page(is_item_selected)
+                            per_page , size = items_per_page(is_item_selected) 
+                            page = choice // per_page
                             curser[2] = curser[0]
                             curser[3] = curser[1]
-                            temp = choice % items_per_page(is_item_selected)
+                            temp = choice % per_page
                             curser[1] = temp % 2
                             curser[0] = temp // 2
                 except:
-                    printr("Invalid inputT")
-                    time.sleep(1)
+                    printr("Invalid inputT\n Item can’t be selected")
+                    printr(f"{choice}")
+                    Graphic.update()
+                    wait(1)
+                    printr("done")
+                    Graphic.update()
 
     def item_stats_add(self):
         self.max_hp_items: int = 0
@@ -358,7 +378,7 @@ class Player:
                     loop_levelup = False
                 else:
                     printr("Invalid inputT")
-                    time.sleep(1)
+                    wait(1)
             self.xp -= self.max_xp
             self.level += 1
             self.max_xp += self.next_level_xp(self.level)
@@ -459,7 +479,7 @@ class Player:
         update_player(self, room)
         game_menu(self, dungeon)
         print_room_options(self)
-        time.sleep(0.2)
+        wait(0.2)
         return "fine"
 
     def rest(self):
@@ -631,7 +651,7 @@ class Enemy:
             update_player(player, room)
             game_menu(player, dungeon)
             Graphic.update()
-            time.sleep(0.2)
+            wait(0.2)
 
     def find_path(
         self,
@@ -1470,10 +1490,10 @@ class Merchent:
                             selected_num = None
                     else:
                         printr("You don’t have enough gold to buy this item")
-                        time.sleep(1)
+                        wait(1)
                 else:
                     printr("No Item Selected")
-                    time.sleep(1)
+                    wait(1)
 
             elif choice == "PAGE":
                 choice = inputT("Selacte page > ", True, True).upper().strip()
@@ -1482,7 +1502,7 @@ class Merchent:
                         page = int(choice) - 1
                 except:
                     printr("Invalid inputT")
-                    time.sleep(1)
+                    wait(1)
             elif is_item_selected and (choice == ""):
                 selected_item = None
                 is_item_selected = False
@@ -1516,7 +1536,7 @@ class Merchent:
                             curser[0] = temp // 2
                 except:
                     printr("Invalid inputT")
-                    time.sleep(1)
+                    wait(1)
 
     def interact_player(self, player):
         is_in_shop: bool = True
@@ -1617,12 +1637,12 @@ def main_menu():
         elif choice == "exit":
             printr("Goodbye, hero...")
             Graphic.update()
-            time.sleep(0.1)
+            wait(0.1)
             return "exit"
         else:
             printr("Invalid option.")
             Graphic.update()
-            time.sleep(1)
+            wait(1)
 
 
 def show_help_new(page=0):
@@ -1739,6 +1759,33 @@ def game_loop_room(player):
                     ]:  # , "consumable"
                         player.add_to_inv(GameItem(rarity, item_type, 100))
                 continue
+            elif choice == "GIVE ALL ALL":
+                for _ in range(5):
+                    for rarity in [
+                        "common",
+                        "uncommon",
+                        "rare",
+                        "epic",
+                        "legendary",
+                        "unique",
+                    ]:
+                        for item_type in [
+                            "sword",
+                            "knife",
+                            "bow",
+                            "stafe",
+                            "spear",
+                            "chestplate",
+                            "helmet",
+                            "boots",
+                            "pants",
+                            "pan",
+                            "gloves",
+                            "sheald",
+                        ]:  # , "consumable"
+                            for _ in range(5):
+                                player.add_to_inv(GameItem(rarity, item_type, 100))
+                    continue
             elif choice == "LEVEL UP":
                 player.Level(player.max_xp + 1)
                 continue
@@ -1756,7 +1803,7 @@ def game_loop_room(player):
             if choice == "R":
                 player.roll_for_move()
                 continue
-                # time.sleep(1)
+                # wait(1)
             elif choice == "P":
                 player.rest()
                 player.moves = -1
@@ -1765,13 +1812,13 @@ def game_loop_room(player):
         if player.moves >= 0:
             if any(c not in ("W", "A", "S", "D") for c in choice):
                 printr("Invalid inputT")
-                time.sleep(1)
+                wait(1)
                 continue
             elif len(choice) <= player.moves:
                 for i in choice:
                     out = player.move(i, dungeon)
                     if out == "brake":
-                        time.sleep(1)
+                        wait(1)
                         break
                 continue
         if player.moves == -1 and choice == "":
@@ -1779,7 +1826,7 @@ def game_loop_room(player):
             player.moves = -2
         else:
             printr("Invalid inputT")
-            time.sleep(1)
+            wait(1)
 
 
 def p_chance(chance):
@@ -1891,11 +1938,6 @@ def fight_roll_dice(player, enemy, start, end, sel=0, advan=0, atk=True):
         attaker = enemy
         deffender = player
         sel = enemy_fight_ai(attaker,deffender)
-    for i in range(15):
-        clear()
-        Graphic.print_fight_UI(player,enemy)
-        Graphic.fight_roll_dice(player,enemy,start,end,advan,advan_e, not(atk))
-        time.sleep((i + 1) / 50)
     clear()
     Graphic.print_fight_UI(player,enemy)
     rand, rand_e = Graphic.fight_roll_dice(player,enemy,start,end,advan,advan_e, not(atk))
@@ -1925,7 +1967,7 @@ def fight_roll_dice(player, enemy, start, end, sel=0, advan=0, atk=True):
     strangth = base_atk - base_def
     sp_strangth = base_sp_atk - base_sp_def
     strangth = 0 if strangth < 0 else strangth
-    sp_strangth = 0 if sp_strangth < 0 else sp_strangth
+    sp_strangth = 0 if sp_strangth < 0 else sp_strangthse_d
     # print("strangth:", strangth)
     # print("sp strangth:", sp_strangth)
     damage = strangth + sp_strangth
@@ -1975,6 +2017,8 @@ def fight_loop(player, enemy, player_start=True):
         elif turn == 1:
             choice, curser = fight_selact_attack(player, enemy, curser)
             # choice = inputT(">").upper().strip()
+            
+            printr(choice)
             try:
                 if choice == "Q":
                     loop_fight = False
@@ -1982,8 +2026,8 @@ def fight_loop(player, enemy, player_start=True):
                 elif choice == "S":
                     printr(enemy)
                     inputT("\nPress Enter to return...")
-                elif (0 <= int(choice)) and (int(choice) <= 3):
-                    attack_num = int(choice)
+                elif (0 <= int(choice)-1) and (int(choice)-1 <= 3):
+                    attack_num = int(choice)-1
                     attack_used = list(player.attacks_used)[attack_num]
                     attack_max_used = player.attacks[attack_num]["stats"]["max_use"]
                     wappon = player.equipt_slots["wappon"]
@@ -1995,20 +2039,20 @@ def fight_loop(player, enemy, player_start=True):
                             printr('You dont have a wapon')
                             #print(needed_wappon)
                             #print(wappon[1])
-                            time.sleep(10)
+                            wait(10)
                             continue
                         elif not wappon[1].sub_type in needed_wappon:
                             printr(f'You dont have the requred wapon, you need a {needed_wappon}')
                             #print(needed_wappon)
                             #print(wappon[1].sub_type)
-                            time.sleep(10)
+                            wait(10)
                             continue
                     if player.attacks_used[attack_used] >= attack_max_used:
                         printr("No more uses of selected attack left")
-                        time.sleep(1)
+                        wait(1)
                     elif player.attacks[attack_num]["stats"]["mp"] > player.mp:
                         printr("Not enough mp for this attack")
-                        time.sleep(1)
+                        wait(1)
                     else:
                         player.attacks_used[attack_used] += 1
                         player.mp -= player.attacks[attack_num]["stats"]["mp"]
@@ -2019,7 +2063,7 @@ def fight_loop(player, enemy, player_start=True):
                         first_turn = False
             except:
                 printr("Invalid inputT lol")
-                time.sleep(1)
+                wait(1)
 
 
 if __name__ == "__main__":

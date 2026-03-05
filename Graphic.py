@@ -1,3 +1,5 @@
+
+
 import os
 import random
 import re
@@ -10,6 +12,8 @@ from math import ceil
 from types import LambdaType
 
 import Game_text_data as GTD
+
+# group 1
 
 FPS = 60
 os.system("cls" if os.name == "nt" else "clear")
@@ -53,7 +57,7 @@ def get_size():
         print(f"{get_color_code(color)}min height is 30 curent is {HEIGHT}{get_color_code("none")}")
         color = "red" if WIDTH < 80 else "green"
         print(f"{get_color_code(color)}min width is 80 curent is {WIDTH}{get_color_code("none")}")
-        time.sleep(0.1)
+        wait(0.1)
 
 
 
@@ -63,7 +67,15 @@ ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;]*m")
 def plen(s: str) -> int:
     clean = ANSI_ESCAPE_RE.sub("", s)
     return len(clean)
-
+    
+    
+def wait(t):
+    stt = time.time()
+    slt = 1 / (FPS * 2)
+    while (time.time() - stt) < t:
+        update(False)
+        if (time.time() - stt) < t:
+            time.sleep(slt)
 
 class TerminalInputUNIX:
     def __init__(self):
@@ -177,10 +189,10 @@ def inputT(text="", wait_for_enter: bool = False, num_only: bool = False):
                     key = keys[-1]
                     #printr(key)
                     update()
-                    #time.sleep(1)
+                    #wait(1)
                     # print(keys)
                     break
-                #time.sleep(0.005)
+                #wait(0.005)
             # printr(out)
             # printr(key)
             if key == "ENTER" or key == " ":
@@ -219,9 +231,9 @@ def inputT(text="", wait_for_enter: bool = False, num_only: bool = False):
                 key = keys[-1]
                 #printr(key)
                 update()
-                #time.sleep(1)
+                #wait(1)
                 break
-            #time.sleep(0.005)  # ← IMPORTANT
+            #wait(0.005)  # ← IMPORTANT
         # printr(keys)
         # printr(str(keys[0].upper().strip()))
         update()
@@ -275,7 +287,7 @@ def print_replace(lines,prio = True):
     """
     global FRAME_BUFER
     if 1 // (time.time() - FRAMR_RATE[-1]) > FPS and not prio:
-        #time.sleep((time.time() - FRAMR_RATE[-1]) * ((1 / (time.time() - FRAMR_RATE[-1])) / (FPS + 10)))
+        #wait((time.time() - FRAMR_RATE[-1]) * ((1 / (time.time() - FRAMR_RATE[-1])) / (FPS + 10)))
         return
 
     #print(PRINT_BUFFER)
@@ -515,9 +527,261 @@ def print_titelbar(text: str, width: int = WIDTH):
     printr(text)
     printr(f"╚{sep}╝")
     
+def header_options(struc, curser_temp=[0, 0, 0, 0], width=36, curser_pos_inver=False):
+    curser = curser_temp.copy()
+    lines = []
+    lines_temp = []
+    ops = [i for i in struc]
+    line_temp = ""
+    line = []
+    for i in struc:
+        if line_temp == "":
+            line_temp += f"{i} = {struc[i]}"
+            line.append(i)
+        else:
+            if len(f"{line_temp} | {i} = {struc[i]}") > width:
+                lines.append(line)
+                lines_temp.append(line_temp)
+                line = []
+                line.append(i)
+                line_temp = f"{i} = {struc[i]}"
+            else:
+                line_temp += f" | {i} = {struc[i]}"
+                line.append(i)
+        if ops.index(i) + 1 >= len(struc):
+            lines.append(line)
+    
+    shape = [len(i) for i in lines]
+    #print(shape)
+            
+    # max_len = max([len(i) for i in lines])
+    if curser_pos_inver:
+        curser[0] = len(lines) + curser[0]
+        if curser[0] < 0:
+            curser[0] = 0
+            curser_temp[0] = 0 - len(lines)
+        
+        curser[2] = len(lines) + curser[2]
+        if curser[2] < 0:
+            curser[2] = 0
+            curser_temp[2] = 2 - len(lines)
+
+    out = None
+    for i in range(len(lines)):
+        mark = None
+        line = ""
+        if curser[0] == i:
+            if curser[1] < len(lines[i]):
+                mark = curser[1]
+            else:
+                mark = len(lines[i]) - 1
+        for j in range(len(lines[i])):
+            if j == mark:
+                temp = f"{get_color_code('green')}{lines[i][j]} = {struc[lines[i][j]]}{get_color_code('none')}"
+                out = str(lines[i][j])
+                line += temp
+            else:
+                line += f"{lines[i][j]} = {struc[lines[i][j]]}"
+            if not j >= len(lines[i]) - 1:
+                line += " | "
+        printr(line)
+    return out , shape
+    
+class BoxPreRender:
+    def __init__(self) -> None:
+        self.color: str|None = None
+        self.num = 0
+        self.num_line = ''
+        self.texts = []
+        self.width = 34
+        self.numj = 6
+        
+    def hight(self) -> int:
+        return 1 + len(self.texts)
+    
+    
+def box_menu(pre_render:list[BoxPreRender],curser:list,size = [2,4]):
+        
+        shape = []
+        #printr(size)
+        for i in range(size[1]):
+            #printr(f"{(i+1) * size[0]}  {len(pre_render)}  {(i+1) * size[0] > len(pre_render)}")
+            if (i+1) * size[0] > len(pre_render):
+                shape.append(len(pre_render) - (i) * size[0])
+                break
+            else: 
+                shape.append(size[0])
+        
+        #printr(shape)
+        
+        hight = max([i.hight() for i in pre_render])
+    
+        def make_box(render:BoxPreRender, color):
+            box = []
+            num1 = f"[{render.num + 1}]".ljust(render.numj)
+            box.append(f"┏{center_text('',render.width+2,"━")}┓")
+            box.append(f"┃ {num1} {render.num_line} ┃")
+            for i in range(hight-1):
+                box.append(f"┃ {render.texts[i]} ┃")
+            box.append(f"┗{center_text('',render.width+2,"━")}┛")
+    
+            if color:
+                # printr(color)
+                for i in range(len(box)):
+                    box[i] = f"{color}{box[i]}{get_color_code("none")}"
+            return box
+    
+        def box_to_render(render):
+            for i in range(len(shape)):
+                out = ""
+                for j in range(hight + 2):
+                    for k in range(shape[i]):
+                        out += str(render[i * shape[0] + k][j])
+                        if k+1 < shape[i]:
+                            out += "  "
+                        else:
+                            out += "\n"
+                printr(out)
+    
+        render = []
+        if curser[0] > -1:
+            selected = (curser[0] * size[0] + curser[1])
+            #printr(selected)
+        else:
+            selected = None
+        for i in range(len(pre_render)):
+            color = pre_render[i].color
+            if color:
+                color += get_color_code("green",["bg"]) if selected == i else ""
+            else:
+                color = get_color_code("green",["bg"]) if selected == i else ""
+            render.append(make_box(pre_render[i],color))
+    
+        box_to_render(render)
+        return selected, shape
+    
+def menu_handler(curser,box_menu_shape:None|list=None,header_menu_shape:None|list=None, page:None|int=None, max_page:None|int=None):
+    
+    layout = []
+    
+    menues = 0
+    
+    if header_menu_shape:
+        layout = header_menu_shape.copy()
+        menues += 1
+    if box_menu_shape:
+        layout += box_menu_shape
+        menues += 2
+        
+    # menues 1 = only header menu
+    # menues 2 = only box menu
+    # menuse 3 = both
+    y_off = 0
+    
+    if menues == 1:
+        if curser[0] < 0:
+            curser[0] = 0
+        elif curser[0] >= len(header_menu_shape):
+            curser[0] = len(header_menu_shape) - 1
+    elif menues == 2:
+        if curser[0] < 0:
+            curser[0] = 0
+        elif curser[0] >= len(box_menu_shape):
+            curser[0] = len(box_menu_shape) - 1
+    elif menues == 3:
+        y_off = len(header_menu_shape)
+        if curser[0] < - len(header_menu_shape):
+            curser[0] = 0 - len(header_menu_shape)
+        elif curser[0] >= len(box_menu_shape):
+            curser[0] = len(box_menu_shape) - 1
+    
+    if curser[0] >= 0 and box_menu_shape:
+        if curser[1] < 0:
+            if page > 0:
+                curser[2] = curser[0]
+                curser[3] = curser[1]
+                curser[1] = box_menu_shape[curser[0]] - 1
+                return "P", curser
+            else:
+                curser[1] = 0
+        elif curser[1] > box_menu_shape[curser[0]] - 1:
+            #printr(f"{curser[1]}  {box_menu_shape[curser[0]] - 1}")
+            if page < max_page:
+                curser[2] = curser[0]
+                curser[3] = curser[1]
+                curser[1] = 0
+                return "N", curser
+            else:
+                curser[1] = 1
+                
+    if curser[0] + y_off < len(layout):
+        line_len = layout[curser[0]+ y_off]
+        if curser[1] >= line_len:
+            curser[1] = line_len - 1
+        elif curser[1] < 0:
+            curser[1] = 0
+    elif curser[2]+ y_off < len(layout):
+        line_len = 2
+        if curser[1] >= line_len:
+            curser[1] = line_len - 1
+        elif curser[1] < 0:
+            curser[1] = 0
+            
+    prev_line = curser[2]+ y_off
+        
+        # clamp prev_line too, or it will bite you later
+    if curser[0]+ y_off != curser[2]+ y_off:
+        if prev_line < 0:
+            prev_line = 0
+            prev_len = layout[prev_line]
+        elif prev_line >= len(layout):
+            prev_line = curser[0]+ y_off
+            prev_len = 2
+        else:
+            prev_len = layout[prev_line]
+                
+        if curser[0]+ y_off >= len(layout):
+            new_len = 2
+        else:
+            new_len  = layout[curser[0]+ y_off]
+           
+        if prev_len > 1:
+            ratio = curser[3] / (prev_len - 1)
+        else:
+            ratio = 0
+           
+        curser[1] = round(ratio * (new_len - 1))
+      
+    #curser_temp[1] = curser[1]
+    #curser_temp[3] = curser[3]
+    
+                
+    # printr(curser)
+    # printr(header_menu_shape)
+    # printr(f"{curser[0] + y_off},{curser[1]}")
+    return None, curser
+
+class NoneGeneral:
+    def __init__(self) -> None:
+        pass
+
+
 
 def roll_dice(start, end, advan=0):
+    clear()
     rand = 0
+    rand_str = str(rand)
+    printr(lambda : f"""
+=========================
+Dice Roll
+╭───────╮
+│       │
+│  {rand_str}  │
+│       │
+╰───────╯
+
+=========================
+""")
     for i in range(10):
         rand_o = rand
         while rand == rand_o:
@@ -532,19 +796,7 @@ def roll_dice(start, end, advan=0):
             rand_str = " " + rand_str
         if len(rand_str) == 2:
             rand_str = rand_str + " "
-        clear()
-        printr(lambda : f"""
-=========================
-Dice Roll
-╭───────╮
-│       │
-│  {rand_str}  │
-│       │
-╰───────╯
-
-=========================
-""")
-        time.sleep((i + 1) / 50)
+        wait((i + 1) / 50)
     inputT("\nPress Enter to return...")
     return rand
 
@@ -559,10 +811,15 @@ def show_inventory(
     is_shop,
     gold,
     curser=[0, 0,0,0],
+    size=[2,4]
 ):
     while True:
         clear()
-        out = render_inventory_header(page, max_page, is_shop, gold, curser)
+        #printr(f"{[WIDTH // 40, (HEIGHT - 10) // 6]}  {size}")
+        if [WIDTH // 40, (HEIGHT - 10) // 6] != size and not is_item_selected:
+            return None , curser
+        
+        out, header_shape = render_inventory_header(page, max_page, is_shop, gold, curser)
         
         if is_item_selected:
             render_item_details(selected_item)
@@ -571,40 +828,24 @@ def show_inventory(
         items = item_fillter[start:end]
         offset = page * per_page
 
-        item_render = build_item_render(items, is_shop,selected_item)
+        item_render = build_item_render(items, is_shop,selected_item,offset)
         
-        if curser[0] >= 0:
-            if curser[1] < 0:
-                if page > 0:
-                    curser[2] = curser[0]
-                    curser[3] = curser[1]
-                    curser[1] = 1
-                    return "P", curser
-                else:
-                    curser[1] = 0
-            elif curser[1] > 1:
-                if page < max_page:
-                    curser[2] = curser[0]
-                    curser[3] = curser[1]
-                    curser[1] = 0
-                    return "N", curser
-                else:
-                    curser[1] = 1
-            elif curser[0] > ceil(len(item_render) / 2) - 1:
-                curser[0] = ceil(len(item_render) / 2) - 1
 
         if curser[0] > -1:
             sel = (curser[0] * 2 + curser[1]) 
         else:
             sel = None
         # printr(ceil(len(item_render) / 2) - 1)
-        render_item_boxes(item_render, offset, sel)
+        #render_item_boxes(item_render, offset, sel)
+        sel, box_shape = box_menu(item_render,curser,size)
+        #menu_handler(curser,box_shape,header_shape,page,max_page)
         choice = inputT("> ", True)
         if choice not in ["UP", "DOWN", "LEFT", "RIGHT", "ENTER"]:
             return choice, curser
         else:
             if choice == "ENTER":
                 if sel != None:
+                    printr(sel + 1 + offset)
                     return sel + 1 + offset, curser
                 elif out:
                     return out, curser
@@ -624,10 +865,14 @@ def show_inventory(
                 curser[2] = curser[0]
                 curser[3] = curser[1]
                 curser[1] += 1
+                
+            choice, curser = menu_handler(curser,box_shape,header_shape,page,max_page)
+            if choice:
+                return choice, curser
             
 
 
-def render_inventory_header(page, max_page, is_shop, gold, curser) -> str | None:
+def render_inventory_header(page, max_page, is_shop, gold, curser):
     ops = {
         "SE": "Show Equipped",
         "SF": "Show Favorites",
@@ -650,86 +895,41 @@ def render_inventory_header(page, max_page, is_shop, gold, curser) -> str | None
     # E = {"Sell" if is_shop else "Equip"} | F = Favorite | SF = Show Favorites
     # PAGE = Go to Page | Number = Select Item | SE = Show Equipped
     # ==============================================================================""")
-    out = header_options(ops, curser, 50, True)
-    return out
+    out, shape = header_options(ops, curser, 50, True)
+    return out, shape
 
 
-def render_item_boxes(item_render, offset, selected=-1) -> None:
-    offset += 1
 
-    def print_render(j: int, line: int) -> str | None:
-        # prints a blank if there is no item in that slot
-        if j >= len(item_render):
-            if line == 3:
-                return None
-            elif line == 2:
-                return fixed_width(" ", 22)
-            return fixed_width(" ", 34)
-        else:
-            return item_render[j][line]
-
-    def make_box(num, color):
-        box = []
-        num1 = f"[{num + offset}]".ljust(6)
-        box.append("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓")
-        box.append(f"┃ {num1}      {print_render(num, 2)} ┃")
-        box.append(f"┃ {print_render(num, 0)} ┃")
-        box.append(f"┃ {print_render(num, 1)} ┃")
-        box.append("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛")
-
-        if color:
-            # printr(color)
-            for i in range(len(box)):
-                box[i] = f"{color}{box[i]}{get_color_code("none")}"
-        return box
-
-    def box_to_render(render):
-        for i in range(ceil(len(render) / 2)):
-            out = ""
-            for j in range(4):
-                out += str(render[i * 2][j] + "  " + render[i * 2 + 1][j] + "\n")
-            out += str(render[i * 2][4] + "  " + render[i * 2 + 1][4])
-            printr(out)
-
-    render = []
-    for i in range(ceil(len(item_render) / 2)):
-        color = print_render(i * 2, 3)
-        if color:
-            color += get_color_code("green",["bg"]) if selected == i * 2 else ""
-        else:
-            color = get_color_code("green",["bg"]) if selected == i * 2 else ""
-        render.append(make_box(i * 2, color))
-        color = print_render(i * 2 + 1, 3)
-        if color:
-            color += get_color_code("green",["bg"]) if selected == i * 2 + 1 else ""
-        else:
-            color = get_color_code("green",["bg"]) if selected == i * 2 + 1 else ""
-        
-        render.append(make_box(i * 2 + 1, color))
-
-    box_to_render(render)
-
-
-def build_item_render(items, is_shop=False,selected_item = None):
-    item_render = []
+def build_item_render(items, is_shop=False,selected_item = None, offset = 0):
+    item_render: list[BoxPreRender] = []
     for item in items:
+        temp_render = BoxPreRender()
         line1 = f"{item.grade} {item.sub_type} (Lvl {item.level})"
         line2 = f"{item.name} {'*' if item.is_equiped else ''}"
         if is_shop:
             line3 = f"{item.value}G"
         else:
             line3 = ""
-
+        
         # Grafik an Graphics delegieren
         line1 = fixed_width(line1, 34)
         line2 = fixed_width(line2, 34)
         while len(line3) < 22:
             line3 = " " + line3
+            
+        temp_render.texts.append(line1)
+        temp_render.texts.append(line2)
+        temp_render.num_line = line3
+        
         color = "red" if item == selected_item else "blue" if item.is_equiped else "yellow" if item.is_fav else None
         if color:
             color = get_color_code(color)
-
-        item_render.append([line1, line2, line3, color])
+            temp_render.color = color
+        
+        temp_render.num = items.index(item) + offset
+        temp_render.numj = 11
+        
+        item_render.append(temp_render)
 
     return item_render
 
@@ -882,10 +1082,13 @@ def print_bars_player(self) -> None:
     printr("===========================================================")
 
 
-def show_attack(self,curser) -> None:
-    def get_attack_stats_for_display(self, attack, i):
+def show_attack(self):
+    def get_attack_stats_for_display(self, attack, i,num):
+        temp_render = BoxPreRender()
+        temp_render.num = num-1
+        temp_render.numj = 6
         line_1 = fixed_width(
-            f"{i} {attack['max_use'] - self.attacks_used[i]}/{attack['max_use']}", 21
+            f"{i} {attack['max_use'] - self.attacks_used[i]}/{attack['max_use']}", 18
         )
         line_2 = fixed_width(
             f"MP {attack['mp']} ATK {attack['atk']} SP ATK {attack['sp_atk']}", 25
@@ -894,27 +1097,19 @@ def show_attack(self,curser) -> None:
             f"Adv {attack['adv']} Crit {attack['crit_chance']}% Crit {attack['crit_bonus']}",
             25,
         )
-        return [line_1, line_2, line_3]
+        temp_render.num_line = line_1
+        temp_render.texts.append(line_2)
+        temp_render.texts.append(line_3)
+        temp_render.width = 25
+        return temp_render
 
-    asfd = []  # asfd stands for attack_stats_for_display
     temp_num = 0
+    atk_render = []
     for j in self.attacks_used:
         attack = self.attacks[temp_num]["stats"]
         temp_num += 1
-        asfd.append(get_attack_stats_for_display(self, attack, j))
-    del temp_num
-    print(curser)
-    printr(f"""
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ [0] {asfd[0][0]} ┃ ┃ [1] {asfd[1][0]} ┃
-┃ {asfd[0][1]} ┃ ┃ {asfd[1][1]} ┃
-┃ {asfd[0][2]} ┃ ┃ {asfd[1][2]} ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ [2] {asfd[2][0]} ┃ ┃ [3] {asfd[3][0]} ┃
-┃ {asfd[2][1]} ┃ ┃ {asfd[3][1]} ┃
-┃ {asfd[2][2]} ┃ ┃ {asfd[3][2]} ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ """)
+        atk_render.append(get_attack_stats_for_display(self, attack, j,temp_num))
+    return atk_render
 
 
 def print_fight_stats_enemy(self) -> None:
@@ -958,16 +1153,14 @@ def fight_selact_attack(player, enemy,curser = [0,0,0,0]):
     while True:
         clear()
         print_titelbar("FIGHT", 59)
-        printr("Number to select attack")
-        printr("===========================================================")
         print_fight_stats_enemy(enemy)
         fight_art(player, enemy)
         print_bars_player(player)
-        show_attack(player,curser)
-        if curser[0] > -1:
-            sel = curser[0] * 2 + curser[1]
-        else:
-            sel = None
+        atk_render = show_attack(player)
+        
+        sel, box_shape = box_menu(atk_render,curser,[2,2])
+        
+
         # printr(ceil(len(item_render) / 2) - 1)
         #render_item_boxes(item_render, offset, sel)
         choice = inputT("> ", True)
@@ -976,9 +1169,8 @@ def fight_selact_attack(player, enemy,curser = [0,0,0,0]):
         else:
             if choice == "ENTER":
                 if sel != None:
+                    printr(sel)
                     return sel + 1, curser
-                elif out:
-                    return out, curser
             elif choice == "UP":
                 curser[2] = curser[0]
                 curser[3] = curser[1]
@@ -997,13 +1189,10 @@ def fight_selact_attack(player, enemy,curser = [0,0,0,0]):
                 curser[2] = curser[0]
                 curser[3] = curser[1]
                 curser[1] += 1
-            if curser[0] >= 0:
-                if curser[1] < 0:
-                    curser[1] = 0
-                elif curser[1] > 1:
-                    curser[1] = 1
-                    #elif curser[0] > ceil(len(item_render) / 2) - 1:
-                    #curser[0] = ceil(len(item_render) / 2) - 1
+            
+            choice, curser = menu_handler(curser,box_shape,page=0,max_page=0)
+            if choice:
+                return choice, curser
 
 def print_atk_damage(sel,atk,sp_atk,deff,sp_deff,crit,damage,who=True):
     if crit:
@@ -1025,21 +1214,6 @@ def fight_roll_dice(
 ) -> tuple[int,int]:
     rand = 0
     rand_e = 0
-    rand_o = rand
-    while rand == rand_o:
-        rand = random.randint(start, end)
-    rand += advan
-    if rand < start:
-        rand = start
-    elif rand > end:
-        rand: int = end
-    advan_e = 0
-    rand_e = random.randint(start, end)
-    rand_e += advan_e
-    if rand_e < start:
-        rand_e = start
-    elif rand_e > end:
-        rand_e: int = end
     rand_str = center_text(str(rand), 3)
     rand_str_e = center_text(str(rand_e), 3)
     if is_deff:
@@ -1048,16 +1222,37 @@ def fight_roll_dice(
     else:
         l1 = center_text("Player Attack", 28)
         l2 = center_text("Enemy Deffes", 28)
-    printr(f"""{center_text(f"{l1}┃{l2}", 59)}
+    
+    dice_rool_f = lambda:f"""{center_text(f"{l1}┃{l2}", 59)}
 {center_text("╭━━━━━━━╮", 29)}┃{center_text("╭━━━━━━━╮", 29)}
 {center_text("┃       ┃", 29)}┃{center_text("┃       ┃", 29)}
 {center_text(f"┃  {rand_str}  ┃", 29)}┃{center_text(f"┃  {rand_str_e}  ┃", 29)}
 {center_text("┃       ┃", 29)}┃{center_text("┃       ┃", 29)}
 {center_text("╰━━━━━━━╯", 29)}┃{center_text("╰━━━━━━━╯", 29)}
-{center_text("┃", 59)}
-===========================================================
-""")
-    update()
+{center_text("┃", 59)}"""
+    printr(dice_rool_f)
+    for i in range(10):
+        rand = 0
+        rand_e = 0
+        rand_o = rand
+        while rand == rand_o:
+            rand = random.randint(start, end)
+        rand += advan
+        if rand < start:
+            rand = start
+        elif rand > end:
+            rand: int = end
+        advan_e = 0
+        rand_e = random.randint(start, end)
+        rand_e += advan_e
+        if rand_e < start:
+            rand_e = start
+        elif rand_e > end:
+            rand_e: int = end
+        rand_str = center_text(str(rand), 3)
+        rand_str_e = center_text(str(rand_e), 3)
+        
+        wait((i + 1) / 50)
     return rand, rand_e
 
 
@@ -1242,121 +1437,14 @@ def select_menu_page(
                     else:
                         printr("nop")
                         update()
-                        time.sleep(1)
+                        wait(1)
                 except:
                     printr("nop nop")
                     update()
-                    time.sleep(1)
+                    wait(1)
 
 
-def header_options(struc, curser_temp=[0, 0, 0, 0], width=36, curser_pos_inver=False):
-    curser = curser_temp.copy()
-    lines = []
-    lines_temp = []
-    ops = [i for i in struc]
-    line_temp = ""
-    line = []
-    for i in struc:
-        if line_temp == "":
-            line_temp += f"{i} = {struc[i]}"
-            line.append(i)
-        else:
-            if len(f"{line_temp} | {i} = {struc[i]}") > width:
-                lines.append(line)
-                lines_temp.append(line_temp)
-                line = []
-                line.append(i)
-                line_temp = f"{i} = {struc[i]}"
-            else:
-                line_temp += f" | {i} = {struc[i]}"
-                line.append(i)
-        if ops.index(i) + 1 >= len(struc):
-            lines.append(line)
-            
-    # max_len = max([len(i) for i in lines])
-    if curser_pos_inver:
-        curser[0] = len(lines) + curser[0]
-        if curser[0] < 0:
-            curser[0] = 0
-            curser_temp[0] = 0 - len(lines)
-        
-        curser[2] = len(lines) + curser[2]
-        if curser[2] < 0:
-            curser[2] = 0
-            curser_temp[2] = 2 - len(lines)
-    #curser[1] = min(curser[1], len(lines[curser[0]]) - 1)
-    
-    # clamp Y
-    if curser[0] < 0:
-        curser[0] = 0
-    
-    # print(curser_temp)
-    # print(curser)
-        # clamp X (tile) BASED ON CURRENT LINE
-    if curser[0] < len(lines):
-        line_len = len(lines[curser[0]])
-        if curser[1] >= line_len:
-            curser[1] = line_len - 1
-        elif curser[1] < 0:
-            curser[1] = 0
-    elif curser[2] < len(lines):
-        line_len = 2
-        if curser[1] >= line_len:
-            curser[1] = line_len - 1
-        elif curser[1] < 0:
-            curser[1] = 0
-            
-    prev_line = curser[2]
-        
-        # clamp prev_line too, or it will bite you later
-    if curser[0] != curser[2]:
-        if prev_line < 0:
-            prev_line = 0
-            prev_len = len(lines[prev_line])
-        elif prev_line >= len(lines):
-            prev_line = curser[0]
-            prev_len = 2
-        else:
-            prev_len = len(lines[prev_line])
-                
-        if curser[0] >= len(lines):
-            new_len = 2
-        else:
-            new_len  = len(lines[curser[0]])
-           
-        if prev_len > 1:
-            ratio = curser[3] / (prev_len - 1)
-        else:
-            ratio = 0
-           
-        curser[1] = round(ratio * (new_len - 1))
-      
-    curser_temp[1] = curser[1]
-    curser_temp[3] = curser[3]
-    
-    # print(curser_temp)
-    # print(curser)
-        
-    out = None
-    for i in range(len(lines)):
-        mark = None
-        line = ""
-        if curser[0] == i:
-            if curser[1] < len(lines[i]):
-                mark = curser[1]
-            else:
-                mark = len(lines[i]) - 1
-        for j in range(len(lines[i])):
-            if j == mark:
-                temp = f"{get_color_code('green')}{lines[i][j]} = {struc[lines[i][j]]}{get_color_code('none')}"
-                out = str(lines[i][j])
-                line += temp
-            else:
-                line += f"{lines[i][j]} = {struc[lines[i][j]]}"
-            if not j >= len(lines[i]) - 1:
-                line += " | "
-        printr(line)
-    return out
+
 
 
 def game_menu(player):
