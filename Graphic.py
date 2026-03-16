@@ -68,6 +68,14 @@ def plen(s: str) -> int:
     clean = ANSI_ESCAPE_RE.sub("", s)
     return len(clean)
     
+def hex_to_int(hex):
+    out = 0
+    h_len = len(hex)
+    for i in hex:
+        h_len -= 1
+        out += hex_codes.index(i) * (16 ** h_len)
+    return out
+    
     
 def wait(t):
     stt = time.time()
@@ -247,6 +255,7 @@ def clear():
     #os.system("cls" if os.name == "nt" else "clear")
     #FRAME_BUFER = []
     get_size()
+    print("\x1b[2J\x1b[H")
     
     
 
@@ -517,7 +526,7 @@ def put_in_box(text = "", type = "thin", max_width = 80):
 
 
 
-def print_titelbar(text: str, width: int = WIDTH):
+def print_titelbar(text: str, width: int = WIDTH-2):
     if plen(text) > width:
         width = plen(text)
     sep = "═" * (width)
@@ -986,13 +995,18 @@ Elements: {self.ele_afi}
 Wapons: {self.wapon_afi}
 ============================
 """)
-    _ = inputT("\nPress Enter to return...")
+    choice = inputT("\nPress Enter to return...")
+    if choice == "E":
+        print_afi(self.ele_afi)
+    elif choice == "W":
+        print_afi(self.wapon_afi)
 
 
 def show_stats_level(self) -> None:
     clear()
     #print_titelbar("Level Up", 28)
     printr(f"Level {self.level} => {self.level + 1}")
+    printr(f"XP {self.xp}/{self.max_xp} => {self.xp - self.max_xp}/{self.next_level_xp(self.level+1)}")
     struc = {"1" :f"Max HP {self.max_hp}+3 => {self.max_hp + 3}",
     "2":f"Max MP {self.max_mp}+3 => {self.max_mp + 3}",
     "3":f"ATK {self.atk}+1 => {self.atk + 1}",
@@ -1002,24 +1016,8 @@ def show_stats_level(self) -> None:
     "7":f"Crit Chance {self.crit_chance}+1 => {self.crit_chance + 1}",
     "8":f"Crit Bounus {self.crit_bonus}+2 => {self.crit_bonus + 2}",
     "9":f"Move {self.min_move}-{self.max_move}",
-    "a":"a",
-    "b":"b",
-    "c":"c",
-    "d":"d",
-    "e":"e",
-    "f":"f",
-    "g":"g",
-    "h":"h",
-    "i":"i",
-    "j":"j",
-    "k":"k",
-    "l":"l",
-    "m":"m",
-    "n":"n",
-    "o":"o",
-    "p":"p",
     }
-    other = f"Level {self.level} => {self.level + 1}\nSelect stat to level up\n"
+    other = f"Level {self.level} => {self.level + 1}\nXP {self.xp}/{self.max_xp} => {self.xp - self.max_xp}/{self.next_level_xp(self.level+1)}\nSelect stat to level up\n"
     choice = select_menu_page(title="Level Up",structure=struc,other = other)
     return choice
     #printr(f"""Level {self.level} => {self.level + 1}
@@ -1583,3 +1581,41 @@ def print_dungeon_map(dungeon, spacing=1, room_size=2, CHEATS_ON=False):
             printr(temp, strip=False)
     # for i in rooms:
     # printr('room:',i,'doors',rooms[i].doors)
+
+
+def print_afi(afi):
+    size = 15
+    max_afi = afi.afi[afi.main_afi]
+    clear()
+    print_titelbar("Affiliations",30)
+    max_char_len = max(len(i) for i in afi.afi)
+    #printr(max_char_len)
+    for i in afi.afi:
+        hight_p = afi.afi[i] / max_afi
+        temp_hight = int((size*8)*hight_p)
+        line = ""
+        for _ in range(temp_hight//8):
+            line += "█"
+            
+        frac = temp_hight % 8
+        #printr(f"{temp_hight,frac}")
+        if frac == 7:
+            line += chr(hex_to_int("2589"))
+        elif frac == 6:
+            line += chr(hex_to_int("258A"))
+        elif frac == 5:
+            line += chr(hex_to_int("258B"))
+        elif frac == 4:
+            line += chr(hex_to_int("258C"))
+        elif frac == 3:
+            line += chr(hex_to_int("258D"))
+        elif frac == 2:
+            line += chr(hex_to_int("258E"))
+        elif frac == 1:
+            line += chr(hex_to_int("258F"))
+        name = fixed_width("",max_char_len-len(i)) + i
+        line = fixed_width(f"{line}{afi.afi[i]}",20)
+        printr(f"{name}:{line}\n")
+    inputT()
+	
+	

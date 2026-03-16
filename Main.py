@@ -90,6 +90,21 @@ class Player:
         self.hp: int = self.max_hp
         self.mp: int = self.max_mp
         self.item_stats_add()
+        self.wapons_used = {}
+        self.ele_afi_used = {}
+        
+        
+    def ele_afi_up(self,afi):
+        if afi:
+            if afi in self.ele_afi_used:
+                self.ele_afi_used[afi] += 1
+                if self.ele_afi_used[afi] == 2:
+                    new_stets = {f"{afi}":self.ele_afi.afi[afi]+10}
+                    self.ele_afi.change(new_stets,5)
+                    self.ele_afi_used[afi] = 0
+            else:
+                self.ele_afi_used[afi] = 1
+                    
 
     def next_level_xp(self, level: int):
         return (math.floor((((math.log(level**2, 10)) ** 2) + 1) * 5)) * 3
@@ -532,6 +547,18 @@ class Enemy:
         self.get_items()
         self.equiped_items = self.items
         self.item_stats_add()
+        self.wapons_used = {}
+        self.ele_afi_used = {}
+        
+    def ele_afi_up(self,afi):
+        if afi in self.ele_afi_used:
+            self.ele_afi_used[afi] += 1
+            if self.ele_afi_used[afi] == 10:
+                new_stets = {f"{afi}":self.ele_afi.afi[afi]+10}
+                self.ele_afi.change(new_stets,5)
+                self.ele_afi_used[afi] = 0
+        else:
+            self.ele_afi_used[afi] = 1
 
     def level_up(self) -> None:
         self.max_hp += 3 * (self.level - 1)
@@ -846,6 +873,12 @@ class Afiliations:
         
         #print(self)
         return bonus
+
+    def sum(self):
+        sum = 0
+        for i in self.afi:
+            sum += self.afi[i]
+        return sum
         
     #def __repr__(self) -> str:
     #    out = ''
@@ -1903,6 +1936,7 @@ def get_attaker_stats(attaker,defender, sel):
             sp_atk = int(sp_atk * 2)
     atk += int(atk * (p_crit_bonus / 100)) if crit else 0
     sp_atk += int(sp_atk * (p_crit_bonus / 100)) if crit else 0
+    attaker.ele_afi_up(atk_ele)
     return atk, sp_atk, crit
         
 
@@ -1967,7 +2001,7 @@ def fight_roll_dice(player, enemy, start, end, sel=0, advan=0, atk=True):
     strangth = base_atk - base_def
     sp_strangth = base_sp_atk - base_sp_def
     strangth = 0 if strangth < 0 else strangth
-    sp_strangth = 0 if sp_strangth < 0 else sp_strangthse_d
+    sp_strangth = 0 if sp_strangth < 0 else sp_strangth
     # print("strangth:", strangth)
     # print("sp strangth:", sp_strangth)
     damage = strangth + sp_strangth
