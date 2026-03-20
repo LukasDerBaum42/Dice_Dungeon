@@ -255,7 +255,7 @@ def clear():
     #os.system("cls" if os.name == "nt" else "clear")
     #FRAME_BUFER = []
     get_size()
-    print("\x1b[2J\x1b[H")
+    #print("\x1b[2J\x1b[H")
     
     
 
@@ -990,9 +990,6 @@ SP DEF {self.sp_def} + {self.sp_def_items}
 Crit Chance {self.crit_chance} + {self.crit_chance_items}
 Crit Bounus {self.crit_bonus} + {self.crit_bonus_items}
 Move {self.min_move}-{self.max_move}
-Affiliations:
-Elements: {self.ele_afi}
-Wapons: {self.wapon_afi}
 ============================
 """)
     choice = inputT("\nPress Enter to return...")
@@ -1471,7 +1468,7 @@ Q = Quit
 def print_dungeon_map(dungeon, spacing=1, room_size=2, CHEATS_ON=False):
     # 1. BFS: relative Positionen bestimmen
     rooms = dungeon.rooms
-    printr(rooms)
+    #printr(rooms)
     if len(str(rooms[len(rooms) - 1].id)) > room_size:
         room_size = len(str(rooms[len(rooms) - 1].id))
     clear()
@@ -1569,9 +1566,8 @@ def print_dungeon_map(dungeon, spacing=1, room_size=2, CHEATS_ON=False):
     # 5. Ausgabe
     # clear()
     # printr(dungeon.room_pos)
-    printr("=" * (width+6))
-    text = "Dungeon Map"
-    printr(text)
+    print_titelbar("Dungeon Map",width+6)
+    
     for row in grid:
         if any(i != " " for i in row):
             temp = "".join(row)

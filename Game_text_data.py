@@ -248,7 +248,7 @@ player_cls = {
             "crit_chance": 2,
             "crit_bonus": 10,
         },
-        "item": ("common", "sword", 1),
+        "item": ("common", "sword", 2),
         "affiliations": {
                 "elements": {"fire": 150, "wind": 90, "water": 90, "stone": 70},
                 "wapons": {"sword": 120, "bow": 95, "stafe": 90}
@@ -2336,6 +2336,8 @@ layers: dict[
 ] = {
     "layer 1": {
         "level": 5,
+        "min_level" : 1,
+        "max_level":10,
         "mob": {"Zomby": 40, "Skelet": 40, "Goblin": 20},
         "boss": "Goblin King",
         "size": [1, 1],
@@ -2346,6 +2348,8 @@ layers: dict[
     },
     "layer 2": {
         "level": 10,
+        "min_level" : 6,
+        "max_level":15,
         "mob": {"Orc": 35, "Dark Elf": 35, "Giant Spider": 30},
         "boss": "Orc Warlord",
         "size": [1, 1],
@@ -2356,6 +2360,8 @@ layers: dict[
     },
     "layer 3": {
         "level": 15,
+        "min_level" : 10,
+        "max_level":20,
         "mob": {"Dark Elf": 40, "Orc": 30, "Goblin": 20, "Giant Spider": 10},
         "boss": "Lich King",
         "size": [1, 1],
@@ -2366,6 +2372,8 @@ layers: dict[
     },
     "layer 4": {
         "level": 25,
+        "min_level" : 18,
+        "max_level":30,
         "mob": {"Wraith": 35, "Minotaur": 35, "Dark Elf": 20, "Orc": 10},
         "boss": "Lich King",
         "size": [1, 1],
@@ -2376,6 +2384,8 @@ layers: dict[
     },
     "layer 5": {
         "level": 30,
+        "min_level" : 25,
+        "max_level":35,
         "mob": {"Wraith": 40, "Minotaur": 30, "Dark Elf": 20, "Giant Spider": 10},
         "boss": "Dragon",
         "size": [1, 1],
@@ -2386,6 +2396,8 @@ layers: dict[
     },
     "layer 6": {
         "level": 40,
+        "min_level" : 35,
+        "max_level":50,
         "mob": {"Wraith": 50, "Minotaur": 30, "Dark Elf": 20},
         "boss": "Dragon",
         "size": [1, 1],
@@ -2396,6 +2408,8 @@ layers: dict[
     },
     "layer 7": {
         "level": 50,
+        "min_level" : 40,
+        "max_level":60,
         "mob": {"Wraith": 40, "Minotaur": 40, "Dark Elf": 20},
         "boss": "Dragon",
         "size": [1, 1],
@@ -2406,6 +2420,8 @@ layers: dict[
     },
     "layer 8": {
         "level": 60,
+        "min_level" : 55,
+        "max_level":70,
         "mob": {"Wraith": 50, "Minotaur": 50},
         "boss": "Lich King",
         "size": [1, 1],
@@ -2416,6 +2432,8 @@ layers: dict[
     },
     "layer 9": {
         "level": 75,
+        "min_level" : 60,
+        "max_level":85,
         "mob": {"Wraith": 60, "Minotaur": 40},
         "boss": "Dragon",
         "size": [1, 1],
@@ -2426,6 +2444,8 @@ layers: dict[
     },
     "layer 10": {
         "level": 90,
+        "min_level" : 80,
+        "max_level":100,
         "mob": {"Wraith": 70, "Minotaur": 30},
         "boss": "Dragon",
         "size": [1, 1],
