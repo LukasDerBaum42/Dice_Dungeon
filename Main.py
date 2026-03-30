@@ -4,7 +4,7 @@ import os
 import random
 import time
 from random import Random, choice, randint
-from tkinter import TclError
+#from tkinter import TclError
 
 import Game_text_data as GTD
 import Graphic
@@ -98,7 +98,7 @@ class Player:
         if afi:
             if afi in self.ele_afi_used:
                 self.ele_afi_used[afi] += 1
-                if self.ele_afi_used[afi] == 2:
+                if self.ele_afi_used[afi] == 10:
                     new_stets = {f"{afi}":self.ele_afi.afi[afi]+10}
                     self.ele_afi.change(new_stets,5)
                     self.ele_afi_used[afi] = 0
@@ -469,6 +469,10 @@ class Player:
             px, py = dungeon.rooms[dungeon.room].door_positions[door_num]
             new_room = dungeon.rooms[dungeon.room]
             new_room.show_on_map = True
+            #print(dungeon.rooms)
+            for rom in dungeon.rooms:
+                for sp in dungeon.rooms[rom].spawners:
+                    sp.update(self,new_room)
             self.x, self.y = px, py
         elif room.map[y][x] == "S":
             if Curent_Layer <= 0:
@@ -510,7 +514,7 @@ class Player:
 
 class Enemy:
     def __init__(
-        self, mob: str, level: int, room, x: int, y: int, is_boss: bool = False
+        self, mob: str, level: int, room,spawner, x: int, y: int, is_boss: bool = False
     ) -> None:
         self.room: Room = room
         self.mob: str = mob
@@ -519,6 +523,7 @@ class Enemy:
         self.y: int = y
         self.is_del: bool = False
         self.level: int = level
+        self.spawner = spawner
         if is_boss:
             stats: dict[str, int] = GTD.bosses[mob]["stats"]
             self.ele_afi = Afiliations(GTD.ele_list,GTD.bosses[mob]["affiliations"])
@@ -743,15 +748,71 @@ class Enemy:
         self.x = -1
         self.y = -1
         self.is_del = True
+        self.spawner.is_spawned = False
+        self.spawner.cool_down = 10
         try:
             self.room.enemys.remove(self.room)
         except:
             pass
         del (
-            self.room,self.mob,self.level,self.max_move,self.min_move,self.max_hp,self.max_mp,self.atk,self.sp_atk,self.def_,self.sp_def,self.crit_chance,self.crit_bonus,self.xp,self.gold,self.hp,self.mp,self.items,
+            self.room,self.spawner,self.mob,self.level,self.max_move,self.min_move,self.max_hp,self.max_mp,self.atk,self.sp_atk,self.def_,self.sp_def,self.crit_chance,self.crit_bonus,self.xp,self.gold,self.hp,self.mp,self.items,
         )
 
+class EnemySpawner:
+    def __init__(self, mob: str, level: int, room, x: int, y: int,min_l,max_l, is_boss: bool = False) -> None:
+        self.room: Room = room
+        self.mob: str = mob
+        self.is_boss: bool = is_boss
+        self.x: int = x
+        self.y: int = y
+        self.level: int = level
+        self.min_l = min_l
+        self.max_l = max_l
+        self.has_spawned = False
+        self.is_spawnd = False
+        self.cool_down = 0
+        self.enemy = None
+        
+    
+    def spawn_enemy(self,player):
+        if self.is_boss:
+            e_level = self.level
+        else:
+            e_level = (self.level + player.level) // 2
+            print(e_level)
+            time.sleep(0.1)
+            if e_level < self.min_l: e_level = self.min_l
+            if e_level > self.max_l: e_level = self.max_l
+            print(e_level,self.min_l,self.max_l)
+            time.sleep(0.1)
+        self.enemy = Enemy(self.mob,e_level,self.room,self,self.x,self.y,self.is_boss)
+        self.room.enemys.append(self.enemy)
+        self.is_spawnd = True
+        self.has_spawned = True
+        
+    def update(self,player,room):
+        if self.enemy:
+            if self.enemy.is_del:
+                self.is_spawnd = False
+                self.enemy = None
+            
+        if room == self.room:
+            print(self.is_spawnd)
+            print(f"{self.cool_down}")
+            #time.sleep(0.1)
 
+        if not self.is_spawnd and self.cool_down <= 0 and room == self.room:
+            if self.is_boss and not self.has_spawned:
+                self.spawn_enemy(player)
+            else:
+                self.spawn_enemy(player)
+        elif not self.is_spawnd and self.cool_down > 0:
+            self.cool_down -= 1
+            print(f"{self.cool_down}")
+            #time.sleep(0.1)
+        
+        
+        
 
 class Afiliations:
     
@@ -888,6 +949,8 @@ class Afiliations:
     #    return out
 
 
+
+
 class Dungeon:
     def __init__(self, layer, type):
         room = [
@@ -935,6 +998,7 @@ class Dungeon:
         self.rooms = self.gen_dungeon(num_rooms=rand, layer=self.layer)
         self.rooms[0].show_on_map = True
         self.room = 0
+        self.spwaners = []
 
     def print_room(self, player):
         # clear()
@@ -1105,6 +1169,7 @@ class Room:
         self.layer = layer
         self.doors = []  # [target_room_id, ...]
         self.enemys = []
+        self.spawners = []
         self.traps = []
         self.cheasts = []
         self.shops = []
@@ -1122,6 +1187,7 @@ class Room:
         self.add_asets(layer)
         self.show_on_map = False
         self.conn = None
+        
 
     def place_enemy(self, width, height, layer="layer 1"):
         x = random.randint(1, width)
@@ -1142,7 +1208,7 @@ class Room:
                 e_level = self.level + random.randint(-3, 3)
                 if e_level <= 0:
                     e_level = 1
-                self.enemys.append(Enemy(j, e_level, self, x, y))
+                self.spawners.append(EnemySpawner(j, e_level, self, x, y,layer["min_level"],layer["max_level"]))
                 self.used_pos.append((x, y))
 
     def place_boss(self, width, height, layer="layer 1"):
@@ -1152,7 +1218,8 @@ class Room:
         e_level = self.level + random.randint(-3, 3)
         if e_level <= 0:
             e_level = 1
-        self.enemys.append(Enemy(layer["boss"], e_level, self, x, y, True))
+        self.spawners.append(EnemySpawner(layer["boss"], e_level, self, x, y,layer["min_level"],layer["max_level"],True))
+        #self.enemys.append(Enemy(layer["boss"], e_level, self, x, y, True))
 
     def place_trap(self, width, height, layer="layer 1"):
         rarety_temp_1 = 0
@@ -1631,6 +1698,7 @@ def enemy_move(dungeon, player):
         enemy = steck.pop(0)
         if enemy.is_del:
             try:
+                enemy.spawner.is_spawnd = False
                 room.enemys.remove(enemy)
                 del enemy
             except:
@@ -1639,6 +1707,7 @@ def enemy_move(dungeon, player):
             enemy.move(player, room, dungeon)
         try:
             if enemy.is_del:
+                enemy.spawner.is_spawnd = False
                 room.enemys.remove(enemy)
                 del enemy
         except:
