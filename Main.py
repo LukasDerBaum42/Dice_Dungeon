@@ -1,21 +1,21 @@
-from ast import Return
+from bdb import Breakpoint
 import math
 import os
 import random
 import time
+from ast import Return
 from random import Random, choice, randint
 #from tkinter import TclError
 
 import Game_text_data as GTD
 import Graphic
-from Graphic import inputT, printr, clear, wait
+from Graphic import clear, inputT, printr, wait
 from Items import GameItem
 
 # from collections import deque
 
 OPPOSITE = {"top": "bottom", "bottom": "top", "left": "right", "right": "left"}
 SIDES = ["top", "bottom", "left", "right"]
-
 
 
 def wrap_text(text: str, width: int = 72):
@@ -84,27 +84,29 @@ class Player:
         for i in GTD.player_cls[cls]["attacks"]:
             self.attacks.append(GTD.attacks[i])
             self.attacks_used[i] = 0
-        self.ele_afi = Afiliations(GTD.ele_list,GTD.player_cls[cls]["affiliations"]["elements"])
-        self.wapon_afi = Afiliations(GTD.wappon_sub_typse,GTD.player_cls[cls]["affiliations"]["wapons"])
+        self.ele_afi = Afiliations(
+            GTD.ele_list, GTD.player_cls[cls]["affiliations"]["elements"]
+        )
+        self.wapon_afi = Afiliations(
+            GTD.wappon_sub_typse, GTD.player_cls[cls]["affiliations"]["wapons"]
+        )
 
         self.hp: int = self.max_hp
         self.mp: int = self.max_mp
         self.item_stats_add()
         self.wapons_used = {}
         self.ele_afi_used = {}
-        
-        
-    def ele_afi_up(self,afi):
+
+    def ele_afi_up(self, afi):
         if afi:
             if afi in self.ele_afi_used:
                 self.ele_afi_used[afi] += 1
                 if self.ele_afi_used[afi] == 10:
-                    new_stets = {f"{afi}":self.ele_afi.afi[afi]+10}
-                    self.ele_afi.change(new_stets,5)
+                    new_stets = {f"{afi}": self.ele_afi.afi[afi] + 10}
+                    self.ele_afi.change(new_stets, 5)
                     self.ele_afi_used[afi] = 0
             else:
                 self.ele_afi_used[afi] = 1
-                    
 
     def next_level_xp(self, level: int):
         return (math.floor((((math.log(level**2, 10)) ** 2) + 1) * 5)) * 3
@@ -131,9 +133,9 @@ class Player:
             self.equipt_slots[slot][1] = None
         else:
             if self.equipt_slots[slot][0]:
-                #printr("\033[u")
+                # printr("\033[u")
 
-                printr(f"You have laredy a {slot} equipped",pos=-1)
+                printr(f"You have laredy a {slot} equipped", pos=-1)
                 choice = inputT("Do you want to swape? [y/n]>")
                 if choice == "Y" or choice == "E":
                     self.equiped_items.remove(self.equipt_slots[slot][1])
@@ -157,19 +159,19 @@ class Player:
         self.inventory.remove(item)
 
     def show_inventory(self, is_shop=False):
-        size = [2,4]
+        size = [2, 4]
+
         def items_per_page(is_selected: bool):
             out = 4 if is_selected else 8
             if out == 4:
-                size = [2,2]
+                size = [2, 2]
             else:
                 temp = Graphic.WIDTH // 40
                 temp2 = (Graphic.HEIGHT - 10) // 6
-                size = [temp,temp2]
+                size = [temp, temp2]
                 out = temp * temp2
-                #size = [2,4]
+                # size = [2,4]
             return out, size
-        
 
         is_item_selected: bool = False
         page: int = 0
@@ -182,7 +184,7 @@ class Player:
         curser = [0, 0, 0, 0]
         while show_inv:
             # clear()
-            per_page,size  = items_per_page(is_item_selected)
+            per_page, size = items_per_page(is_item_selected)
             max_page = max(0, (len(item_fillter) - 1) // per_page)
 
             choice, curser = Graphic.show_inventory(
@@ -195,7 +197,7 @@ class Player:
                 is_shop,
                 self.gold,
                 curser,
-                size
+                size,
             )
             printr(choice)
             # choice = inputT("> ", True).upper().strip()
@@ -221,7 +223,7 @@ class Player:
                             self.gold += selected_item.value
                             selected_item = None
                             is_item_selected = False
-                            per_page , size = items_per_page(is_item_selected)
+                            per_page, size = items_per_page(is_item_selected)
                             page = selected_num // per_page
                             selected_num = None
                     else:
@@ -272,7 +274,7 @@ class Player:
             elif is_item_selected and (choice == ""):
                 selected_item = None
                 is_item_selected = False
-                per_page , size = items_per_page(is_item_selected)
+                per_page, size = items_per_page(is_item_selected)
                 page = selected_num // per_page
                 selected_num = None
 
@@ -285,7 +287,7 @@ class Player:
                             selected_item = None
                             is_item_selected = False
                             selected_num = None
-                            per_page , size = items_per_page(is_item_selected) 
+                            per_page, size = items_per_page(is_item_selected)
                             page = choice // per_page
                             curser[2] = curser[0]
                             curser[3] = curser[1]
@@ -296,7 +298,7 @@ class Player:
                             selected_item = item_fillter[choice]
                             is_item_selected = True
                             selected_num = choice
-                            per_page , size = items_per_page(is_item_selected) 
+                            per_page, size = items_per_page(is_item_selected)
                             page = choice // per_page
                             curser[2] = curser[0]
                             curser[3] = curser[1]
@@ -331,7 +333,7 @@ class Player:
                 self.crit_chance_items += item.crit_chance
                 self.crit_bonus_items += item.crit_bonus
             elif item.main_type == "wapon":
-                afi = (self.wapon_afi.afi[item.sub_type] / 100)
+                afi = self.wapon_afi.afi[item.sub_type] / 100
                 self.max_hp_items += int(item.max_hp * afi)
                 self.max_mp_items += int(item.max_mp * afi)
                 self.atk_items += int(item.atk * afi)
@@ -340,7 +342,7 @@ class Player:
                 self.sp_def_items += int(item.sp_def * afi)
                 self.crit_chance_items += int(item.crit_chance * afi)
                 self.crit_bonus_items += int(item.crit_bonus * afi)
-        
+
         if self.equipt_slots["wappon"][1]:
             self.wapon_ele = self.equipt_slots["wappon"][1].ele
         else:
@@ -356,8 +358,8 @@ class Player:
         if self.xp >= self.max_xp:
             loop_levelup = True
             while loop_levelup:
-                choice =  Graphic.show_stats_level(self)
-                #choice = inputT("> ").strip()
+                choice = Graphic.show_stats_level(self)
+                # choice = inputT("> ").strip()
                 if choice == "1":
                     rand = Graphic.roll_dice(1, 6, -1)
                     self.max_hp += rand
@@ -469,10 +471,10 @@ class Player:
             px, py = dungeon.rooms[dungeon.room].door_positions[door_num]
             new_room = dungeon.rooms[dungeon.room]
             new_room.show_on_map = True
-            #print(dungeon.rooms)
+            # print(dungeon.rooms)
             for rom in dungeon.rooms:
                 for sp in dungeon.rooms[rom].spawners:
-                    sp.update(self,new_room)
+                    sp.update(self, new_room)
             self.x, self.y = px, py
         elif room.map[y][x] == "S":
             if Curent_Layer <= 0:
@@ -514,7 +516,7 @@ class Player:
 
 class Enemy:
     def __init__(
-        self, mob: str, level: int, room,spawner, x: int, y: int, is_boss: bool = False
+        self, mob: str, level: int, room, spawner, x: int, y: int, is_boss: bool = False
     ) -> None:
         self.room: Room = room
         self.mob: str = mob
@@ -526,10 +528,10 @@ class Enemy:
         self.spawner = spawner
         if is_boss:
             stats: dict[str, int] = GTD.bosses[mob]["stats"]
-            self.ele_afi = Afiliations(GTD.ele_list,GTD.bosses[mob]["affiliations"])
+            self.ele_afi = Afiliations(GTD.ele_list, GTD.bosses[mob]["affiliations"])
         else:
             stats: dict[str, int] = GTD.enemy_cls[mob]["stats"]
-            self.ele_afi = Afiliations(GTD.ele_list,GTD.enemy_cls[mob]["affiliations"])
+            self.ele_afi = Afiliations(GTD.ele_list, GTD.enemy_cls[mob]["affiliations"])
         self.max_move: int = stats["max_move"]
         self.min_move: int = stats["min_move"]
         self.max_hp: int = stats["max_hp"]
@@ -554,13 +556,13 @@ class Enemy:
         self.item_stats_add()
         self.wapons_used = {}
         self.ele_afi_used = {}
-        
-    def ele_afi_up(self,afi):
+
+    def ele_afi_up(self, afi):
         if afi in self.ele_afi_used:
             self.ele_afi_used[afi] += 1
             if self.ele_afi_used[afi] == 10:
-                new_stets = {f"{afi}":self.ele_afi.afi[afi]+10}
-                self.ele_afi.change(new_stets,5)
+                new_stets = {f"{afi}": self.ele_afi.afi[afi] + 10}
+                self.ele_afi.change(new_stets, 5)
                 self.ele_afi_used[afi] = 0
         else:
             self.ele_afi_used[afi] = 1
@@ -595,7 +597,7 @@ class Enemy:
                 self.crit_chance_items += item.crit_chance
                 self.crit_bonus_items += item.crit_bonus
             elif item.main_type == "wapon":
-                afi = (self.wapon_afi.afi[item.sub_type] / 100)
+                afi = self.wapon_afi.afi[item.sub_type] / 100
                 self.wapon_ele = item.ele
                 self.max_hp_items += int(item.max_hp * afi)
                 self.max_mp_items += int(item.max_mp * afi)
@@ -755,7 +757,25 @@ class Enemy:
         except:
             pass
         del (
-            self.room,self.spawner,self.mob,self.level,self.max_move,self.min_move,self.max_hp,self.max_mp,self.atk,self.sp_atk,self.def_,self.sp_def,self.crit_chance,self.crit_bonus,self.xp,self.gold,self.hp,self.mp,self.items,
+            self.room,
+            self.spawner,
+            self.mob,
+            self.level,
+            self.max_move,
+            self.min_move,
+            self.max_hp,
+            self.max_mp,
+            self.atk,
+            self.sp_atk,
+            self.def_,
+            self.sp_def,
+            self.crit_chance,
+            self.crit_bonus,
+            self.xp,
+            self.gold,
+            self.hp,
+            self.mp,
+            self.items,
         )
 
 class EnemySpawner:
@@ -801,6 +821,62 @@ class EnemySpawner:
             print(f"{self.cool_down}")
             #time.sleep(0.1)
 
+class EnemySpawner:
+    def __init__(
+        self,
+        mob: str,
+        level: int,
+        room,
+        x: int,
+        y: int,
+        min_l,
+        max_l,
+        is_boss: bool = False,
+    ) -> None:
+        self.room: Room = room
+        self.mob: str = mob
+        self.is_boss: bool = is_boss
+        self.x: int = x
+        self.y: int = y
+        self.level: int = level
+        self.min_l = min_l
+        self.max_l = max_l
+        self.has_spawned = False
+        self.is_spawnd = False
+        self.cool_down = 0
+        self.enemy = None
+
+    def spawn_enemy(self, player):
+        if self.is_boss:
+            e_level = self.level
+        else:
+            e_level = (self.level + player.level) // 2
+            # print(e_level)
+            # time.sleep(0.1)
+            if e_level < self.min_l:
+                e_level = self.min_l
+            if e_level > self.max_l:
+                e_level = self.max_l
+            # print(e_level,self.min_l,self.max_l)
+            # time.sleep(0.1)
+        self.enemy = Enemy(
+            self.mob, e_level, self.room, self, self.x, self.y, self.is_boss
+        )
+        self.room.enemys.append(self.enemy)
+        self.is_spawnd = True
+        self.has_spawned = True
+
+    def update(self, player, room = None):
+        if self.enemy:
+            if self.enemy.is_del:
+                self.is_spawnd = False
+                self.enemy = None
+
+        # if room == self.room:
+        # print(self.is_spawnd)
+        # print(f"{self.cool_down}")
+        # time.sleep(0.1)
+
         if not self.is_spawnd and self.cool_down <= 0 and room == self.room:
             if self.is_boss and not self.has_spawned:
                 self.spawn_enemy(player)
@@ -808,15 +884,14 @@ class EnemySpawner:
                 self.spawn_enemy(player)
         elif not self.is_spawnd and self.cool_down > 0:
             self.cool_down -= 1
-            print(f"{self.cool_down}")
-            #time.sleep(0.1)
-        
-        
-        
+            # print(f"{self.cool_down}")
+            # time.sleep(0.1)
+
 
 class Afiliations:
-    
-    def __init__(self,els:list[str],stats:dict[str,int]={}, bonus: int = 0) -> None:
+    def __init__(
+        self, els: list[str], stats: dict[str, int] = {}, bonus: int = 0
+    ) -> None:
         self.afi = {}
         self.temp_afi = {}
         self.len = len(self.afi)
@@ -825,40 +900,39 @@ class Afiliations:
         for i in els:
             self.afi[i] = 100
         add_l, sub_l, unblock_l = self.split_new(stats)
-        #print(add_l)
-        #print(sub_l)
-        #print(unblock_l)
-        #print(self)
-        self.bonus = self.sub(stats,sub_l,unblock_l,self.bonus)
-        self.bonus = self.add(stats,add_l, unblock_l, self.bonus)
+        # print(add_l)
+        # print(sub_l)
+        # print(unblock_l)
+        # print(self)
+        self.bonus = self.sub(stats, sub_l, unblock_l, self.bonus)
+        self.bonus = self.add(stats, add_l, unblock_l, self.bonus)
         self.fin_afi = {}
         self.add_temp()
-        
-    def change(self,stats,bonus):
+
+    def change(self, stats, bonus):
         self.bonus += bonus
         add_l, sub_l, unblock_l = self.split_new(stats)
-        #print(add_l)
-        #print(sub_l)
-        #print(unblock_l)
-        #print(self)
-        self.bonus = self.sub(stats,sub_l,unblock_l,self.bonus)
-        self.bonus = self.add(stats,add_l, unblock_l, self.bonus)
+        # print(add_l)
+        # print(sub_l)
+        # print(unblock_l)
+        # print(self)
+        self.bonus = self.sub(stats, sub_l, unblock_l, self.bonus)
+        self.bonus = self.add(stats, add_l, unblock_l, self.bonus)
         self.add_temp()
-        
-    def update_temp_afi(self,stats):
+
+    def update_temp_afi(self, stats):
         self.temp_afi = stats
         self.add_temp()
-        
+
     def add_temp(self):
         for i in self.afi:
-            if i in  self.temp_afi:
+            if i in self.temp_afi:
                 self.fin_afi[i] = self.afi[i] + self.temp_afi[i]
             else:
                 self.fin_afi[i] = self.afi[i]
-        self.main_afi = max(self.fin_afi,key=self.fin_afi.get)
-        
-    
-    def split_new(self,stats:dict[str,int]):
+        self.main_afi = max(self.fin_afi, key=self.fin_afi.get)
+
+    def split_new(self, stats: dict[str, int]):
         add_l = []
         sub_l = []
         unblock_l = []
@@ -871,68 +945,70 @@ class Afiliations:
             else:
                 unblock_l.append(i)
         return add_l, sub_l, unblock_l
-            
-    def sub(self,stats,sub_l,unblock_l,bonus:int = 0):
+
+    def sub(self, stats, sub_l, unblock_l, bonus: int = 0):
         for i in sub_l:
             temp = self.afi[i] - stats[i]
             bonus += temp
             self.afi[i] = stats[i]
-            
-        #print(self)
+
+        # print(self)
         return bonus
-    
-    def compute_subtraction(self,afi: dict[str, int],unblock_l: list[str],needed: int):
+
+    def compute_subtraction(
+        self, afi: dict[str, int], unblock_l: list[str], needed: int
+    ):
         keys = [k for k in unblock_l if k in afi and afi[k] > 0]
         result = {k: 0 for k in keys}
-    
+
         remaining = needed
         active = keys.copy()
-    
+
         while remaining > 0 and active:
             share = max(1, remaining // len(active))
             new_active = []
-    
+
             for k in active:
                 take = min(share, afi[k] - result[k])
                 result[k] += take
                 remaining -= take
-    
+
                 if result[k] < afi[k]:
                     new_active.append(k)
-    
+
                 if remaining == 0:
                     break
-    
+
             active = new_active
-    
+
         return result, remaining
-    
-    def add(self,stats,add_l, unblock_l,bonus:int = 0):
+
+    def add(self, stats, add_l, unblock_l, bonus: int = 0):
         needed = 0
         for i in add_l:
             temp = stats[i] - self.afi[i]
             needed += temp
-        #print(needed)
+        # print(needed)
         needed -= bonus
         if needed > 0:
-            #print("not enough points")
+            # print("not enough points")
             sub_ele, missing = self.compute_subtraction(self.afi, unblock_l, needed)
             for i in sub_ele:
                 self.afi[i] -= sub_ele[i]
                 bonus += sub_ele[i]
-        
+
         for i in add_l:
             temp = stats[i] - self.afi[i]
             if bonus >= temp:
                 bonus -= temp
             elif bonus < temp:
                 temp = int(bonus)
-                #print(temp,bonus)
+                # print(temp,bonus)
                 bonus = 0
-                #print(temp,bonus)
+                # print(temp,bonus)
             self.afi[i] = self.afi[i] + temp
-        
-        #print(self)
+
+        # print(self)
         return bonus
 
     def sum(self):
@@ -940,12 +1016,12 @@ class Afiliations:
         for i in self.afi:
             sum += self.afi[i]
         return sum
-        
-    #def __repr__(self) -> str:
+
+    # def __repr__(self) -> str:
     #    out = ''
     #    for i in self.afi:
     #        out += f'{i} = {self.afi[i]}  '
-    #    
+    #
     #    return out
 
 
@@ -967,20 +1043,16 @@ class Dungeon:
         gentype = "liniar" if layer < l_size else "endless"
         print(gentype)
         # self.layer_set = GTD.dungeons_preset[type][gentype]["layers"][layer]
-         # self.layer = self.layer_set["layer"]
+        # self.layer = self.layer_set["layer"]
         if gentype == "liniar":
             self.layer_set = GTD.dungeons_preset[type][gentype]["layers"][layer]
             self.layer = self.layer_set["layer"]
-            size_a = (
-                self.layer_set["Size"][0] * GTD.layers[self.layer]["size"][0]
-            ) 
-            size_b = (
-                self.layer_set["Size"][1] * GTD.layers[self.layer]["size"][1]
-            ) 
+            size_a = self.layer_set["Size"][0] * GTD.layers[self.layer]["size"][0]
+            size_b = self.layer_set["Size"][1] * GTD.layers[self.layer]["size"][1]
             self.level = self.layer_set["level"]
         else:
             e_size = len(GTD.dungeons_preset[type]["endless"]["layers"])
-            e_layer = (layer - l_size)
+            e_layer = layer - l_size
             self.layer = GTD.dungeons_preset[type][gentype]["layers"][e_layer % e_size]
             size_a = (
                 GTD.dungeons_preset[type][gentype]["Size"][0]
@@ -993,7 +1065,7 @@ class Dungeon:
             base_level = GTD.dungeons_preset[type][gentype]["start_level"]
             skale = GTD.dungeons_preset[type][gentype]["Skale"]
             self.level = int(base_level * (skale**e_layer))
-        rand = random.randint(min(size_a, size_b),max(size_a, size_b))
+        rand = random.randint(min(size_a, size_b), max(size_a, size_b))
         self.room_pos = []
         self.rooms = self.gen_dungeon(num_rooms=rand, layer=self.layer)
         self.rooms[0].show_on_map = True
@@ -1114,7 +1186,7 @@ class Dungeon:
 
                 # Create and connect room
 
-                new_room = Room(next_id, room_type, layer=layer,level=self.level)
+                new_room = Room(next_id, room_type, layer=layer, level=self.level)
                 rooms[next_id] = new_room
 
                 dir_a = random.choice(avail_sides)
@@ -1160,7 +1232,7 @@ class Room:
         width=None,
         height=None,
         layer="layer 1",
-        level= 5
+        level=5,
     ):
         self.id = room_id
         self.level = level
@@ -1208,7 +1280,11 @@ class Room:
                 e_level = self.level + random.randint(-3, 3)
                 if e_level <= 0:
                     e_level = 1
-                self.spawners.append(EnemySpawner(j, e_level, self, x, y,layer["min_level"],layer["max_level"]))
+                self.spawners.append(
+                    EnemySpawner(
+                        j, e_level, self, x, y, layer["min_level"], layer["max_level"]
+                    )
+                )
                 self.used_pos.append((x, y))
 
     def place_boss(self, width, height, layer="layer 1"):
@@ -1218,8 +1294,19 @@ class Room:
         e_level = self.level + random.randint(-3, 3)
         if e_level <= 0:
             e_level = 1
-        self.spawners.append(EnemySpawner(layer["boss"], e_level, self, x, y,layer["min_level"],layer["max_level"],True))
-        #self.enemys.append(Enemy(layer["boss"], e_level, self, x, y, True))
+        self.spawners.append(
+            EnemySpawner(
+                layer["boss"],
+                e_level,
+                self,
+                x,
+                y,
+                layer["min_level"],
+                layer["max_level"],
+                True,
+            )
+        )
+        # self.enemys.append(Enemy(layer["boss"], e_level, self, x, y, True))
 
     def place_trap(self, width, height, layer="layer 1"):
         rarety_temp_1 = 0
@@ -1232,7 +1319,7 @@ class Room:
             rarety_temp_1 = rarety_temp_2
             rarety_temp_2 += p
             if (rarety_temp_1 < rand_num) and (rand_num <= rarety_temp_2):
-                self.traps.append(Trape(width, height, j,self))
+                self.traps.append(Trape(width, height, j, self))
 
     def place_cheast(self, x, y):
         self.cheasts.append(Cheast(self, x, y))
@@ -1384,7 +1471,7 @@ class Room:
 
 
 class Trape:
-    def __init__(self, x, y, type,room):
+    def __init__(self, x, y, type, room):
         self.x = x
         self.y = y
         self.show = False
@@ -1695,6 +1782,8 @@ def enemy_move(dungeon, player):
         else:
             steck.append(enemy)
     while len(steck) > 0:
+        if player.hp <= 0:
+            break
         enemy = steck.pop(0)
         if enemy.is_del:
             try:
@@ -1783,7 +1872,9 @@ def select_player_class():
     struc = {f"{cls[i]}": f"{cls[i]}" for i in range(len(cls))}
 
     while True:
-        choice = Graphic.select_menu_page("Selacte a player class", struc, {"Q": "Q"})#
+        choice = Graphic.select_menu_page(
+            "Selacte a player class", struc, {"Q": "Q"}
+        )  #
         Graphic.update()
         return choice
 
@@ -1835,8 +1926,56 @@ def game_loop_room(player):
         elif choice == "UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT B A":
             CHEATS_ON = True
             continue
-        if CHEATS_ON:
-            if choice == "GIVE ALL":
+
+        elif player.moves >= 0:
+            if any(c not in ("W", "A", "S", "D") for c in choice):
+                printr("Invalid inputT")
+                wait(1)
+                continue
+            elif len(choice) <= player.moves:
+                for i in choice:
+                    out = player.move(i, dungeon)
+                    if out == "brake":
+                        wait(1)
+                        break
+                continue
+        elif player.moves == -2:
+            if choice == "R":
+                player.roll_for_move()
+                continue
+                # wait(1)
+            elif choice == "P":
+                player.rest()
+                player.moves = -1
+                continue
+
+        elif choice == "GIVE ALL" and CHEATS_ON:
+            for rarity in [
+                "common",
+                "uncommon",
+                "rare",
+                "epic",
+                "legendary",
+                "unique",
+            ]:
+                for item_type in [
+                    "sword",
+                    "knife",
+                    "bow",
+                    "stafe",
+                    "spear",
+                    "chestplate",
+                    "helmet",
+                    "boots",
+                    "pants",
+                    "pan",
+                    "gloves",
+                    "sheald",
+                ]:  # , "consumable"
+                    player.add_to_inv(GameItem(rarity, item_type, 100))
+            continue
+        elif choice == "GIVE ALL ALL" and CHEATS_ON:
+            for _ in range(5):
                 for rarity in [
                     "common",
                     "uncommon",
@@ -1859,72 +1998,27 @@ def game_loop_room(player):
                         "gloves",
                         "sheald",
                     ]:  # , "consumable"
-                        player.add_to_inv(GameItem(rarity, item_type, 100))
+                        for _ in range(5):
+                            player.add_to_inv(GameItem(rarity, item_type, 100))
                 continue
-            elif choice == "GIVE ALL ALL":
-                for _ in range(5):
-                    for rarity in [
-                        "common",
-                        "uncommon",
-                        "rare",
-                        "epic",
-                        "legendary",
-                        "unique",
-                    ]:
-                        for item_type in [
-                            "sword",
-                            "knife",
-                            "bow",
-                            "stafe",
-                            "spear",
-                            "chestplate",
-                            "helmet",
-                            "boots",
-                            "pants",
-                            "pan",
-                            "gloves",
-                            "sheald",
-                        ]:  # , "consumable"
-                            for _ in range(5):
-                                player.add_to_inv(GameItem(rarity, item_type, 100))
-                    continue
-            elif choice == "LEVEL UP":
-                player.Level(player.max_xp + 1)
-                continue
-            elif choice == "GIVE ITEM":
-                player.add_to_inv(GameItem("common", "sword", 10))
-                continue
-            elif choice == "FIGHT":
-                enemy = Enemy("Zomby", random.randint(1, 5), 0, 5, 5)
-                player, loop_room = fight_loop(player, enemy)
-                continue
-            elif choice == "TP":
-                choice = inputT("> ").upper().strip()
-                dungeon.room = int(choice)
-        if player.moves == -2:
-            if choice == "R":
-                player.roll_for_move()
-                continue
-                # wait(1)
-            elif choice == "P":
-                player.rest()
-                player.moves = -1
-                continue
-
-        if player.moves >= 0:
-            if any(c not in ("W", "A", "S", "D") for c in choice):
-                printr("Invalid inputT")
-                wait(1)
-                continue
-            elif len(choice) <= player.moves:
-                for i in choice:
-                    out = player.move(i, dungeon)
-                    if out == "brake":
-                        wait(1)
-                        break
-                continue
-        if player.moves == -1 and choice == "":
+        elif choice == "LEVEL UP" and CHEATS_ON:
+            player.Level(player.max_xp + 1)
+            continue
+        elif choice == "GIVE ITEM" and CHEATS_ON:
+            player.add_to_inv(GameItem("common", "sword", 10))
+            continue
+        elif choice == "FIGHT" and CHEATS_ON:
+            enemy = Enemy("Zomby", random.randint(1, 5), 0, 5, 5)
+            player, loop_room = fight_loop(player, enemy)
+            continue
+        elif choice == "TP" and CHEATS_ON:
+            choice = inputT("> ").upper().strip()
+            dungeon.room = int(choice)
+        elif player.moves == -1:
             enemy_move(dungeon, player)
+            for rom in dungeon.rooms:
+                for sp in dungeon.rooms[rom].spawners:
+                    sp.update(player)
             player.moves = -2
         else:
             printr("Invalid inputT")
@@ -1934,6 +2028,7 @@ def game_loop_room(player):
 def p_chance(chance):
     rand = random.randint(1, 100)
     return True if rand <= chance else False
+
 
 def fight_won(player, enemy):
     gold_gain = f"{enemy.gold} Gold"
@@ -1965,27 +2060,23 @@ def you_died():
     printr("You died")
     inputT("\nPress Enter to return...")
 
+
 def fight_selact_attack(player, enemy, curser):
     clear()
-    choice, curser = Graphic.fight_selact_attack(player, enemy,curser)
+    choice, curser = Graphic.fight_selact_attack(player, enemy, curser)
     return choice, curser
 
-    
-    
-def get_attaker_stats(attaker,defender, sel):
+
+def get_attaker_stats(attaker, defender, sel):
     attake = attaker.attacks[sel]
     atk_ele = attake["ele"]
     p_crit = (
-        attaker.crit_chance
-        + attaker.crit_chance_items
-        + attake["stats"]["crit_chance"]
+        attaker.crit_chance + attaker.crit_chance_items + attake["stats"]["crit_chance"]
     )
     p_crit_bonus = (
-        attaker.crit_bonus
-        + attaker.crit_bonus_items
-        + attake["stats"]["crit_bonus"]
+        attaker.crit_bonus + attaker.crit_bonus_items + attake["stats"]["crit_bonus"]
     )
-    
+
     crit = p_chance(p_crit)
     atk = attaker.atk + attaker.atk_items
     atk = int(atk * (attake["stats"]["atk"] / 100))
@@ -1995,11 +2086,11 @@ def get_attaker_stats(attaker,defender, sel):
         afi_stat = attaker.ele_afi.fin_afi[atk_ele] / 100
         atk = int(atk * afi_stat)
         sp_atk = int(sp_atk * afi_stat)
-        
+
         if attaker.wapon_ele == atk_ele:
             atk = int(atk * 1.5)
             sp_atk = int(sp_atk * 1.5)
-        
+
         if defender.ele_afi.main_afi in GTD.elementare[atk_ele]["atk"]:
             atk = int(atk * 2)
             sp_atk = int(sp_atk * 2)
@@ -2007,30 +2098,30 @@ def get_attaker_stats(attaker,defender, sel):
     sp_atk += int(sp_atk * (p_crit_bonus / 100)) if crit else 0
     attaker.ele_afi_up(atk_ele)
     return atk, sp_atk, crit
-        
 
-def get_deffender_stats(attaker,defender, sel):
+
+def get_deffender_stats(attaker, defender, sel):
     attake = attaker.attacks[sel]
     atk_ele = attake["ele"]
-    
+
     def_ = defender.def_ + defender.def_items
     sp_def = defender.sp_def + defender.sp_def_items
     if atk_ele:
         afi_stat = defender.ele_afi.fin_afi[atk_ele] / 100
         def_ = int(def_ * afi_stat)
         sp_def = int(sp_def * afi_stat)
-        
+
         if defender.ele_afi.main_afi in GTD.elementare[atk_ele]["def"]:
             def_ = int(def_ * 2)
             sp_def = int(sp_def * 2)
     return def_, sp_def
 
 
-def enemy_fight_ai(attacker,deffender):
-    rand = random.randint(0,3)
+def enemy_fight_ai(attacker, deffender):
+    rand = random.randint(0, 3)
     return rand
 
-    
+
 def fight_roll_dice(player, enemy, start, end, sel=0, advan=0, atk=True):
     rand = 0
     advan_e = 0
@@ -2040,21 +2131,22 @@ def fight_roll_dice(player, enemy, start, end, sel=0, advan=0, atk=True):
     else:
         attaker = enemy
         deffender = player
-        sel = enemy_fight_ai(attaker,deffender)
+        sel = enemy_fight_ai(attaker, deffender)
     clear()
-    Graphic.print_fight_UI(player,enemy)
-    rand, rand_e = Graphic.fight_roll_dice(player,enemy,start,end,advan,advan_e, not(atk))
-    
-    
+    Graphic.print_fight_UI(player, enemy)
+    rand, rand_e = Graphic.fight_roll_dice(
+        player, enemy, start, end, advan, advan_e, not (atk)
+    )
+
     if atk:
         rand_a = rand
         rand_d = rand_e
     else:
         rand_a = rand_e
         rand_d = rand
-    
-    base_atk, base_sp_atk, crit = get_attaker_stats(attaker,deffender,sel)
-    base_def, base_sp_def = get_deffender_stats(attaker,deffender,sel)
+
+    base_atk, base_sp_atk, crit = get_attaker_stats(attaker, deffender, sel)
+    base_def, base_sp_def = get_deffender_stats(attaker, deffender, sel)
     # print("base atk:",base_atk)
     # print("base sp atk:",base_sp_atk)
     base_atk *= rand_a
@@ -2074,14 +2166,16 @@ def fight_roll_dice(player, enemy, start, end, sel=0, advan=0, atk=True):
     # print("strangth:", strangth)
     # print("sp strangth:", sp_strangth)
     damage = strangth + sp_strangth
-    #print("damage:",damage)
+    # print("damage:",damage)
     deffender.hp -= damage
     sel_atk = list(attaker.attacks_used)[sel]
-    Graphic.print_atk_damage(sel_atk,base_atk,base_sp_atk,base_def,base_sp_def,crit,damage,atk)
+    Graphic.print_atk_damage(
+        sel_atk, base_atk, base_sp_atk, base_def, base_sp_def, crit, damage, atk
+    )
     inputT("\nPress Enter to return...")
-    
 
     return player, enemy
+
 
 def fight_loop(player, enemy, player_start=True):
     global loop_fight, loop_room
@@ -2120,7 +2214,7 @@ def fight_loop(player, enemy, player_start=True):
         elif turn == 1:
             choice, curser = fight_selact_attack(player, enemy, curser)
             # choice = inputT(">").upper().strip()
-            
+
             printr(choice)
             try:
                 if choice == "Q":
@@ -2129,8 +2223,8 @@ def fight_loop(player, enemy, player_start=True):
                 elif choice == "S":
                     printr(enemy)
                     inputT("\nPress Enter to return...")
-                elif (0 <= int(choice)-1) and (int(choice)-1 <= 3):
-                    attack_num = int(choice)-1
+                elif (0 <= int(choice) - 1) and (int(choice) - 1 <= 3):
+                    attack_num = int(choice) - 1
                     attack_used = list(player.attacks_used)[attack_num]
                     attack_max_used = player.attacks[attack_num]["stats"]["max_use"]
                     wappon = player.equipt_slots["wappon"]
@@ -2139,15 +2233,17 @@ def fight_loop(player, enemy, player_start=True):
                         pass
                     else:
                         if wappon[1] == None:
-                            printr('You dont have a wapon')
-                            #print(needed_wappon)
-                            #print(wappon[1])
+                            printr("You dont have a wapon")
+                            # print(needed_wappon)
+                            # print(wappon[1])
                             wait(10)
                             continue
                         elif not wappon[1].sub_type in needed_wappon:
-                            printr(f'You dont have the requred wapon, you need a {needed_wappon}')
-                            #print(needed_wappon)
-                            #print(wappon[1].sub_type)
+                            printr(
+                                f"You dont have the requred wapon, you need a {needed_wappon}"
+                            )
+                            # print(needed_wappon)
+                            # print(wappon[1].sub_type)
                             wait(10)
                             continue
                     if player.attacks_used[attack_used] >= attack_max_used:
@@ -2188,10 +2284,10 @@ if __name__ == "__main__":
             if Dungeon_type == "Q":
                 continue
             Layers.append(Dungeon(Curent_Layer, Dungeon_type))
-            #for _ in range(0):
+            # for _ in range(0):
             #    Curent_Layer += 1
             #    Layers.append(Dungeon(Curent_Layer, Dungeon_type))
-            #print(len(Layers))
+            # print(len(Layers))
             DUNGEON = Layers[Curent_Layer]
             player = Player(cls)
             player.add_to_inv(GameItem("legendary", "sword", 75))

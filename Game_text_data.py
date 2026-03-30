@@ -248,7 +248,7 @@ player_cls = {
             "crit_chance": 2,
             "crit_bonus": 10,
         },
-        "item": ("common", "sword", 1),
+        "item": ("common", "sword", 2),
         "affiliations": {
                 "elements": {"fire": 150, "wind": 90, "water": 90, "stone": 70},
                 "wapons": {"sword": 120, "bow": 95, "stafe": 90}
