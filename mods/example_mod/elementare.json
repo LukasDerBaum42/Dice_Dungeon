@@ -1,0 +1,7 @@
+{
+  "mod": { 
+    "atk": ["plant", "ice", "metal","fire","water","stone","poison","sound","lava","steam"], 
+    "def": ["wind", "plant","electric","light","dark","psychic","sound","lava","steam","water","stone","poison"], 
+    "color": "#FF0000" 
+  }
+}

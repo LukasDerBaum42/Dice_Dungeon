@@ -1,20 +1,20 @@
 {
   "Mod Dungeon": {
-        "layers": [
-            "layer Mod",
-            "layer Mod",
-            "layer Mod",
-            "layer Mod",
-            "layer Mod",
-            "layer Mod",
-            "layer Mod",
-            "layer Mod",
-            "layer Mod",
-            "layer Mod"
-        ],
-        "size": [
-            100,
-            160
-        ]
+    "L_size": 10,
+        "liniar": {
+          "layers": [
+            { "layer": "layer Mod", "level": 10, "Size": [100, 60] },
+            { "layer": "layer Mod", "level": 20, "Size": [100, 60] },
+            { "layer": "layer Mod", "level": 30, "Size": [100, 60] },
+            { "layer": "layer Mod", "level": 50, "Size": [100, 60] },
+            { "layer": "layer Mod", "level": 60, "Size": [100, 60] },
+            { "layer": "layer Mod", "level": 80, "Size": [100, 60] },
+            { "layer": "layer Mod", "level": 100, "Size": [100, 60] },
+            { "layer": "layer Mod", "level": 120, "Size": [100, 60] },
+            { "layer": "layer Mod", "level": 150, "Size": [100, 60] },
+            { "layer": "layer Mod", "level": 180, "Size": [100, 60] }
+          ]
+        },
+        "endless": { "layers": ["layer Mod"], "start_level": 200, "Size": [100, 100], "Skale": 1.2 }
     }
 }

@@ -1,5 +1,3 @@
-
-
 import os
 import random
 import re
@@ -15,7 +13,7 @@ import Game_text_data as GTD
 
 # group 1
 
-FPS = 60
+FPS = 120
 os.system("cls" if os.name == "nt" else "clear")
 hex_codes = [
     "0",
@@ -48,7 +46,7 @@ WIDTH, HEIGHT = shutil.get_terminal_size(fallback=(80, 30))
 def get_size():
     global WIDTH, HEIGHT, FRAME_BUFER
     WIDTH, HEIGHT = shutil.get_terminal_size(fallback=(80, 30))
-    while WIDTH < 80 or HEIGHT < 30:#
+    while WIDTH < 80 or HEIGHT < 30:
         WIDTH, HEIGHT = shutil.get_terminal_size(fallback=(80, 30))
         os.system("cls" if os.name == "nt" else "clear")
         FRAME_BUFER = []
@@ -57,7 +55,7 @@ def get_size():
         print(f"{get_color_code(color)}min height is 30 curent is {HEIGHT}{get_color_code("none")}")
         color = "red" if WIDTH < 80 else "green"
         print(f"{get_color_code(color)}min width is 80 curent is {WIDTH}{get_color_code("none")}")
-        wait(0.1)
+        time.sleep(0.1)
 
 
 
@@ -269,37 +267,42 @@ FRAMR_RATE = [time.time()]
 
 def up_frame_rate():
     global FRAMR_RATE
-    if len(FRAMR_RATE) > 10:
+    if len(FRAMR_RATE) > 20:
         _ = FRAMR_RATE.pop(0)
         
     FRAMR_RATE.append(time.time())
     
     if len(FRAMR_RATE) >= 2:
-        temp = []
+        out = 0
         for i in range(1,len(FRAMR_RATE)):
             fps = FRAMR_RATE[i] - FRAMR_RATE[i -1]
             if i == len(FRAMR_RATE)-1:
-                ft = int(fps * 100000)
+                ft = round(fps * 100000)
             fps = 1 / fps
-            temp.append(fps)
-        out = int(sum(temp)/ len(temp))
-        return out, ft
+            out = (out+fps)/2
+            #temp.append(fps)
+        #out = int(sum(temp)/ len(temp))
+        out = round(out)
+        exect_t = round(1 / (FRAMR_RATE[-1] - FRAMR_RATE[-2]))
+        return out,exect_t, ft
     else:
-        return 0 ,0
+        return 0 ,0,0
 
 FRAME_BUFER = []
+fps = ""
 
 def print_replace(lines,prio = True):
     """
     Prints a list of strings and replaces them in-place
     on subsequent calls.
     """
-    global FRAME_BUFER
-    if 1 // (time.time() - FRAMR_RATE[-1]) > FPS and not prio:
+    global FRAME_BUFER, fps
+    if 1 // (time.time() - FRAMR_RATE[-1]) >= FPS and not prio:
         #wait((time.time() - FRAMR_RATE[-1]) * ((1 / (time.time() - FRAMR_RATE[-1])) / (FPS + 10)))
         return
 
     #print(PRINT_BUFFER)
+    fps = str(up_frame_rate())
     out_1 = []
     for line_s in lines:
         out_2 = []
@@ -331,7 +334,6 @@ def print_replace(lines,prio = True):
 
     # Clear from cursor to end of screen
 
-    fps = str(up_frame_rate())
     #print(out_1)
     sys.stdout.write("\033[H\033[2Kfps " + fps + "\033[E")
     for i, line in enumerate(out_1):
@@ -402,9 +404,9 @@ def get_color_code(color: str = "white",bonus:list = []):
         g = hex_codes.index(hex[3]) * 16 + hex_codes.index(hex[4])
         b = hex_codes.index(hex[5]) * 16 + hex_codes.index(hex[6])
         if "bg" in bonus:
-            out = f"\033[48;2;{r};{g};{b}m"
+            out = f"\x1b[48;2;{r};{g};{b}m"
         else:
-            out = f"\033[38;2;{r};{g};{b}m"
+            out = f"\x1b[38;2;{r};{g};{b}m"
     else:
         printr(f"INVALED COLOR {color} ", "red")
         return None
@@ -419,7 +421,7 @@ def get_color_code(color: str = "white",bonus:list = []):
         
         if "hi" in bonus:
            out = str(int(out)+60)
-        out = f"\033[{color_c}{out}m"
+        out = f"\x1b[{color_c}{out}m"
     return out
 
 
@@ -770,6 +772,80 @@ def menu_handler(curser,box_menu_shape:None|list=None,header_menu_shape:None|lis
     # printr(f"{curser[0] + y_off},{curser[1]}")
     return None, curser
 
+def select_menu_page(
+    title: str|None, structure: dict[str, str], special_key: dict[str, str] = {} ,other = None, cursor_pos = 0
+):
+    elements = [i for i in structure]
+    max_el_len = max([plen(structure[i]) for i in structure]) + 6
+    el_len = len(elements)
+    temp = None
+    while True:
+        clear()
+        if title:
+            print_titelbar(title, 35)
+        if other:
+            printr(other)
+        if el_len < HEIGHT - 10:
+            for i in range(el_len):
+                if i == cursor_pos:
+                    printr(
+                        f"> {fixed_width(f'[{i + 1}] {structure[elements[i]]}', max_el_len)}",
+                        "yellow",
+                    )
+                else:
+                    printr(
+                        f"{fixed_width(f'[{i + 1}] {structure[elements[i]]}', max_el_len)}"
+                    )
+        else:
+            if temp:
+                if cursor_pos >= temp[1]:
+                    if temp[1]+1 <= el_len:
+                        temp[0] += 1
+                        temp[1] += 1
+                    else:
+                        temp = [0,HEIGHT - 10]
+                elif cursor_pos < temp[0] and temp[0]-1 >= 0:
+                    temp[0] -= 1
+                    temp[1] -= 1
+            else:
+                temp = [0,HEIGHT - 10]
+            for i in range(*temp):
+                if i == cursor_pos:
+                    printr(
+                        f"> {fixed_width(f'[{i + 1}] {structure[elements[i]]}', max_el_len)}",
+                        "yellow",
+                    )
+                else:
+                    printr(
+                        f"{fixed_width(f'[{i + 1}] {structure[elements[i]]}', max_el_len)}"
+                    )
+        update()
+        choic = inputT("> ", True if el_len > 9 else False, True)
+        if choic == "UP":
+            cursor_pos = (cursor_pos - 1) % el_len
+        elif choic == "DOWN":
+            cursor_pos = (cursor_pos + 1) % el_len
+        elif choic == "ENTER":
+            return elements[cursor_pos] , cursor_pos
+        else:
+            if choic in special_key:
+                return special_key[choic] , cursor_pos
+            else:
+                try:
+                    choic = int(choic)
+                    if choic > 0 and choic <= el_len:
+                       return elements[choic - 1], cursor_pos
+                    else:
+                        printr("nop")
+                        update()
+                        wait(1)
+                except:
+                    printr("nop nop")
+                    update()
+                    wait(1)
+
+
+
 class NoneGeneral:
     def __init__(self) -> None:
         pass
@@ -1015,7 +1091,7 @@ def show_stats_level(self) -> None:
     "9":f"Move {self.min_move}-{self.max_move}",
     }
     other = f"Level {self.level} => {self.level + 1}\nXP {self.xp}/{self.max_xp} => {self.xp - self.max_xp}/{self.next_level_xp(self.level+1)}\nSelect stat to level up\n"
-    choice = select_menu_page(title="Level Up",structure=struc,other = other)
+    choice,_ = select_menu_page(title="Level Up",structure=struc,other = other)
     return choice
     #printr(f"""Level {self.level} => {self.level + 1}
 #XP {self.xp}/{self.max_xp} => {self.xp - self.max_xp}/{self.next_level_xp(self.level + 1)}
@@ -1290,11 +1366,11 @@ def shop_hader(page, max_page, gold, curser=[0, 0, 0, 0]):
         "PAGE": "Go to Page",
     }
     printr("")
-    out = header_options(ops, curser, 45, True)
+    out,shape = header_options(ops, curser, 45, True)
     # printr(f""" Q = Close | N = Next | P = Previous | H = Help
     # E = Buy |  PAGE = Go to Page | Number = Select Item""")
     printr(center_text("", 78, "="))
-    return out
+    return out, shape
 
 
 def shop_buy_page(
@@ -1306,10 +1382,11 @@ def shop_buy_page(
     selected_item,
     gold,
     curser=[0, 0,0,0],
+    size=[2,4]
 ):
     while True:
         clear()
-        out = shop_hader(page, max_page, gold, curser)
+        out,header_shape = shop_hader(page, max_page, gold, curser)
         if is_item_selected:
             render_item_details(selected_item)
 
@@ -1317,19 +1394,23 @@ def shop_buy_page(
         end = start + per_page
         items = item_fillter[start:end]
         offset = page * per_page
-        item_render = build_item_render(items, True)
+        item_render = build_item_render(items, True,selected_item,offset)
+        
         if curser[0] > -1:
-            sel = curser[0] * 2 + curser[1]
+            sel = (curser[0] * 2 + curser[1]) 
         else:
             sel = None
-        render_item_boxes(item_render, offset, sel)
-        choice = inputT("> ", True, True)
+
+        sel, box_shape = box_menu(item_render,curser,size)
+
+        choice = inputT("> ", True)
         if choice not in ["UP", "DOWN", "LEFT", "RIGHT", "ENTER"]:
             return choice, curser
         else:
             if choice == "ENTER":
                 if sel != None:
-                    return sel + 1, curser
+                    printr(sel + 1 + offset)
+                    return sel + 1 + offset, curser
                 elif out:
                     return out, curser
             elif choice == "UP":
@@ -1348,95 +1429,28 @@ def shop_buy_page(
                 curser[2] = curser[0]
                 curser[3] = curser[1]
                 curser[1] += 1
-            if curser[0] >= 0:
-                if curser[1] < 0:
-                    if page > 0:
-                        curser[1] = 1
-                        return "P", curser
-                    else:
-                        curser[1] = 0
-                elif curser[1] > 1:
-                    if page < max_page:
-                        curser[1] = 0
-                        return "N", curser
-                    else:
-                        curser[1] = 1
-                elif curser[0] > ceil(len(item_render) / 2) - 1:
-                    curser[0] = ceil(len(item_render) / 2) - 1
+                
+            choice, curser = menu_handler(curser,box_shape,header_shape,page,max_page)
+            if choice:
+                return choice, curser
+#            if curser[0] >= 0:
+#                if curser[1] < 0:
+#                    if page > 0:
+#                        curser[1] = 1
+#                        return "P", curser
+#                    else:
+#                        curser[1] = 0
+#                elif curser[1] > 1:
+#                    if page < max_page:
+#                        curser[1] = 0
+#                        return "N", curser
+#                    else:
+#                        curser[1] = 1
+#                elif curser[0] > ceil(len(item_render) / 2) - 1:
+#                    curser[0] = ceil(len(item_render) / 2) - 1
 
 
-def select_menu_page(
-    title: str|None, structure: dict[str, str], special_key: dict[str, str] = {} ,other = None
-):
-    coursr_pos = 0
-    elements = [i for i in structure]
-    max_el_len = max([len(structure[i]) for i in structure]) + 6
-    el_len = len(elements)
-    temp = None
-    while True:
-        clear()
-        if title:
-            print_titelbar(title, 35)
-        if other:
-            printr(other)
-        if el_len < HEIGHT - 10:
-            for i in range(el_len):
-                if i == coursr_pos:
-                    printr(
-                        f"> {fixed_width(f'[{i + 1}] {structure[elements[i]]}', max_el_len)}",
-                        "yellow",
-                    )
-                else:
-                    printr(
-                        f"{fixed_width(f'[{i + 1}] {structure[elements[i]]}', max_el_len)}"
-                    )
-        else:
-            if temp:
-                if coursr_pos >= temp[1]:
-                    if temp[1]+1 <= el_len:
-                        temp[0] += 1
-                        temp[1] += 1
-                    else:
-                        temp = [0,HEIGHT - 10]
-                elif coursr_pos < temp[0] and temp[0]-1 >= 0:
-                    temp[0] -= 1
-                    temp[1] -= 1
-            else:
-                temp = [0,HEIGHT - 10]
-            for i in range(*temp):
-                if i == coursr_pos:
-                    printr(
-                        f"> {fixed_width(f'[{i + 1}] {structure[elements[i]]}', max_el_len)}",
-                        "yellow",
-                    )
-                else:
-                    printr(
-                        f"{fixed_width(f'[{i + 1}] {structure[elements[i]]}', max_el_len)}"
-                    )
-        update()
-        choic = inputT("> ", True if el_len > 9 else False, True)
-        if choic == "UP":
-            coursr_pos = (coursr_pos - 1) % el_len
-        elif choic == "DOWN":
-            coursr_pos = (coursr_pos + 1) % el_len
-        elif choic == "ENTER":
-            return elements[coursr_pos]
-        else:
-            if choic in special_key:
-                return special_key[choic]
-            else:
-                try:
-                    choic = int(choic)
-                    if choic > 0 and choic <= el_len:
-                        return elements[choic - 1]
-                    else:
-                        printr("nop")
-                        update()
-                        wait(1)
-                except:
-                    printr("nop nop")
-                    update()
-                    wait(1)
+
 
 
 
@@ -1485,7 +1499,7 @@ def print_dungeon_map(dungeon, spacing=1, room_size=2, CHEATS_ON=False):
     width = (maxx - minx + 1) * (room_size + (spacing * 2)) - spacing
     if width % 2 == 1:
         width += 1
-    height = (maxy - miny + 1) * (room_size + spacing) - spacing
+    height = (maxy - miny + 1) * (ceil(room_size/2) + spacing) - spacing
 
     grid = [[" " for _ in range(width)] for _ in range(height)]
 
@@ -1496,48 +1510,29 @@ def print_dungeon_map(dungeon, spacing=1, room_size=2, CHEATS_ON=False):
         # continue
         gx, gy = room.pos
         gx = (gx - minx) * (room_size + (spacing * 2))
-        gy = (gy - miny) * (room_size + spacing)
+        gy = (gy - miny) * (ceil(room_size/2) + spacing)
 
         rid_str = str(room.id)
         if room.show_on_map or CHEATS_ON:
+            color = 'None'
             if room.id == dungeon.room:
-                if len(rid_str) < room_size:
-                    for i in range(room_size - len(rid_str)):
-                        grid[gy][gx + len(rid_str) + i] = "\33[32m#\33[0m"
-                grid[gy][gx : gx + len(rid_str)] = [
-                    f"\33[32m{i}\33[0m" for i in rid_str
-                ]
-                for i in range(room_size - 1):
-                    for j in range(room_size):
-                        grid[gy + 1 + i][gx + j] = "\33[32m#\33[0m"
+                color = get_color_code('green')
             elif room.type == "boss":
-                if len(rid_str) < room_size:
-                    for i in range(room_size - len(rid_str)):
-                        grid[gy][gx + len(rid_str) + i] = "\33[31m#\33[0m"
-                grid[gy][gx : gx + len(rid_str)] = [
-                    f"\33[31m{i}\33[0m" for i in rid_str
-                ]
-                for i in range(room_size - 1):
-                    for j in range(room_size):
-                        grid[gy + 1 + i][gx + j] = "\33[31m#\33[0m"
+                color = get_color_code('red')
             elif room.type == "merchant":
-                if len(rid_str) < room_size:
-                    for i in range(room_size - len(rid_str)):
-                        grid[gy][gx + len(rid_str) + i] = "\33[34m#\33[0m"
-                grid[gy][gx : gx + len(rid_str)] = [
-                    f"\33[34m{i}\33[0m" for i in rid_str
-                ]
-                for i in range(room_size - 1):
-                    for j in range(room_size):
-                        grid[gy + 1 + i][gx + j] = "\33[34m#\33[0m"
+                color = get_color_code('blue')
             else:
-                if len(rid_str) < room_size:
-                    for i in range(room_size - len(rid_str)):
-                        grid[gy][gx + len(rid_str) + i] = "#"
-                grid[gy][gx : gx + len(rid_str)] = list(rid_str)
-                for i in range(room_size - 1):
-                    for j in range(room_size):
-                        grid[gy + 1 + i][gx + j] = "#"
+                color = ''
+                
+            if len(rid_str) < room_size:
+                for i in range(room_size - len(rid_str)):
+                    grid[gy][gx + len(rid_str) + i] = f"{color}#\33[0m"
+            grid[gy][gx : gx + len(rid_str)] = [f"{color}{i}\33[0m" for i in rid_str]
+            
+            for i in range(ceil(room_size/2) - 1):
+                for j in range(room_size):
+                    grid[gy + 1 + i][gx + j] = f"{color}#\33[0m"
+                        
         room_coords[room.id] = (gx, gy)
 
     # 4. Linien nur zwischen Räumen in Zwischenzellen
@@ -1550,8 +1545,8 @@ def print_dungeon_map(dungeon, spacing=1, room_size=2, CHEATS_ON=False):
             cgx, cgy = room_coords[conn]
             # Vertikal
             if gx == cgx:
-                start = min(gy + room_size, cgy)
-                end = max(gy, cgy + room_size)
+                start = min(gy + ceil(room_size/2), cgy)
+                end = max(gy, cgy + ceil(room_size/2))
                 for y_pos in range(start, end):
                     if grid[y_pos][gx] == " ":
                         grid[y_pos][gx] = "|"
@@ -1568,13 +1563,16 @@ def print_dungeon_map(dungeon, spacing=1, room_size=2, CHEATS_ON=False):
     # printr(dungeon.room_pos)
     print_titelbar("Dungeon Map",width+6)
     
+    out = ''
     for row in grid:
         if any(i != " " for i in row):
             temp = "".join(row)
             # print(temp)
             # printr(plen(temp))
             # printr(len(temp))
-            printr(temp, strip=False)
+            out += temp + '\n'
+            #printr(temp, strip=False)
+    printr(out, strip=False)
     # for i in rooms:
     # printr('room:',i,'doors',rooms[i].doors)
 
@@ -1614,4 +1612,5 @@ def print_afi(afi):
         printr(f"{name}:{line}\n")
     inputT()
 	
-	
+def print_mod_menu():
+    pass

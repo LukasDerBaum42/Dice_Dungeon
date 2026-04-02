@@ -12,16 +12,11 @@
       "crit_chance": 10,
       "crit_bonus": 15
     },
-    "item": [
-      "rare",
-      "stafe",
-      30
-    ],
-    "attacks": [
-      "Mod slash",
-      "Mod Swing",
-      "Mod Coil",
-      "Mod Bite"
-    ]
+    "item": ["rare","stafe",30],
+    "affiliations": {
+      "elements": { "fire": 150, "wind": 90, "water": 90, "stone": 70,"mod":200},
+      "wapons": {"bow": 95, "stafe": 130 }
+    },
+    "attacks": ["Mod slash","Mod Swing","Mod Coil","Mod Bite"]
   }
 }

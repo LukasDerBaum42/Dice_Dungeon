@@ -1,9 +1,7 @@
-from bdb import Breakpoint
 import math
 import os
 import random
 import time
-from ast import Return
 from random import Random, choice, randint
 #from tkinter import TclError
 
@@ -1047,18 +1045,18 @@ class Dungeon:
         if gentype == "liniar":
             self.layer_set = GTD.dungeons_preset[type][gentype]["layers"][layer]
             self.layer = self.layer_set["layer"]
-            size_a = self.layer_set["Size"][0] * GTD.layers[self.layer]["size"][0]
-            size_b = self.layer_set["Size"][1] * GTD.layers[self.layer]["size"][1]
+            size_a = int(self.layer_set["Size"][0] * GTD.layers[self.layer]["size"][0])
+            size_b = int(self.layer_set["Size"][1] * GTD.layers[self.layer]["size"][1])
             self.level = self.layer_set["level"]
         else:
             e_size = len(GTD.dungeons_preset[type]["endless"]["layers"])
             e_layer = layer - l_size
             self.layer = GTD.dungeons_preset[type][gentype]["layers"][e_layer % e_size]
-            size_a = (
+            size_a = int(
                 GTD.dungeons_preset[type][gentype]["Size"][0]
                 * GTD.layers[self.layer]["size"][0]
             )
-            size_b = (
+            size_b = int(
                 GTD.dungeons_preset[type][gentype]["Size"][1]
                 * GTD.layers[self.layer]["size"][1]
             )
@@ -1066,6 +1064,10 @@ class Dungeon:
             skale = GTD.dungeons_preset[type][gentype]["Skale"]
             self.level = int(base_level * (skale**e_layer))
         rand = random.randint(min(size_a, size_b), max(size_a, size_b))
+        print(size_a)
+        print(size_b)
+        print(rand)
+        #time.sleep(10)
         self.room_pos = []
         self.rooms = self.gen_dungeon(num_rooms=rand, layer=self.layer)
         self.rooms[0].show_on_map = True
@@ -1137,7 +1139,7 @@ class Dungeon:
 
         SPECIAL_ROOMS = GTD.layers[layer]["rooms"]  # Easy to add more
 
-        while next_id < num_rooms and todo:
+        while next_id < num_rooms or todo:
             current = rooms[todo.pop(0)]
 
             # Decide connections (1-3, fewer near end)
@@ -1157,6 +1159,8 @@ class Dungeon:
                 printr(todo)
                 printr(current.id)
                 printr(next_id)
+                #printr(self.room_pos)
+                #time.sleep(0.2)
                 # if next_id >= num_rooms: break
                 # if current.conn <= 0: continue
                 # Find available sides and connect
@@ -1169,12 +1173,12 @@ class Dungeon:
                             break
                         else:
                             break
-                    if random.randint(0, 3) == 0 and len(todo) > 3:
+                    if random.randint(0, 5) == 0 and len(todo) > 3:
                         current, rooms = self.conect_rooms(current, rooms)
                         continue
 
                 # Determine room type
-                room_type = "boss" if next_id == num_rooms - 1 else "normal"
+                room_type = "boss" if next_id == num_rooms-1 else "normal"
                 if room_type != "boss":
                     for (
                         special,
@@ -1188,6 +1192,8 @@ class Dungeon:
 
                 new_room = Room(next_id, room_type, layer=layer, level=self.level)
                 rooms[next_id] = new_room
+                
+            
 
                 dir_a = random.choice(avail_sides)
                 dir_b = OPPOSITE[dir_a]
@@ -1202,9 +1208,17 @@ class Dungeon:
                 if pos_a and pos_b:
                     current.doors.append(next_id)
                     new_room.doors.append(current.id)
-
-                todo.append(next_id)
-                next_id += 1
+                
+                #dist= int(math.sqrt(abs(current.pos[0] ** 2) + abs(current.pos[1] ** 2)))
+                
+                if next_id < num_rooms:
+                    if next_id > num_rooms - 7:
+                        todo.insert(0,next_id)
+                    elif len(todo) > 4 and next_id % 2 == 0:
+                        todo.insert(0,next_id)
+                    else:
+                        todo.append(next_id)
+                    next_id += 1
 
         for _ in range(len(rooms) // 6):
             current = choice(rooms)
@@ -1282,7 +1296,7 @@ class Room:
                     e_level = 1
                 self.spawners.append(
                     EnemySpawner(
-                        j, e_level, self, x, y, layer["min_level"], layer["max_level"]
+                        j, e_level, self, x, y, self.level - layer["min_level"],self.level + layer["max_level"]
                     )
                 )
                 self.used_pos.append((x, y))
@@ -1301,8 +1315,8 @@ class Room:
                 self,
                 x,
                 y,
-                layer["min_level"],
-                layer["max_level"],
+                self.level - layer["min_level"],
+                self.level + layer["max_level"],
                 True,
             )
         )
@@ -1401,6 +1415,20 @@ class Room:
                 printr("add assets")
 
     def update_free_sides(self, grid):
+        f_side = []
+        if (self.pos[0], self.pos[1] - 1) not in grid:
+            f_side.append('top')
+            
+        if (self.pos[0], self.pos[1] + 1) not in grid:
+            f_side.append('bottom')
+        
+        if (self.pos[0] - 1, self.pos[1]) not in grid:
+            f_side.append('left')
+            
+        if (self.pos[0] + 1, self.pos[1]) not in grid:
+            f_side.append('right')
+        
+        self.free_sides = f_side
         for i in self.free_sides:
             try:
                 if i == "top" and (self.pos[0], self.pos[1] - 1) in grid:
@@ -1624,8 +1652,18 @@ class Merchent:
         return items
 
     def shop_buy(self, player):
-        def items_per_page(is_selected: bool) -> int:
-            return 4 if is_selected else 8
+        size = [2,4]
+        def items_per_page(is_selected: bool):
+            out = 4 if is_selected else 8
+            if out == 4:
+                size = [2, 2]
+            else:
+                temp = Graphic.WIDTH // 40
+                temp2 = (Graphic.HEIGHT - 10) // 6
+                size = [temp, temp2]
+                out = temp * temp2
+                # size = [2,4]
+            return out, size
 
         is_item_selected: bool = False
         page: int = 0
@@ -1635,7 +1673,7 @@ class Merchent:
         show_inv = True
         curser = [0, 0, 0, 0]
         while show_inv:
-            per_page = items_per_page(is_item_selected)
+            per_page, size = items_per_page(is_item_selected)
             max_page = max(0, (len(item_fillter) - 1) // per_page)
 
             choice, curser = Graphic.shop_buy_page(
@@ -1647,6 +1685,7 @@ class Merchent:
                 selected_item,
                 player.gold,
                 curser,
+                size,
             )
             # choice = inputT("> ", True).upper().strip()
             if choice == "Q":
@@ -1673,7 +1712,8 @@ class Merchent:
                             self.items.remove(selected_item)
                             selected_item = None
                             is_item_selected = False
-                            page = selected_num // items_per_page(is_item_selected)
+                            per_page, size = items_per_page(is_item_selected)
+                            page = selected_num // per_page
                             selected_num = None
                     else:
                         printr("You don’t have enough gold to buy this item")
@@ -1693,7 +1733,8 @@ class Merchent:
             elif is_item_selected and (choice == ""):
                 selected_item = None
                 is_item_selected = False
-                page = selected_num // items_per_page(is_item_selected)
+                per_page, size = items_per_page(is_item_selected)
+                page = selected_num // per_page
                 selected_num = None
 
             else:
@@ -1705,20 +1746,22 @@ class Merchent:
                             selected_item = None
                             is_item_selected = False
                             selected_num = None
-                            page = choice // items_per_page(is_item_selected)
+                            per_page, size = items_per_page(is_item_selected)
+                            page = choice // per_page
                             curser[2] = curser[0]
                             curser[3] = curser[1]
-                            temp = choice % items_per_page(is_item_selected)
+                            temp = choice % per_page
                             curser[1] = temp % 2
                             curser[0] = temp // 2
                         else:
                             selected_item = item_fillter[choice]
                             is_item_selected = True
                             selected_num = choice
-                            page = choice // items_per_page(is_item_selected)
+                            per_page, size = items_per_page(is_item_selected)
+                            page = choice // per_page
                             curser[2] = curser[0]
                             curser[3] = curser[1]
-                            temp = choice % items_per_page(is_item_selected)
+                            temp = choice % per_page
                             curser[1] = temp % 2
                             curser[0] = temp // 2
                 except:
@@ -1729,7 +1772,7 @@ class Merchent:
         is_in_shop: bool = True
         struc = {"buy": "Buy Items", "sell": "Sell Items", "Q": "Leave"}
         while is_in_shop:
-            choice = Graphic.select_menu_page("Merchent", struc, {"Q": "Q"})
+            choice,_ = Graphic.select_menu_page("Merchent", struc, {"Q": "Q"})
             if choice == "Q":
                 is_in_shop = False
             elif choice == "sell":
@@ -1737,6 +1780,11 @@ class Merchent:
             elif choice == "buy":
                 self.shop_buy(player)
 
+
+class Fight:
+    def __init__(self):
+        pass
+    
 
 def update_player(player, room):
     enemys: list[Enemy] = room.enemys
@@ -1815,16 +1863,50 @@ def print_room_options(player):
         player.moves = -1
     Graphic.update()
 
+def mod_menu():
+    if GTD.mod_found:
+        mods = []
+        for i in GTD.mod_loader_settings:
+            mods.append(i)
+        struc = {f"{mods[i]}": f"[{'X' if GTD.mod_loader_settings[mods[i]] else ' ' }] {mods[i][:-4]}" for i in range(len(mods))}
+        cursor_pos = 0
+        struc['Q'] = 'Exit'
+        while True:
+            choice,cursor_pos = Graphic.select_menu_page(
+            "Mod menu" , struc, {"Q": "Q"},"Selecte what mods to use\n", cursor_pos
+            )
+            Graphic.update()
+            if choice == "Q":
+                GTD.save_mod_loader_settings()
+                return
+            elif choice in GTD.mod_loader_settings:
+                if GTD.mod_loader_settings[choice]:
+                    GTD.mod_loader_settings[choice] = False
+                else:
+                    GTD.mod_loader_settings[choice] = True
+                    
+                struc = {f"{mods[i]}": f"[{'X' if GTD.mod_loader_settings[mods[i]] else ' ' }] {mods[i][:-4]}" for i in range(len(mods))}
+                struc['Q'] = 'Exit'
+    else:
+        
+        choice,_ = Graphic.select_menu_page(
+        "Mod menu" ,{'':''}, {"Q": "Q"},"No mods have been found\n\nYou can install mods by creating a folder with the ending\n'_mod'\ninside the mods folder\n\nNormaly there should be an exaple mod\nbut it wasn’t found", 
+        )
+        Graphic.update()
+        return
+        
 
 def main_menu():
-    struc = {"start": "Start Game", "help": "How to Play", "exit": "Quit"}
+    struc = {"start": "Start Game", "help": "How to Play","mods":"Mod opptions", "exit": "Quit"}
     while True:
-        choice = Graphic.select_menu_page("DICE DUNGEON: DESCENT", struc, {"Q": "exit"})
+        choice,_ = Graphic.select_menu_page("DICE DUNGEON: DESCENT", struc, {"Q": "exit"})
         # printr(choice)
         if choice == "start":
             return "start"
         elif choice == "help":
             show_help_new()
+        elif choice == "mods":
+            mod_menu()
         elif choice == "exit":
             printr("Goodbye, hero...")
             Graphic.update()
@@ -1872,11 +1954,12 @@ def select_player_class():
     struc = {f"{cls[i]}": f"{cls[i]}" for i in range(len(cls))}
 
     while True:
-        choice = Graphic.select_menu_page(
+        choice,_ = Graphic.select_menu_page(
             "Selacte a player class", struc, {"Q": "Q"}
         )  #
         Graphic.update()
         return choice
+        
 
 
 def select_dungeon():
@@ -1885,7 +1968,7 @@ def select_dungeon():
         d_type.append(i)
     struc = {f"{d_type[i]}": f"{d_type[i]}" for i in range(len(d_type))}
     while True:
-        choice = Graphic.select_menu_page("Selacte a dungeon", struc, {"Q": "Q"})
+        choice,_ = Graphic.select_menu_page("Selacte a dungeon", struc, {"Q": "Q"})
         Graphic.update()
         return choice
 
@@ -2275,6 +2358,7 @@ if __name__ == "__main__":
     while main_loop:
         out = main_menu()
         if out == "start":
+            GTD.load_mods()
             cls = select_player_class()
             if cls == "Q":
                 continue

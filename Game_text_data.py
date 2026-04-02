@@ -1,8 +1,10 @@
 import json
 import os
+from pickle import GLOBAL
 import time
 
-help_txt = {
+
+base_help_txt = {
     "page 0": """ --- HOW TO PLAY ---
 - You roll a dice to move across the dungeon.
 - Use W/A/S/D to choose a path.
@@ -11,7 +13,7 @@ help_txt = {
 - Survive and reach the final floor."""
 }
 
-UNIQUE_ITEMS = {
+base_UNIQUE_ITEMS = {
     "Excalibur": {
         "type": "sword",
         "stats": {
@@ -53,7 +55,7 @@ UNIQUE_ITEMS = {
     },
 }
 
-wappon_sub_typse = [
+base_wappon_sub_typse = [
     "sword",
     "knife",
     "bow",
@@ -63,7 +65,7 @@ wappon_sub_typse = [
     "gloves",
 ]
 
-stat_value = {
+base_stat_value = {
     "max_hp": 0.4,
     "max_mp": 0.4,
     "atk": 1.5,
@@ -75,7 +77,7 @@ stat_value = {
 }
 
 
-elementare = {
+base_elementare = {
     "fire": {
         "atk": ["plant", "ice", "metal"],
         "def": ["wind", "plant"],
@@ -115,16 +117,7 @@ elementare = {
 }
 
 
-def update_ele_list():
-    ele_list = []
-    for i in elementare:
-        ele_list.append(i)
-    return ele_list
-
-
-ele_list = update_ele_list()
-
-fight_art = {
+base_fight_art = {
     "player": ["  `o^     ", "^\\/0\\_+---", "  /O\\     ", " _| /_    ", ""],
     "Zomby": ["   @      ", "  ==|     ", "    |     ", "   / \\    ", ""],
     "Mimic": [
@@ -148,7 +141,7 @@ fight_art = {
 }
 
 
-trap_art = {
+base_trap_art = {
     "Hole": {
         "player": [4, 0],
         "art": [
@@ -210,31 +203,7 @@ trap_art = {
 """
 
 
-# print("\033[1;4mFett UND unterstrichen\033[0m")
-# print("\033[1;34mFetter blauer Text\033[0m")
-# print("\033[4;31;7mChaos-Modus\033[0m")
-# print("\033[2mDas hier sollte dunkler wirken\033[0m")
-# print("\033[38;2;255;100;0mOrange Text\033[0m")
-# print("\033[48;2;20;20;20mDarker Background\033[0m")
-
-
-# for r in range(8):
-#     row = ''
-#    for g in range(8):
-#         for b in range(8):
-#             row += f'\033[48;2;{32*r};{32*g};{32*b}m▄\033[0m'
-#     print(row)
-# for r in range(6):
-#     for g in range(6):
-#         for b in range(6):
-#             row = ''
-#             for r_2 in range(6):
-#               for g_2 in range(6):
-#                     for b_2 in range(6):
-#                         row += f'\033[48;5;{16+36*r +6*g+b};38;5;{16+36*r_2+6*g_2+b_2}m▄\033[0m'
-#             print(row)
-
-player_cls = {
+base_player_cls = {
     "Adventurer": {
         "stats": {
             "max_move": 6,
@@ -397,7 +366,7 @@ player_cls = {
 }
 
 
-attacks = {
+base_attacks = {
     "Sword slash": {
         "stats": {
             "atk": 100,
@@ -905,7 +874,7 @@ attacks = {
     },
 }
 
-enemy_cls = {
+base_enemy_cls = {
     "Mimic": {
         "stats": {
             "min_move": 0,
@@ -1809,7 +1778,7 @@ enemy_cls = {
     },
 }
 
-bosses = {
+base_bosses = {
     "Goblin King": {
         "stats": {
             "min_move": 1,
@@ -2216,7 +2185,7 @@ bosses = {
 # type 0 a set amount of instent damage that cant be avoided
 # type 1 a set amount of damage that can be decreast be rolling
 # type 2 a procentage amount of damage that can be reduced be rolling
-traps = {
+base_traps = {
     "Mimic": {
         "text": "You found a chest but as you were about to open it, it turned out to just be a mimic... Oh fuck!!!"
     },
@@ -2237,7 +2206,7 @@ traps = {
     },
 }
 
-cheast = {
+base_cheast = {
     "normal": {
         "rarety": {"common": 50, "uncommon": 35, "rare": 15, "epic": 0, "legendary": 0},
         "level": [-3, 4],
@@ -2258,7 +2227,7 @@ cheast = {
     }
 }
 
-shops = {
+base_shops = {
     "common": {
         "level": [-3, 3],
         "price": 0,
@@ -2331,13 +2300,11 @@ shops = {
 }
 
 
-layers: dict[
-    str, dict[str, int | dict[str, int] | dict[str, float] | str | list[int]]
-] = {
+base_layers: dict[
+    str, dict[str, int | dict[str, int] | dict[str, float] | str | list[int]]] = {
     "layer 1": {
-        "level": 5,
-        "min_level" : 1,
-        "max_level":10,
+        "min_level" : 4,
+        "max_level":5,
         "mob": {"Zomby": 40, "Skelet": 40, "Goblin": 20},
         "boss": "Goblin King",
         "size": [1, 1],
@@ -2347,9 +2314,8 @@ layers: dict[
         "rooms": {"merchant": 0.05},
     },
     "layer 2": {
-        "level": 10,
-        "min_level" : 6,
-        "max_level":15,
+        "min_level" : 5,
+        "max_level":5,
         "mob": {"Orc": 35, "Dark Elf": 35, "Giant Spider": 30},
         "boss": "Orc Warlord",
         "size": [1, 1],
@@ -2359,9 +2325,8 @@ layers: dict[
         "rooms": {"merchant": 0.05},
     },
     "layer 3": {
-        "level": 15,
-        "min_level" : 10,
-        "max_level":20,
+        "min_level" : 5,
+        "max_level":5,
         "mob": {"Dark Elf": 40, "Orc": 30, "Goblin": 20, "Giant Spider": 10},
         "boss": "Lich King",
         "size": [1, 1],
@@ -2371,9 +2336,8 @@ layers: dict[
         "rooms": {"merchant": 0.05},
     },
     "layer 4": {
-        "level": 25,
-        "min_level" : 18,
-        "max_level":30,
+        "min_level" : 7,
+        "max_level":5,
         "mob": {"Wraith": 35, "Minotaur": 35, "Dark Elf": 20, "Orc": 10},
         "boss": "Lich King",
         "size": [1, 1],
@@ -2383,9 +2347,8 @@ layers: dict[
         "rooms": {"merchant": 0.05},
     },
     "layer 5": {
-        "level": 30,
-        "min_level" : 25,
-        "max_level":35,
+        "min_level" : 5,
+        "max_level":5,
         "mob": {"Wraith": 40, "Minotaur": 30, "Dark Elf": 20, "Giant Spider": 10},
         "boss": "Dragon",
         "size": [1, 1],
@@ -2395,9 +2358,8 @@ layers: dict[
         "rooms": {"merchant": 0.05},
     },
     "layer 6": {
-        "level": 40,
-        "min_level" : 35,
-        "max_level":50,
+        "min_level" : 5,
+        "max_level":10,
         "mob": {"Wraith": 50, "Minotaur": 30, "Dark Elf": 20},
         "boss": "Dragon",
         "size": [1, 1],
@@ -2407,9 +2369,8 @@ layers: dict[
         "rooms": {"merchant": 0.05},
     },
     "layer 7": {
-        "level": 50,
-        "min_level" : 40,
-        "max_level":60,
+        "min_level" : 10,
+        "max_level":10,
         "mob": {"Wraith": 40, "Minotaur": 40, "Dark Elf": 20},
         "boss": "Dragon",
         "size": [1, 1],
@@ -2419,9 +2380,8 @@ layers: dict[
         "rooms": {"merchant": 0.05},
     },
     "layer 8": {
-        "level": 60,
-        "min_level" : 55,
-        "max_level":70,
+        "min_level" : 5,
+        "max_level":10,
         "mob": {"Wraith": 50, "Minotaur": 50},
         "boss": "Lich King",
         "size": [1, 1],
@@ -2431,9 +2391,8 @@ layers: dict[
         "rooms": {"merchant": 0.05},
     },
     "layer 9": {
-        "level": 75,
-        "min_level" : 60,
-        "max_level":85,
+        "min_level" : 15,
+        "max_level":15,
         "mob": {"Wraith": 60, "Minotaur": 40},
         "boss": "Dragon",
         "size": [1, 1],
@@ -2443,9 +2402,8 @@ layers: dict[
         "rooms": {"merchant": 0.05},
     },
     "layer 10": {
-        "level": 90,
-        "min_level" : 80,
-        "max_level":100,
+        "min_level" : 10,
+        "max_level":10,
         "mob": {"Wraith": 70, "Minotaur": 30},
         "boss": "Dragon",
         "size": [1, 1],
@@ -2457,21 +2415,21 @@ layers: dict[
 }
 
 
-dungeons_preset = {
+base_dungeons_preset = {
     "Standerd": {
         "L_size": 10,
         "liniar": {
             "layers": [
-                {"layer": "layer 1", "level": 5, "Size": [10, 20]},
-                {"layer": "layer 2", "level": 10, "Size": [10, 20]},
-                {"layer": "layer 3", "level": 15, "Size": [10, 20]},
-                {"layer": "layer 4", "level": 25, "Size": [10, 20]},
-                {"layer": "layer 5", "level": 30, "Size": [10, 20]},
-                {"layer": "layer 6", "level": 40, "Size": [10, 20]},
-                {"layer": "layer 7", "level": 50, "Size": [10, 20]},
-                {"layer": "layer 8", "level": 60, "Size": [10, 20]},
-                {"layer": "layer 9", "level": 75, "Size": [10, 20]},
-                {"layer": "layer 10", "level": 90, "Size": [10, 20]},
+                {"layer": "layer 1", "level": 5, "Size": [15, 25]},
+                {"layer": "layer 2", "level": 10, "Size": [15, 25]},
+                {"layer": "layer 3", "level": 15, "Size": [15, 25]},
+                {"layer": "layer 4", "level": 25, "Size": [15, 25]},
+                {"layer": "layer 5", "level": 30, "Size": [15, 25]},
+                {"layer": "layer 6", "level": 40, "Size": [15, 25]},
+                {"layer": "layer 7", "level": 50, "Size": [15, 25]},
+                {"layer": "layer 8", "level": 60, "Size": [15, 25]},
+                {"layer": "layer 9", "level": 75, "Size": [15, 25]},
+                {"layer": "layer 10", "level": 90, "Size": [15, 25]},
             ]
         },
         "endless": {
@@ -2481,7 +2439,7 @@ dungeons_preset = {
                 "layer 10",
             ],
             "start_level": 100,
-            "Size": [10, 20],
+            "Size": [15, 25],
             "Skale": 1.1,
         },
     },
@@ -2508,7 +2466,7 @@ dungeons_preset = {
                 "layer 10",
             ],
             "start_level": 100,
-            "Size": [10, 20],
+            "Size": [30, 40],
             "Skale": 1.1,
         },
     },
@@ -2534,15 +2492,38 @@ dungeons_preset = {
                 "layer 10",
             ],
             "start_level": 100,
-            "Size": [10, 20],
+            "Size": [50, 60],
             "Skale": 1.1,
         },
     },
 }
 
+def update_ele_list():
+    ele_list = []
+    for i in elementare:
+        ele_list.append(i)
+    return ele_list
 
 # loads mods
 
+help_txt = base_help_txt.copy()
+UNIQUE_ITEMS = base_UNIQUE_ITEMS.copy()
+wappon_sub_typse = base_wappon_sub_typse.copy()
+stat_value = base_stat_value.copy()
+elementare = base_elementare.copy()
+fight_art = base_fight_art.copy()
+trap_art = base_trap_art.copy()
+player_cls = base_player_cls.copy()
+attacks = base_attacks.copy()
+enemy_cls = base_enemy_cls.copy()
+bosses = base_bosses.copy()
+traps = base_traps.copy()
+cheast = base_cheast.copy()
+shops = base_shops.copy()
+layers = base_layers.copy()
+dungeons_preset = base_dungeons_preset.copy()
+
+ele_list = update_ele_list()
 
 def load_json_as_variable(path):
     name = os.path.splitext(os.path.basename(path))[0]
@@ -2560,16 +2541,33 @@ def load_json_as_variable(path):
         globals()[name] = data
 
 
-test_for_mods = False
-try:
-    mods = os.listdir("mods")
-    print(mods)
-    velid_mods = [f for f in mods if f.lower().endswith(("_mod"))]
-    test_for_mods = True
-except:
-    print("no mods found")
-if test_for_mods:
-    for mod in mods:
+def load_mods():
+    global ele_list, mod_loader_settings, help_txt,UNIQUE_ITEMS,wappon_sub_typse,stat_value,elementare,fight_art,trap_art,player_cls,attacks,enemy_cls,bosses,traps,cheast,shops,layers,dungeons_preset
+    help_txt = base_help_txt.copy()
+    UNIQUE_ITEMS = base_UNIQUE_ITEMS.copy()
+    wappon_sub_typse = base_wappon_sub_typse.copy()
+    stat_value = base_stat_value.copy()
+    elementare = base_elementare.copy()
+    fight_art = base_fight_art.copy()
+    trap_art = base_trap_art.copy()
+    player_cls = base_player_cls.copy()
+    attacks = base_attacks.copy()
+    enemy_cls = base_enemy_cls.copy()
+    bosses = base_bosses.copy()
+    traps = base_traps.copy()
+    cheast = base_cheast.copy()
+    shops = base_shops.copy()
+    layers = base_layers.copy()
+    dungeons_preset = base_dungeons_preset.copy()
+    
+    mods_to_load = []
+    with open("mods/mod_loader_settings.json","r") as file:
+        mod_loader_settings = json.load(file)
+    for mod in mod_loader_settings:
+        if mod_loader_settings[mod]:
+            mods_to_load.append(mod)
+    
+    for mod in mods_to_load:
         files = os.listdir(f"mods/{mod}")
         mod_files = [f for f in files if f.lower().endswith((".json"))]
         for file in mod_files:
@@ -2578,4 +2576,47 @@ if test_for_mods:
             except:
                 print("error while loading mod")
                 time.sleep(1)
-ele_list = update_ele_list()
+    ele_list = update_ele_list()
+    
+def save_mod_loader_settings():
+    with open("mods/mod_loader_settings.json","w") as file:
+        json.dump(mod_loader_settings,file)
+
+
+mod_found = False
+try:
+#if False:
+    mods = os.listdir("mods")
+    mod_loader_settings = {}
+    #print(mods)
+    if "mod_loader_settings.json" in mods:
+        velid_mods = [f for f in mods if f.lower().endswith(("_mod"))]
+        with open("mods/mod_loader_settings.json","r") as file:
+            mod_loader_settings = json.load(file)
+            
+        for mod in velid_mods:
+            if mod not in mod_loader_settings:
+                mod_loader_settings[mod] = False
+        
+        mods_to_del = []
+        for dead_mod in mod_loader_settings: 
+            if dead_mod not in velid_mods:
+                mods_to_del.append(dead_mod)
+        for del_mod in mods_to_del:
+            del mod_loader_settings[del_mod]
+        del mods_to_del
+    else:
+        velid_mods = [f for f in mods if f.lower().endswith(("_mod"))]
+        for mod in velid_mods:
+            mod_loader_settings[mod] = False
+    
+    print(mod_loader_settings)
+    save_mod_loader_settings()
+    mod_found = True
+except:
+    print("no mods found")
+    mod_found = False
+    #time.sleep(1)
+if __name__ == '__main__':
+    with open('temp.json','w') as file:
+        json.dump(base_wappon_sub_typse,file)

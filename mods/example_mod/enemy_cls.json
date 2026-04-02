@@ -14,85 +14,16 @@
             "crit_chance": 10,
             "crit_bonus": 10
         },
-        "Attacks": {
-            "Mod slash": 100,
-            "Mod Swing": 100,
-            "Mod Coil": 100,
-            "Mod Bite": 100
+        "affiliations": { "fire": 80, "water": 120, "stone": 150, "metal": 130, "dark": 60, "light": 40 },
+        "Attacks": {"Mod slash": 100,"Mod Swing": 100,"Mod Coil": 100,"Mod Bite": 100
         },
         "Items": {
-            "stafe": {
-                "chance": 10,
-                "rarety": {
-                    "common": 70,
-                    "uncommon": 25,
-                    "rare": 5
-                },
-                "level": [
-                    -3,
-                    3
-                ]
-            },
-            "sword": {
-                "chance": 10,
-                "rarety": {
-                    "common": 70,
-                    "uncommon": 25,
-                    "rare": 5
-                },
-                "level": [
-                    -3,
-                    3
-                ]
-            },
-            "knife": {
-                "chance": 10,
-                "rarety": {
-                    "common": 70,
-                    "uncommon": 25,
-                    "rare": 5
-                },
-                "level": [
-                    -3,
-                    3
-                ]
-            },
-            "sheald": {
-                "chance": 10,
-                "rarety": {
-                    "common": 70,
-                    "uncommon": 25,
-                    "rare": 5
-                },
-                "level": [
-                    -3,
-                    3
-                ]
-            },
-            "chestplate": {
-                "chance": 10,
-                "rarety": {
-                    "common": 70,
-                    "uncommon": 25,
-                    "rare": 5
-                },
-                "level": [
-                    -3,
-                    3
-                ]
-            },
-            "pants": {
-                "chance": 10,
-                "rarety": {
-                    "common": 70,
-                    "uncommon": 25,
-                    "rare": 5
-                },
-                "level": [
-                    -3,
-                    3
-                ]
-            }
+            "stafe": {"chance": 10,"rarety": {"common": 70,"uncommon": 25,"rare": 5},"level": [-3,3]},
+            "sword": {"chance": 10,"rarety": {"common": 70,"uncommon": 25,"rare": 5},"level": [-3,3]},
+            "knife": {"chance": 10,"rarety": {"common": 70,"uncommon": 25,"rare": 5},"level": [-3,3]},
+            "sheald": {"chance": 10,"rarety": {"common": 70,"uncommon": 25,"rare": 5},"level": [-3,3]},
+            "chestplate": {"chance": 10,"rarety": {"common": 70,"uncommon": 25,"rare": 5},"level": [-3,3]},
+            "pants": {"chance": 10,"rarety": {"common": 70,"uncommon": 25,"rare": 5},"level": [-3,3]}
         }
     }
 }

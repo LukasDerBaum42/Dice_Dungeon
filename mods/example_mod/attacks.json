@@ -9,6 +9,8 @@
             "crit_bonus": 10,
             "adv": 0
         },
+        "wapon":["sword"],
+        "ele":null,
         "discription": "A slash with a sword"
   },
   "Mod Swing": {
@@ -21,6 +23,8 @@
             "crit_bonus": 15,
             "adv": 0
         },
+        "wapon":[],
+        "ele":null,
         "discription": "A powerful swing with a heavy axe"
   },
   "Mod Coil": {
@@ -33,6 +37,8 @@
             "crit_bonus": 20,
             "adv": 0
         },
+        "wapon":[],
+        "ele":"mod",
         "discription": "Unleashes a coil of death energy"
   },
   "Mod Bite": {
@@ -45,6 +51,8 @@
             "crit_bonus": 18,
             "adv": -1
         },
+        "wapon":[],
+        "ele":"mod",
         "discription": "A poisonous bite that drains strength"
   }
 }
