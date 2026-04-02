@@ -1,5 +1,8 @@
 # **Dice Dungeon**
-this is a small turn based dungeon crawler rouglike
+This is a small turn based dungeon crawler rouglike
+
+## **LICENS**
+This game is licensed under the 
 
 ## **Thing to be added**
 - Better gide
