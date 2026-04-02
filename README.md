@@ -1,24 +1,24 @@
 # **Dice Dungeon**
-This is a small turn based dungeon crawler rouglike
+This is a small turn based dungeon crawler roguelike
 
 ## **LICENSE**
 This game is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike license
-You are alowed to reuse the game for any NonCommercial peruosas long as crecit is give and changes are published uder the same license
+You are allowed to reuse the game for any NonCommercial purposes as long as credit is given and changes are published under the same license
 
-If you want to use it for commertion purposses pleas contect me
+If you want to use it for commercial purposes please contact me
 
-## **Thing to be added**
-- Better gide
-- Consummabil items
-- Diffrent way to heal
-- abiliy to learn new attacks
+## **Things to be added**
+- Better guide
+- Consumable items
+- Different way to heal
+- ability to learn new attacks
 
-When you have any issus or ideas for something to add pleas leave a comment or write an Issue on Github
+When you have any issues or ideas for something to add please leave a comment or write an Issue on Github
 
 ## **AI disclosure**
 AI was used to make parts of the Game
 this includes
-- Modloder
+- Modloader
 - Map
 - Items
 - Temporary enemy stats
