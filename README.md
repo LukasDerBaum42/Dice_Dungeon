@@ -1,8 +1,8 @@
 # **Dice Dungeon**
 This is a small turn based dungeon crawler rouglike
 
-## **LICENS**
-This game is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike licens
+## **LICENSE**
+This game is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike license
 
 ## **Thing to be added**
 - Better gide
