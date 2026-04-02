@@ -2,10 +2,12 @@
 This is a small turn based dungeon crawler roguelike
 
 ## **LICENSE**
-This game is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike license
+This game is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike license.
 You are allowed to reuse the game for any NonCommercial purposes as long as credit is given and changes are published under the same license
 
 If you want to use it for commercial purposes please contact me
+
+Copyright: LukasDerBaum
 
 ## **Things to be added**
 - Better guide
