@@ -2,7 +2,7 @@
 This is a small turn based dungeon crawler rouglike
 
 ## **LICENS**
-This game is licensed under the 
+This game is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike licens
 
 ## **Thing to be added**
 - Better gide
