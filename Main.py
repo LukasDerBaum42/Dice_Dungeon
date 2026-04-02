@@ -496,9 +496,9 @@ class Player:
             self.y = len(new_room.map) // 2
             self.x = len(new_room.map[0]) // 2
         update_player(self, room)
-        game_menu(self, dungeon)
-        print_room_options(self)
-        wait(0.2)
+        #Graphic.game_menu(self, dungeon,GAME_STATE)
+        #print_room_options(self)
+        wait(0.1)
         return "fine"
 
     def rest(self):
@@ -681,8 +681,8 @@ class Enemy:
             elif path[i] == "E":
                 self.x += 1
             update_player(player, room)
-            game_menu(player, dungeon)
-            Graphic.update()
+            Graphic.game_menu(player, dungeon,GAME_STATE,is_enemy_turn=True)
+            #Graphic.update()
             wait(0.2)
 
     def find_path(
@@ -777,60 +777,7 @@ class Enemy:
         )
 
 class EnemySpawner:
-    def __init__(self, mob: str, level: int, room, x: int, y: int,min_l,max_l, is_boss: bool = False) -> None:
-        self.room: Room = room
-        self.mob: str = mob
-        self.is_boss: bool = is_boss
-        self.x: int = x
-        self.y: int = y
-        self.level: int = level
-        self.min_l = min_l
-        self.max_l = max_l
-        self.has_spawned = False
-        self.is_spawnd = False
-        self.cool_down = 0
-        self.enemy = None
-        
-    
-    def spawn_enemy(self,player):
-        if self.is_boss:
-            e_level = self.level
-        else:
-            e_level = (self.level + player.level) // 2
-            print(e_level)
-            time.sleep(0.1)
-            if e_level < self.min_l: e_level = self.min_l
-            if e_level > self.max_l: e_level = self.max_l
-            print(e_level,self.min_l,self.max_l)
-            time.sleep(0.1)
-        self.enemy = Enemy(self.mob,e_level,self.room,self,self.x,self.y,self.is_boss)
-        self.room.enemys.append(self.enemy)
-        self.is_spawnd = True
-        self.has_spawned = True
-        
-    def update(self,player,room):
-        if self.enemy:
-            if self.enemy.is_del:
-                self.is_spawnd = False
-                self.enemy = None
-            
-        if room == self.room:
-            print(self.is_spawnd)
-            print(f"{self.cool_down}")
-            #time.sleep(0.1)
-
-class EnemySpawner:
-    def __init__(
-        self,
-        mob: str,
-        level: int,
-        room,
-        x: int,
-        y: int,
-        min_l,
-        max_l,
-        is_boss: bool = False,
-    ) -> None:
+    def __init__(self,mob: str,level: int,room,x: int,y: int,min_l,max_l,is_boss: bool = False,) -> None:
         self.room: Room = room
         self.mob: str = mob
         self.is_boss: bool = is_boss
@@ -849,17 +796,13 @@ class EnemySpawner:
             e_level = self.level
         else:
             e_level = (self.level + player.level) // 2
-            # print(e_level)
-            # time.sleep(0.1)
+
             if e_level < self.min_l:
                 e_level = self.min_l
             if e_level > self.max_l:
                 e_level = self.max_l
-            # print(e_level,self.min_l,self.max_l)
-            # time.sleep(0.1)
-        self.enemy = Enemy(
-            self.mob, e_level, self.room, self, self.x, self.y, self.is_boss
-        )
+
+        self.enemy = Enemy(self.mob, e_level, self.room, self, self.x, self.y, self.is_boss)
         self.room.enemys.append(self.enemy)
         self.is_spawnd = True
         self.has_spawned = True
@@ -1487,8 +1430,9 @@ class Room:
         return (x, y)
 
     def generate_room(self, room_type, width=None, height=None):
-        width: int = width or random.randint(6, 10)
-        height: int = height or random.randint(6, 10)
+        width: int = width if width else random.randint(6, 10)
+        height: int = height if height else random.randint(6, 10)
+        self.width, self.height = width , height
         return [
             [
                 "#" if x in (0, width - 1) or y in (0, height - 1) else "."
@@ -1851,17 +1795,7 @@ def enemy_move(dungeon, player):
             continue
 
 
-def print_room_options(player):
-    printr("======== Your turn =========")
-    if player.moves == -2:
-        if player.cls == "Roghe":
-            printr("R = Roll dice to move | F = Roll to check for traps")
-        printr("R = Roll dice to move | P = Make a pause and rest")
-    elif player.moves > 0:
-        printr(f"Moves {player.moves} left")
-    else:
-        player.moves = -1
-    Graphic.update()
+
 
 def mod_menu():
     if GTD.mod_found:
@@ -1939,12 +1873,7 @@ P = Privios Page | N = Next """)
             break
 
 
-def game_menu(player, dungeon):
-    Graphic.game_menu(player)
-    if GAME_STATE == "map":
-        dungeon.print_room(player)
-    Graphic.update()
-    return player
+
 
 
 def select_player_class():
@@ -1982,11 +1911,13 @@ def print_dungeon_map(dungeon, spacing=1, room_size=2):
 def game_loop_room(player):
     global loop_room, Layers, DUNGEON, CHEATS_ON
     loop_room = True
+    cursor = [0,0,0,0]
     while loop_room:
         dungeon = DUNGEON
-        game_menu(player, dungeon)
-        print_room_options(player)
-        choice = inputT("> ").upper().strip()
+        choice, cursor = Graphic.game_menu(player, dungeon,GAME_STATE,cursor)
+        #print_room_options(player)
+        choice = choice.upper().strip()
+        #choice = inputT("> ").upper().strip()
         if choice == "/":
             choice = inputT("> ", True).upper().strip()
         if choice == "H":
@@ -2282,7 +2213,7 @@ def fight_loop(player, enemy, player_start=True):
             clear()
             Graphic.print_fight_UI(player, enemy)
             choice = inputT("\nPress Enter to continue...").upper().strip()
-            if choice == "Q":
+            if choice == "Q" and CHEATS_ON:
                 loop_fight = False
                 return player, True
             elif choice == "S":
@@ -2352,10 +2283,10 @@ if __name__ == "__main__":
     main_loop = True
     loop_room = False
     loop_fight = False
-    CHEATS_ON = True
-    Layers = []
-    Curent_Layer = 0
     while main_loop:
+        Layers = []
+        Curent_Layer = 0
+        CHEATS_ON = False
         out = main_menu()
         if out == "start":
             GTD.load_mods()
@@ -2374,8 +2305,8 @@ if __name__ == "__main__":
             # print(len(Layers))
             DUNGEON = Layers[Curent_Layer]
             player = Player(cls)
-            player.add_to_inv(GameItem("legendary", "sword", 75))
-            player.add_to_inv(GameItem("common", "sword", 10))
+            #player.add_to_inv(GameItem("legendary", "sword", 75))
+            #player.add_to_inv(GameItem("common", "sword", 10))
             GAME_STATE = "map"
             game_loop_room(player)
         # game_menu()

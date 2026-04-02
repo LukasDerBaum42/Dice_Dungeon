@@ -225,24 +225,24 @@ base_player_cls = {
         # the item types are
         "attacks": ("Sword slash", "Sword thrust", "Flame sword", "Fireball"),
     },
-    "Tester": {
-        "stats": {
-            "max_move": 30,
-            "min_move": 15,
-            "max_hp": 500,
-            "max_mp": 400,
-            "atk": 50,
-            "sp_atk": 50,
-            "def_": 50,
-            "sp_def": 50,
-            "crit_chance": 10,
-            "crit_bonus": 10,
-        },
-        "item": ("common", "sword", 10),
-        "affiliations": {"elements": {}, "wapons": {}},
-        # the item types are
-        "attacks": ("Sword slash", "Axe Swing", "Flame sword", "Fireball"),
-    },
+    #"Tester": {
+    #    "stats": {
+    #        "max_move": 30,
+    #        "min_move": 15,
+    #        "max_hp": 500,
+    #        "max_mp": 400,
+    #        "atk": 50,
+    #        "sp_atk": 50,
+    #        "def_": 50,
+    #        "sp_def": 50,
+    #        "crit_chance": 10,
+    #        "crit_bonus": 10,
+    #    },
+    #    "item": ("common", "sword", 10),
+    #    "affiliations": {"elements": {}, "wapons": {}},
+    #    # the item types are
+    #    "attacks": ("Sword slash", "Axe Swing", "Flame sword", "Fireball"),
+    #},
     "Warrior": {
         "stats": {
             "max_move": 5,
@@ -2307,11 +2307,12 @@ base_layers: dict[
         "max_level":5,
         "mob": {"Zomby": 40, "Skelet": 40, "Goblin": 20},
         "boss": "Goblin King",
+        'room size': [6,10,6,10],
         "size": [1, 1],
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
-        "rooms": {"merchant": 0.05},
+        "rooms": {"merchant": 0.1},
     },
     "layer 2": {
         "min_level" : 5,
@@ -2322,7 +2323,7 @@ base_layers: dict[
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
-        "rooms": {"merchant": 0.05},
+        "rooms": {"merchant": 0.1},
     },
     "layer 3": {
         "min_level" : 5,
@@ -2333,7 +2334,7 @@ base_layers: dict[
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
-        "rooms": {"merchant": 0.05},
+        "rooms": {"merchant": 0.1},
     },
     "layer 4": {
         "min_level" : 7,
@@ -2344,7 +2345,7 @@ base_layers: dict[
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
-        "rooms": {"merchant": 0.05},
+        "rooms": {"merchant": 0.1},
     },
     "layer 5": {
         "min_level" : 5,
@@ -2355,7 +2356,7 @@ base_layers: dict[
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
-        "rooms": {"merchant": 0.05},
+        "rooms": {"merchant": 0.1},
     },
     "layer 6": {
         "min_level" : 5,
@@ -2366,7 +2367,7 @@ base_layers: dict[
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
-        "rooms": {"merchant": 0.05},
+        "rooms": {"merchant": 0.1},
     },
     "layer 7": {
         "min_level" : 10,
@@ -2377,7 +2378,7 @@ base_layers: dict[
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
-        "rooms": {"merchant": 0.05},
+        "rooms": {"merchant": 0.1},
     },
     "layer 8": {
         "min_level" : 5,
@@ -2399,7 +2400,7 @@ base_layers: dict[
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
-        "rooms": {"merchant": 0.05},
+        "rooms": {"merchant": 0.1},
     },
     "layer 10": {
         "min_level" : 10,
@@ -2410,7 +2411,7 @@ base_layers: dict[
         "traps": {"Hole": 25, "Tripwire": 25, "Falling Piano": 25, "Mimic": 25},
         "cheasts": {"normal": 100},
         "shops": {"common": 60, "uncommon": 30, "rare": 10},
-        "rooms": {"merchant": 0.05},
+        "rooms": {"merchant": 0.1},
     },
 }
 

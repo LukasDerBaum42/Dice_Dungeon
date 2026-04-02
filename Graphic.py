@@ -15,24 +15,6 @@ import Game_text_data as GTD
 
 FPS = 120
 os.system("cls" if os.name == "nt" else "clear")
-hex_codes = [
-    "0",
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-]
 PLAYER = "P"
 TRAP = "T"
 CHEAST = "C"
@@ -45,7 +27,10 @@ WIDTH, HEIGHT = shutil.get_terminal_size(fallback=(80, 30))
 
 def get_size():
     global WIDTH, HEIGHT, FRAME_BUFER
-    WIDTH, HEIGHT = shutil.get_terminal_size(fallback=(80, 30))
+    new_w , new_h = shutil.get_terminal_size(fallback=(80, 30))
+    if new_w != WIDTH or new_h != HEIGHT:
+        print('\x1b[2J\x1b[H')
+    WIDTH, HEIGHT = new_w , new_h
     while WIDTH < 80 or HEIGHT < 30:
         WIDTH, HEIGHT = shutil.get_terminal_size(fallback=(80, 30))
         os.system("cls" if os.name == "nt" else "clear")
@@ -66,13 +51,6 @@ def plen(s: str) -> int:
     clean = ANSI_ESCAPE_RE.sub("", s)
     return len(clean)
     
-def hex_to_int(hex):
-    out = 0
-    h_len = len(hex)
-    for i in hex:
-        h_len -= 1
-        out += hex_codes.index(i) * (16 ** h_len)
-    return out
     
     
 def wait(t):
@@ -394,15 +372,30 @@ def get_color_code(color: str = "white",bonus:list = []):
         out = "36"
     elif color == "white":
         out = "37"
+    
+    elif color == "black":
+        out = "30"
+    elif color == "red":
+        out = "31"
+    elif color == "green":
+        out = "32"
+    elif color == "yellow":
+        out = "33"
+    elif color == "blue":
+        out = "34"
+    elif color == "purple":
+        out = "35"
+    elif color == "cyan":
+        out = "36"
+    elif color == "white":
+        out = "37"
     elif color == "none":
         out = "0"
     elif color[0] == "#" and len(color) == 7:
         temp = False
-        hex = color
-        #print(hex)
-        r = hex_codes.index(hex[1]) * 16 + hex_codes.index(hex[2])
-        g = hex_codes.index(hex[3]) * 16 + hex_codes.index(hex[4])
-        b = hex_codes.index(hex[5]) * 16 + hex_codes.index(hex[6])
+        r = int(color[1:3],16)
+        g = int(color[3:5],16)
+        b = int(color[5:7],16)
         if "bg" in bonus:
             out = f"\x1b[48;2;{r};{g};{b}m"
         else:
@@ -922,6 +915,7 @@ def show_inventory(
             sel = None
         # printr(ceil(len(item_render) / 2) - 1)
         #render_item_boxes(item_render, offset, sel)
+        printr('')
         sel, box_shape = box_menu(item_render,curser,size)
         #menu_handler(curser,box_shape,header_shape,page,max_page)
         choice = inputT("> ", True)
@@ -1053,9 +1047,17 @@ def render_item_details(selected_item) -> None:
 
 
 def show_stats(self) -> None:
-    clear()
-    print_titelbar("Stets", 28)
-    printr(f"""Level {self.level}
+    mode = 0
+    while True:
+        clear()
+        print_titelbar("Stets", 28)
+        stet_text = f"{get_color_code('green')}S = Stets{get_color_code('none')}" if mode == 0 else "S = Stets"
+        ele_text = f"{get_color_code('green')}E = Elements{get_color_code('none')}" if mode == 1 else "E = Elements"
+        wap_text = f"{get_color_code('green')}W = Wapons{get_color_code('none')}" if mode == 2 else "W = Wapons"
+        printr(f"{stet_text} | {ele_text} | {wap_text}")
+        printr('')
+        if mode == 0:
+            printr(f"""Level {self.level}
 XP {self.xp}/{self.max_xp}
 Max HP {self.max_hp} + {self.max_hp_items}
 Max MP {self.max_mp} + {self.max_mp_items}
@@ -1066,13 +1068,26 @@ SP DEF {self.sp_def} + {self.sp_def_items}
 Crit Chance {self.crit_chance} + {self.crit_chance_items}
 Crit Bounus {self.crit_bonus} + {self.crit_bonus_items}
 Move {self.min_move}-{self.max_move}
-============================
 """)
-    choice = inputT("\nPress Enter to return...")
-    if choice == "E":
-        print_afi(self.ele_afi)
-    elif choice == "W":
-        print_afi(self.wapon_afi)
+        elif mode == 1:
+            print_afi(self.ele_afi)
+        elif mode == 2:
+            print_afi(self.wapon_afi)
+        
+        choice = inputT("\nPress Enter to return...")
+        if choice == 'LEFT':
+            mode = (mode - 1) % 3
+        elif choice == 'RIGHT':
+            mode = (mode + 1) % 3
+        elif choice == "S":
+            mode = 0
+        elif choice == "E":
+            mode = 1
+        elif choice == "W":
+            mode = 2
+        elif choice == 'ENTER' or choice == 'Q' or choice == 'T':
+            return
+        
 
 
 def show_stats_level(self) -> None:
@@ -1330,12 +1345,14 @@ def fight_roll_dice(
 def print_room(
     player: tuple[int, int], room, enemys, traps, cheasts, merchents
 ) -> None:
-    printr(room.type)
+    #printr(room.type)
+    printr(f"{center_text(f' {room.type} ',(room.width + 4)*2 + len(room.type), '═')}")
+    printr('')
 
     room_map: list[list[str]] = deepcopy(room.map)
     for t in traps:
-        #if t.show:
-        room_map[t.y][t.x] = TRAP
+        if t.show:
+            room_map[t.y][t.x] = TRAP
     for c in cheasts:
         room_map[c.y][c.x] = CHEAST
     for m in merchents:
@@ -1451,33 +1468,81 @@ def shop_buy_page(
 
 
 
-
-
-
-
-
-def game_menu(player):
+def game_menu(player,dungeon,game_state,curser=[0,0,0,0],is_enemy_turn=False):
     hp: str = f"HP {player.hp}/{player.max_hp + player.max_hp_items}"
     mp: str = f"MP {player.mp}/{player.max_mp + player.max_mp_items}"
     gold: str = f"Gold {player.gold}"
     xp: str = f"XP {player.xp}/{player.max_xp}"
     level: str = f"Level {player.level}"
-    hp = fixed_width(hp, 13)
-    mp = fixed_width(mp, 13)
-    gold = fixed_width(gold, 13)
-    xp = fixed_width(xp, 13)
-    level = fixed_width(level, 13)
-    clear()
-    print_titelbar("Dice Dungeon", 40)
-    printr(
-        f"""{hp}  {mp}  {gold}
-{level}  {xp}
-H = Help | I = Invetory | T = Stats
-Q = Quit
-========================================""",
-        strip=True,
-    )
-
+    hp = center_text(hp, 13)
+    mp = center_text(mp, 13)
+    gold = center_text(gold, 13)
+    xp = center_text(xp, 13)
+    level = center_text(level, 13)
+    while True:
+        clear()
+        #printr(curser)
+        print_titelbar("Dice Dungeon", 40)
+        ops = {
+            'H':'Help',
+            #'Q':'Quit Game',
+            'Q':'Quit',
+            #'T':'Show Stets',
+            'T':'Stets',
+            #'I':'Open Inventory',
+            'I':'Inventory',
+            #'M':'Open Map'
+            'M':'Map'
+        }
+        if player.moves == -2:
+            ops['R'] = 'Roll dice to move'
+            ops['P'] = 'Make a pause and rest'
+            if player.cls == "Roghe":
+                ops['F'] = 'Roll to check for traps'
+        printr(put_in_box(f"{hp}  {mp}  {gold}\n{level}  {xp}"),strip=True,)
+        out, shape = header_options(ops,curser)
+        if game_state == "map":
+            room = dungeon.rooms[dungeon.room]
+            enemys = room.enemys
+            traps = room.traps
+            cheasts = room.cheasts
+            merchents = room.shops
+            player_pos: tuple[int, int] = (player.x, player.y)
+            printr('')
+            #printr(f"{center_text('',(room.width + 4)*2, '═')}")
+            print_room(player_pos, room, enemys, traps, cheasts, merchents)
+            
+        print_room_options(player)
+        
+        if is_enemy_turn:
+            return
+        
+        choice = inputT("perss any unbount key to start enemy turn" if player.moves == -1 else "> ")
+        if choice not in ["UP", "DOWN", "LEFT", "RIGHT", "ENTER"]:
+            return choice, curser
+        else:
+            if choice == "ENTER":
+                return out, curser
+            elif choice == "UP":
+                curser[3] = curser[1]
+                curser[2] = curser[0]
+                curser[0] -= 1
+            elif choice == "DOWN":
+                curser[3] = curser[1]
+                curser[2] = curser[0]
+                curser[0] += 1
+            elif choice == "LEFT":
+                curser[2] = curser[0]
+                curser[3] = curser[1]
+                curser[1] -= 1
+            elif choice == "RIGHT":
+                curser[2] = curser[0]
+                curser[3] = curser[1]
+                curser[1] += 1
+                
+            choice, curser = menu_handler(curser,header_menu_shape=shape)
+            if choice:
+                return choice, curser
 
 def print_dungeon_map(dungeon, spacing=1, room_size=2, CHEATS_ON=False):
     # 1. BFS: relative Positionen bestimmen
@@ -1545,15 +1610,15 @@ def print_dungeon_map(dungeon, spacing=1, room_size=2, CHEATS_ON=False):
             cgx, cgy = room_coords[conn]
             # Vertikal
             if gx == cgx:
-                start = min(gy + ceil(room_size/2), cgy)
-                end = max(gy, cgy + ceil(room_size/2))
+                start = min(gy , cgy + ceil(room_size/2)) 
+                end = max(gy + ceil(room_size/2), cgy  )
                 for y_pos in range(start, end):
                     if grid[y_pos][gx] == " ":
                         grid[y_pos][gx] = "|"
             # Horizontal
             elif gy == cgy:
-                start = min(gx + room_size, cgx)
-                end = max(gx + 1, cgx)
+                start = min(gx, cgx + room_size)
+                end = max(gx + room_size, cgx)
                 for x_pos in range(start, end):
                     if grid[gy][x_pos] == " ":
                         grid[gy][x_pos] = "–"
@@ -1580,11 +1645,24 @@ def print_dungeon_map(dungeon, spacing=1, room_size=2, CHEATS_ON=False):
 def print_afi(afi):
     size = 15
     max_afi = afi.afi[afi.main_afi]
-    clear()
-    print_titelbar("Affiliations",30)
+    #clear()
+    #print_titelbar("Affiliations",30)
     max_char_len = max(len(i) for i in afi.afi)
     #printr(max_char_len)
+    num = 0
     for i in afi.afi:
+        if i in GTD.elementare:
+            color = get_color_code(GTD.elementare[i]['color'])
+        else:
+            match num:
+                case 0:
+                   color = get_color_code('none')
+                case 1:
+                    color = get_color_code('white')    
+                case 2:
+                    color = get_color_code('black',['hi'])
+            
+        num = (num + 1) % 3
         hight_p = afi.afi[i] / max_afi
         temp_hight = int((size*8)*hight_p)
         line = ""
@@ -1594,23 +1672,36 @@ def print_afi(afi):
         frac = temp_hight % 8
         #printr(f"{temp_hight,frac}")
         if frac == 7:
-            line += chr(hex_to_int("2589"))
+            line += chr(0x2589)
         elif frac == 6:
-            line += chr(hex_to_int("258A"))
+            line += chr(0x258A)
         elif frac == 5:
-            line += chr(hex_to_int("258B"))
+            line += chr(0x258B)
         elif frac == 4:
-            line += chr(hex_to_int("258C"))
+            line += chr(0x258C)
         elif frac == 3:
-            line += chr(hex_to_int("258D"))
+            line += chr(0x258D)
         elif frac == 2:
-            line += chr(hex_to_int("258E"))
+            line += chr(0x258E)
         elif frac == 1:
-            line += chr(hex_to_int("258F"))
+            line += chr(0x258F)
         name = fixed_width("",max_char_len-len(i)) + i
-        line = fixed_width(f"{line}{afi.afi[i]}",20)
-        printr(f"{name}:{line}\n")
-    inputT()
-	
-def print_mod_menu():
-    pass
+        line = fixed_width(f"{color}{line}\x1b[0m {afi.afi[i]}",25)
+        printr(f"{name}:{line}")
+    #inputT()
+
+def print_room_options(player):
+    #printr("======== Your turn =========")
+    printr('')
+    if player.moves == -2:
+        printr(f"\n{center_text(' Your turn ',28, '═')}")
+        #if player.cls == "Roghe":
+        #    printr("R = Roll dice to move | F = Roll to check for traps")
+        #printr("R = Roll dice to move | P = Make a pause and rest")
+    elif player.moves > 0:
+        printr(f"\n{center_text(' Your turn ',28, '═')}")
+        printr(f"Moves {player.moves} left")
+        printr('use WASD to move')
+    else:
+        printr(f"\n{center_text(' Enemy turn ',28, '═')}")
+        player.moves = -1

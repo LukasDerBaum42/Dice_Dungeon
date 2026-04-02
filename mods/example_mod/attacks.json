@@ -9,7 +9,7 @@
             "crit_bonus": 10,
             "adv": 0
         },
-        "wapon":["sword"],
+        "wapon":["stafe"],
         "ele":null,
         "discription": "A slash with a sword"
   },

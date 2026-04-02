@@ -1,7 +1,7 @@
 {
   "Moder": {
     "stats": {
-      "max_move": 10,
+      "max_move": 12,
       "min_move": 3,
       "max_hp": 200,
       "max_mp": 300,
