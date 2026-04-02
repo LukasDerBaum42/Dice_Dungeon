@@ -3,6 +3,9 @@ This is a small turn based dungeon crawler rouglike
 
 ## **LICENSE**
 This game is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike license
+You are alowed to reuse the game for any NonCommercial peruosas long as crecit is give and changes are published uder the same license
+
+If you want to use it for commertion purposses pleas contect me
 
 ## **Thing to be added**
 - Better gide
