@@ -225,24 +225,24 @@ base_player_cls = {
         # the item types are
         "attacks": ("Sword slash", "Sword thrust", "Flame sword", "Fireball"),
     },
-    #"Tester": {
-    #    "stats": {
-    #        "max_move": 30,
-    #        "min_move": 15,
-    #        "max_hp": 500,
-    #        "max_mp": 400,
-    #        "atk": 50,
-    #        "sp_atk": 50,
-    #        "def_": 50,
-    #        "sp_def": 50,
-    #        "crit_chance": 10,
-    #        "crit_bonus": 10,
-    #    },
-    #    "item": ("common", "sword", 10),
-    #    "affiliations": {"elements": {}, "wapons": {}},
-    #    # the item types are
-    #    "attacks": ("Sword slash", "Axe Swing", "Flame sword", "Fireball"),
-    #},
+    "Tester": {
+        "stats": {
+            "max_move": 30,
+            "min_move": 15,
+            "max_hp": 500,
+            "max_mp": 400,
+            "atk": 50,
+            "sp_atk": 50,
+            "def_": 50,
+            "sp_def": 50,
+            "crit_chance": 10,
+            "crit_bonus": 10,
+        },
+        "item": ("common", "sword", 10),
+        "affiliations": {"elements": {}, "wapons": {}},
+        # the item types are
+        "attacks": ("Sword slash", "Axe Swing", "Flame sword", "Fireball"),
+    },
     "Warrior": {
         "stats": {
             "max_move": 5,

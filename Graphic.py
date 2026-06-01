@@ -1255,7 +1255,7 @@ def fight_selact_attack(player, enemy,curser = [0,0,0,0]):
         else:
             if choice == "ENTER":
                 if sel != None:
-                    printr(sel)
+                    #printr(sel)
                     return sel + 1, curser
             elif choice == "UP":
                 curser[2] = curser[0]
