@@ -10,7 +10,7 @@
 #from types import LambdaType
 
 #from ...data import Game_text_data as GTD
-from ...data.settings_handler import settings
+from data.settings_handler import settings
 
 # group 1
 

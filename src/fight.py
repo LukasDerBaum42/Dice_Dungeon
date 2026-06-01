@@ -5,10 +5,12 @@ import time
 from random import Random, choice, randint
 #from tkinter import TclError
 
-import Game_text_data as GTD
-import Graphic
-from Graphic import clear, inputT, printr, wait
-from Items import GameItem
+from data import Game_text_data as GTD
+from .graphic import Graphic
+
+from .Items import GameItem
+from .common import p_chance
+from Main import CHEATS_ON
 
 # from src.player import *
 # from src.enemy import *
@@ -38,26 +40,26 @@ def fight_won(player, enemy):
             xp_gain = " " + xp_gain
     stats_gain = gold_gain + " " + xp_gain
 
-    clear()
+    Graphic.clear()
     Graphic.print_fight_UI(player, enemy)
-    printr(stats_gain)
-    printr("                          ITEMS                            ")
+    Graphic.printr(stats_gain)
+    Graphic.printr("                          ITEMS                            ")
     for item in enemy.items:
-        printr(item.Name())
+        Graphic.printr(item.Name())
         player.inventory.append(item)
-    inputT("\nPress Enter to return...")
+    Graphic.inputT("\nPress Enter to return...")
     player.gold += enemy.gold
     player.Level(enemy.xp)
 
 
 def you_died():
-    clear()
-    printr("You died")
-    inputT("\nPress Enter to return...")
+    Graphic.clear()
+    Graphic.printr("You died")
+    Graphic.inputT("\nPress Enter to return...")
 
 
 def fight_selact_attack(player, enemy, curser):
-    clear()
+    Graphic.clear()
     choice, curser = Graphic.fight_selact_attack(player, enemy, curser)
     return choice, curser
 
@@ -127,7 +129,7 @@ def fight_roll_dice(player, enemy, start, end, sel=0, advan=0, atk=True):
         attaker = enemy
         deffender = player
         sel = enemy_fight_ai(attaker, deffender)
-    clear()
+    Graphic.clear()
     Graphic.print_fight_UI(player, enemy)
     rand, rand_e = Graphic.fight_roll_dice(
         player, enemy, start, end, advan, advan_e, not (atk)
@@ -167,7 +169,7 @@ def fight_roll_dice(player, enemy, start, end, sel=0, advan=0, atk=True):
     Graphic.print_atk_damage(
         sel_atk, base_atk, base_sp_atk, base_def, base_sp_def, crit, damage, atk
     )
-    inputT("\nPress Enter to return...")
+    Graphic.inputT("\nPress Enter to return...")
 
     return player, enemy
 
@@ -191,15 +193,15 @@ def fight_loop(player, enemy, player_start=True):
             return player, False
         # printr(turn)
         if turn == 0:
-            clear()
+            Graphic.clear()
             Graphic.print_fight_UI(player, enemy)
-            choice = inputT("\nPress Enter to continue...").upper().strip()
+            choice = Graphic.inputT("\nPress Enter to continue...").upper().strip()
             if choice == "Q" and CHEATS_ON:
                 loop_fight = False
                 return player, True
             elif choice == "S":
-                printr(enemy)
-                inputT("\nPress Enter to return...")
+                Graphic.printr(enemy)
+                Graphic.inputT("\nPress Enter to return...")
             else:
                 player, enemy = fight_roll_dice(
                     player, enemy, 1, 6, advan=-1 if first_turn else 0, atk=False
@@ -215,8 +217,8 @@ def fight_loop(player, enemy, player_start=True):
                     loop_fight = False
                     return player, True
                 elif choice == "S":
-                    printr(enemy)
-                    inputT("\nPress Enter to return...")
+                    Graphic.printr(enemy)
+                    Graphic.inputT("\nPress Enter to return...")
                 elif (0 <= int(choice) - 1) and (int(choice) - 1 <= 3):
                     attack_num = int(choice) - 1
                     attack_used = list(player.attacks_used)[attack_num]
@@ -227,25 +229,25 @@ def fight_loop(player, enemy, player_start=True):
                         pass
                     else:
                         if wappon[1] == None:
-                            printr("You dont have a wapon")
+                            Graphic.printr("You dont have a wapon")
                             # print(needed_wappon)
                             # print(wappon[1])
-                            wait(2)
+                            Graphic.wait(2)
                             continue
                         elif not wappon[1].sub_type in needed_wappon:
-                            printr(
+                            Graphic.printr(
                                 f"You dont have the requred wapon, you need a {needed_wappon}"
                             )
                             # print(needed_wappon)
                             # print(wappon[1].sub_type)
-                            wait(2)
+                            Graphic.wait(2)
                             continue
                     if player.attacks_used[attack_used] >= attack_max_used:
-                        printr("No more uses of selected attack left")
-                        wait(1)
+                        Graphic.printr("No more uses of selected attack left")
+                        Graphic.wait(1)
                     elif player.attacks[attack_num]["stats"]["mp"] > player.mp:
-                        printr("Not enough mp for this attack")
-                        wait(1)
+                        Graphic.printr("Not enough mp for this attack")
+                        Graphic.wait(1)
                     else:
                         player.attacks_used[attack_used] += 1
                         player.mp -= player.attacks[attack_num]["stats"]["mp"]
@@ -255,5 +257,5 @@ def fight_loop(player, enemy, player_start=True):
                         turn = 0
                         first_turn = False
             except:
-                printr("Invalid inputT lol")
-                wait(1)
+                Graphic.printr("Invalid inputT lol")
+                Graphic.wait(1)

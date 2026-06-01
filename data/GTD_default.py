@@ -2296,8 +2296,7 @@ base_shops = {
 }
 
 
-base_layers: dict[
-    str, dict[str, int | dict[str, int] | dict[str, float] | str | list[int]]] = {
+base_layers = {
     "layer 1": {
         "min_level" : 4,
         "max_level":5,

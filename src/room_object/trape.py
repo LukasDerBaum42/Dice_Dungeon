@@ -5,10 +5,11 @@ import time
 from random import Random, choice, randint
 #from tkinter import TclError
 
-import Game_text_data as GTD
-import Graphic
-from Graphic import clear, inputT, printr, wait
-from Items import GameItem
+from data import Game_text_data as GTD
+from ..graphic import Graphic
+from ..Items import GameItem
+from ..enemy import Enemy
+from ..fight import fight_loop
 # from src import player, enemy, dungeon, afiliation, fight
 # from src.player import *
 # from src.enemy import *
@@ -29,15 +30,15 @@ class Trape:
         self.room = room
 
     def triger(self, player):
-        clear()
+        Graphic.clear()
         Graphic.print_titelbar("Trape", 16)
         temp = f"{self.type}"
         while len(temp) < 30:
             temp += " "
             if len(temp) < 30:
                 temp = " " + temp
-        printr(temp)
-        printr(wrap_text(GTD.traps[self.type]["text"], 30))
+        Graphic.printr(temp)
+        Graphic.printr(Graphic.wrap_text(GTD.traps[self.type]["text"], 30))
 
         art_t = GTD.trap_art
         art_p = GTD.fight_art
@@ -53,14 +54,14 @@ class Trape:
                 temp += player_art[i - trap_art["player"][1]]
             temp += trap_art["art"][i]
             Graphic.fixed_width(temp, 28)
-            printr(temp)
+            Graphic.printr(temp)
         if self.type == "Mimic":
-            inputT("\nPress Enter to return...")
+            Graphic.inputT("\nPress Enter to return...")
             level = self.room.level
             enemy = Enemy("Mimic", level, None,None, 0, 0)
             player = fight_loop(player, enemy, False)
         else:
-            inputT("\nPress Enter to return...")
+            Graphic.inputT("\nPress Enter to return...")
             if GTD.traps[self.type]["damage_type"] == 0:
                 player.hp -= GTD.traps[self.type]["damage"]
             elif GTD.traps[self.type]["damage_type"] == 1:

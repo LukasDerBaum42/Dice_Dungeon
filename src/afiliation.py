@@ -7,10 +7,10 @@ from random import Random, choice, randint
 from tokenize import Ignore
 #from tkinter import TclError
 
-from ..data import Game_text_data as GTD
+from data import Game_text_data as GTD
 from .graphic import Graphic
 # from Graphic import clear, inputT, printr, wait
-from Items import GameItem
+from .Items import GameItem
 
 # from src.player import *
 # from src.enemy import *

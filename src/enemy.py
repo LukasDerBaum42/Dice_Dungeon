@@ -5,15 +5,19 @@ import time
 from random import Random, choice, randint
 #from tkinter import TclError
 
-import Game_text_data as GTD
-import Graphic
-from Graphic import clear, inputT, printr, wait
-from Items import GameItem
+from data import Game_text_data as GTD
+from .graphic import Graphic
+
+from .Items import GameItem
+from .afiliation import Afiliations
+# from .room import Room
+# from .player import update_player
+from Main import GAME_STATE
 
 # from src.player import *
 # from src.enemy import *
 # from src.dungeon import *
-from src.afiliation import Afiliations
+# from src.afiliation import Afiliations
 # from src.fight import *
 
 
@@ -171,13 +175,13 @@ class Enemy:
     def move(self, player, room, dungeon):
         rand = random.randint(self.min_move, self.max_move)
         enemy_pos = room.get_enemy_pos()
-        player_pos = [player.x, player.y]
+        player_pos : tuple[int, int] = player.x, player.y
         grid = room.map
         path = self.find_path(grid, enemy_pos, player_pos)
         if len(path) < rand:
             rand = len(path)
         for i in range(rand):
-            printr(path[i])
+            Graphic.printr(path[i])
             if path[i] == "N":
                 self.y -= 1
             elif path[i] == "S":
@@ -189,7 +193,7 @@ class Enemy:
             update_player(player, room)
             Graphic.game_menu(player, dungeon,GAME_STATE,is_enemy_turn=True)
             #Graphic.update()
-            wait(0.2)
+            Graphic.wait(0.2)
 
     def find_path(
         self,
@@ -297,12 +301,11 @@ def enemy_move(dungeon, player):
     while len(steck) > 0:
         if player.hp <= 0:
             break
-        enemy = steck.pop(0)
+        enemy: Enemy = steck.pop(0)
         if enemy.is_del:
             try:
                 enemy.spawner.is_spawnd = False
                 room.enemys.remove(enemy)
-                del enemy
             except:
                 continue
         else:
@@ -314,3 +317,37 @@ def enemy_move(dungeon, player):
                 del enemy
         except:
             continue
+
+
+def update_player(player, room):
+    enemys: list[Enemy] = room.enemys
+    traps: list[Trape] = room.traps
+    cheasts: list[Cheast] = room.cheasts
+    shops: list[Merchent] = room.shops
+    px, py = player.x, player.y
+    for e in enemys:
+        Graphic.update()
+        if e.x == px and e.y == py:
+            if player.moves < 0:
+                fight_loop(player, e, False)
+            else:
+                fight_loop(player, e, True)
+            if e.is_boss:
+                player.x, player.y = player.last_pos
+            e.del_()
+    for t in traps:
+        Graphic.update()
+        if t.coldown > 0:
+            t.coldown -= 1
+            continue
+        elif t.x == px and t.y == py:
+            t.triger(player)
+    for c in cheasts:
+        Graphic.update()
+        if c.x == px and c.y == py:
+            c.give_player(player)
+    for m in shops:
+        Graphic.update()
+        if m.x == px and m.y == py:
+            m.interact_player(player)
+            player.x, player.y = player.last_pos

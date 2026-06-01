@@ -1,6 +1,6 @@
 import random
 import time
-from ..data import Game_text_data as GTD
+from data import Game_text_data as GTD
 
 
 class GameItem:
@@ -20,7 +20,7 @@ class GameItem:
         self.main_type = "wapon" if item_type in GTD.wappon_sub_typse else "wareable"
         self.sub_type: str = item_type.lower()
         self.level: int = level
-        self.max_level: int = self.GRADE_INFO[grade]["max_level"]
+        self.max_level = self.GRADE_INFO[grade]["max_level"]
         self.prefix: str = ""
         self.suffix: str = ""
         self.name: str = ""
@@ -57,16 +57,16 @@ class GameItem:
             "legendary": 100,
             "unique": 200,
         }
-        value: int = base_prices[self.grade]
-        value += self.max_hp * GTD.stat_value["max_hp"]
-        value += self.max_mp * GTD.stat_value["max_mp"]
-        value += self.atk * GTD.stat_value["atk"]
-        value += self.sp_atk * GTD.stat_value["sp_atk"]
-        value += self.def_ * GTD.stat_value["def"]
-        value += self.sp_def * GTD.stat_value["sp_def"]
-        value += self.crit_bonus * GTD.stat_value["crit_bonus"]
-        value += self.crit_chance * GTD.stat_value["crit_chance"]
-        value = int(value)
+        value_t: int | float = base_prices[self.grade]
+        value_t += self.max_hp * GTD.stat_value["max_hp"]
+        value_t += self.max_mp * GTD.stat_value["max_mp"]
+        value_t += self.atk * GTD.stat_value["atk"]
+        value_t += self.sp_atk * GTD.stat_value["sp_atk"]
+        value_t += self.def_ * GTD.stat_value["def"]
+        value_t += self.sp_def * GTD.stat_value["sp_def"]
+        value_t += self.crit_bonus * GTD.stat_value["crit_bonus"]
+        value_t += self.crit_chance * GTD.stat_value["crit_chance"]
+        value : int = int(value_t)
         # print(value)
         temp = [value, self.price]
         for _ in range(2):
@@ -86,7 +86,11 @@ class GameItem:
             data = self.UNIQUE_ITEMS[name]
         self.flavor = data["flavor"]
         stats = data["stats"]
-        self.sub_type = data["type"]
+        if isinstance(stats, str):
+            assert False, "stats should be a dict, got str instead"
+        for k, v in stats.items():
+            setattr(self, k, int(v * (1 + self.level / 3)))
+        self.sub_type = str(data["type"])
         self.main_type = "wapon" if self.sub_type in GTD.wappon_sub_typse else "wareable"
         for k, v in stats.items():
             setattr(self, k, int(v * (1 + self.level / 3)))

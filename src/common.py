@@ -18,3 +18,8 @@ def p_chois(opption: dict[str, int]) -> str:
     if out == None:
         out = str(Random.choice(ops))
     return out
+
+
+def p_chance(chance):
+    rand = random.randint(1, 100)
+    return True if rand <= chance else False

@@ -5,41 +5,22 @@ import time
 from random import Random, choice, randint
 #from tkinter import TclError
 
-import Game_text_data as GTD
-import Graphic
-from Graphic import clear, inputT, printr, wait
-from Items import GameItem
+from data import Game_text_data as GTD
+from .graphic import Graphic
+from .Items import GameItem
 
 # from src.player import *
-from src.enemy import Enemy
+from .enemy import Enemy
 # from src.dungeon import *
-from src.afiliation import Afiliations
 # from src.fight import *
 
-from src.room_object.cheast import Cheast
-from src.room_object.trape import Trape
-from src.room_object.merchent import Merchent
+from .room_object.cheast import Cheast
+from .room_object.trape import Trape
+from .room_object.merchent import Merchent
 
 OPPOSITE = {"top": "bottom", "bottom": "top", "left": "right", "right": "left"}
 SIDES = ["top", "bottom", "left", "right"]
 
-def p_chois(opption: dict[str, int]) -> str:
-    changs1 = 0
-    changs2 = 0
-    rand_num = random.randint(1, 100)
-    ops: list[str] = []
-    out = None
-    for j in opption:
-        ops.append(j)
-        p = opption[j]
-        changs1 = changs2
-        changs2 += p
-        if (changs1 < rand_num) and (rand_num <= changs2):
-            out = j
-            break
-    if out == None:
-        out: str = str(Random.choice(ops))
-    return out
 
 class EnemySpawner:
     def __init__(self,mob: str,level: int,room,x: int,y: int,min_l,max_l,is_boss: bool = False,) -> None:
@@ -94,8 +75,6 @@ class EnemySpawner:
             # time.sleep(0.1)
 
 
-
-
 class Dungeon:
     def __init__(self, layer, type):
         room = [
@@ -108,7 +87,11 @@ class Dungeon:
             ["#", "#", "#", "#", "#", "#"],
         ]
         self.no_child = ["boss", "start"]
-        l_size = len(GTD.dungeons_preset[type]["liniar"]["layers"])
+        dung_preset = GTD.dungeons_preset[type]["liniar"]["layers"]
+        if not isinstance(dung_preset, list):
+            raise TypeError("dung_preset should be a list, got {} instead".format(type(dung_preset)))
+        
+        l_size = len(dung_preset)
         gentype = "liniar" if layer < l_size else "endless"
         print(gentype)
         # self.layer_set = GTD.dungeons_preset[type][gentype]["layers"][layer]
@@ -158,6 +141,7 @@ class Dungeon:
     def conect_rooms(self, current, rooms):
         pos = current.pos
         side = choice(["top", "bottom", "left", "right"])
+        pos_2 = None
         if side == "top":
             pos_2 = (pos[0], pos[1] - 1)
         elif side == "bottom":
@@ -166,6 +150,9 @@ class Dungeon:
             pos_2 = (pos[0] - 1, pos[1])
         elif side == "right":
             pos_2 = (pos[0] + 1, pos[1])
+        if pos_2 is None:
+            return current, rooms
+        
         safety_count = 0
         side_options = ["top", "bottom", "left", "right"]
         while side in current.sides_used or pos_2 not in self.room_pos:
@@ -208,7 +195,7 @@ class Dungeon:
         self.room_pos = [(0, 0)]
         next_id = 1
 
-        SPECIAL_ROOMS = GTD.layers[layer]["rooms"]  # Easy to add more
+        SPECIAL_ROOMS: dict = GTD.layers[layer]["rooms"]  # Easy to add more
 
         while next_id < num_rooms or todo:
             current = rooms[todo.pop(0)]
@@ -225,11 +212,11 @@ class Dungeon:
                 )
 
             for child in range(connections):
-                clear()
+                Graphic.clear()
                 Graphic.print_titelbar("Generating Dungeon", 16)
-                printr(todo)
-                printr(current.id)
-                printr(next_id)
+                Graphic.printr(todo)
+                Graphic.printr(current.id)
+                Graphic.printr(next_id)
                 #printr(self.room_pos)
                 #time.sleep(0.2)
                 # if next_id >= num_rooms: break
@@ -346,7 +333,7 @@ class Room:
         self.conn = None
         
 
-    def place_enemy(self, width, height, layer="layer 1"):
+    def place_enemy(self, width, height, layer_name="layer 1"):
         x = random.randint(1, width)
         y = random.randint(1, height)
         while self.map[y][x] != ".":
@@ -355,7 +342,7 @@ class Room:
         rarety_temp_1 = 0
         rarety_temp_2 = 0
         rand_num = random.randint(0, 100)
-        layer = GTD.layers[layer]
+        layer: dict = GTD.layers[layer_name]
         for j in layer["mob"]:
             p = layer["mob"][j]
             # printr(p)
@@ -372,10 +359,10 @@ class Room:
                 )
                 self.used_pos.append((x, y))
 
-    def place_boss(self, width, height, layer="layer 1"):
+    def place_boss(self, width, height, layer_name="layer 1"):
         x = width
         y = height
-        layer = GTD.layers[layer]
+        layer: dict = GTD.layers[layer_name]
         e_level = self.level + random.randint(-3, 3)
         if e_level <= 0:
             e_level = 1
@@ -393,11 +380,11 @@ class Room:
         )
         # self.enemys.append(Enemy(layer["boss"], e_level, self, x, y, True))
 
-    def place_trap(self, width, height, layer="layer 1"):
+    def place_trap(self, width, height, layer_name="layer 1"):
         rarety_temp_1 = 0
         rarety_temp_2 = 0
         rand_num = random.randint(0, 100)
-        layer = GTD.layers[layer]
+        layer: dict = GTD.layers[layer_name]
         for j in layer["traps"]:
             p = layer["traps"][j]
             # printr(p)
@@ -420,19 +407,19 @@ class Room:
             height = len(self.map) // 2
             width = len(self.map[0]) // 2
             self.map[height][width] = "S"
-            printr("add assets")
+            Graphic.printr("add assets")
 
         elif self.type == "boss":
             height = len(self.map) // 2
             width = len(self.map[0]) // 2
             self.place_boss(width, height, layer)
-            printr("add assets")
+            Graphic.printr("add assets")
 
         elif self.type == "merchant":
             height = len(self.map) // 2
             width = len(self.map[0]) // 2
             self.shops.append(Merchent(width, height, self))
-            printr("add assets")
+            Graphic.printr("add assets")
 
         elif self.type == "normal":
             height = len(self.map) - 2
@@ -483,7 +470,7 @@ class Room:
                         if self.map[y][x] == "." and (x, y) not in self.used_pos:
                             self.used_pos.append((x, y))
                             self.map[y][x] = " "
-                printr("add assets")
+                Graphic.printr("add assets")
 
     def update_free_sides(self, grid):
         f_side = []
@@ -522,8 +509,10 @@ class Room:
         def clamp(val, min_val, max_val):
             return max(min_val, min(val, max_val))
 
+
+        x, y = None, None
         # compute door coordinates
-        if mirror:
+        if mirror and o_pos:
             mx, my = mirror
             if side == "left":
                 x, y = 0, clamp(my, 1, height - 2)
@@ -547,6 +536,8 @@ class Room:
             elif side == "right":
                 x, y = width - 1, random.randint(1, height - 2)
 
+        if x == None or y == None:
+            return (0,0)
         self.map[y][x] = "D"
         self.door_positions.append((x, y))
         try:

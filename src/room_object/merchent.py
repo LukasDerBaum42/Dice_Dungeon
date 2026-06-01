@@ -5,12 +5,12 @@ import time
 from random import Random, choice, randint
 #from tkinter import TclError
 
-import Game_text_data as GTD
-import Graphic
-from Graphic import clear, inputT, printr, wait
-from Items import GameItem
+from data import Game_text_data as GTD
+from ..graphic import Graphic
+from ..Items import GameItem
 
-from src.common import p_chois
+
+from ..common import p_chois
 
 # from src.player import *
 # from src.enemy import *
@@ -87,11 +87,11 @@ class Merchent:
                 page -= 1 if page > 0 else 0
 
             elif choice == "E":
-                if is_item_selected:
+                if is_item_selected and isinstance(selected_item, GameItem):
                     if selected_item.value <= player.gold:
                         choice = (
-                            inputT(
-                                f"Do you want to buy this item?\nthe item costs {selected_item.value} gold\nyou have {player.gold}, after buying you’ll have {player.gold - selected_item.value}\n [Y/N] > "
+                            Graphic.inputT(
+                                f"Do you want to buy this item?\nthe item costs {selected_item.value} gold\nyou have {player.gold}, after buying you'll have {player.gold - selected_item.value}\n [Y/N] > "
                             )
                             .upper()
                             .strip()
@@ -103,28 +103,30 @@ class Merchent:
                             selected_item = None
                             is_item_selected = False
                             per_page, size = items_per_page(is_item_selected)
-                            page = selected_num // per_page
+                            if selected_num is not None:
+                                page = selected_num // per_page
                             selected_num = None
                     else:
-                        printr("You don’t have enough gold to buy this item")
-                        wait(1)
+                        Graphic.printr("You don’t have enough gold to buy this item")
+                        Graphic.wait(1)
                 else:
-                    printr("No Item Selected")
-                    wait(1)
+                    Graphic.printr("No Item Selected")
+                    Graphic.wait(1)
 
             elif choice == "PAGE":
-                choice = inputT("Selacte page > ", True, True).upper().strip()
+                choice = Graphic.inputT("Selacte page > ", True, True).upper().strip()
                 try:
                     if (int(choice) - 1) >= 0 and (int(choice) - 1) <= max_page:
                         page = int(choice) - 1
                 except:
-                    printr("Invalid inputT")
-                    wait(1)
+                    Graphic.printr("Invalid inputT")
+                    Graphic.wait(1)
             elif is_item_selected and (choice == ""):
                 selected_item = None
                 is_item_selected = False
                 per_page, size = items_per_page(is_item_selected)
-                page = selected_num // per_page
+                if selected_num is not None:
+                    page = selected_num // per_page
                 selected_num = None
 
             else:
@@ -155,8 +157,8 @@ class Merchent:
                             curser[1] = temp % 2
                             curser[0] = temp // 2
                 except:
-                    printr("Invalid inputT")
-                    wait(1)
+                    Graphic.printr("Invalid inputT")
+                    Graphic.wait(1)
 
     def interact_player(self, player):
         is_in_shop: bool = True

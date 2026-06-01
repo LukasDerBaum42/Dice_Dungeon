@@ -5,10 +5,12 @@ import time
 from random import Random, choice, randint
 #from tkinter import TclError
 
-import Game_text_data as GTD
-import Graphic
-from Graphic import clear, inputT, printr, wait
-from Items import GameItem
+from data import Game_text_data as GTD
+from ..graphic import Graphic
+from ..Items import GameItem
+
+from ..dungeon import Room
+from ..player import Player
 # from src import player, enemy, dungeon, afiliation, fight
 # from src.player import *
 # from src.enemy import *
@@ -25,24 +27,28 @@ class Cheast:
         self.gold: int = 3
         self.is_open: bool = False
 
-        self.item: GameItem | str = self.gen_item()
+        self.item: GameItem | None | str = self.gen_item()
 
-    def gen_item(self) -> GameItem | None:
+    def gen_item(self) -> GameItem | None | str:
         layer: str = self.room.layer
         posbil_types: dict[str, int] = GTD.layers[layer]["cheasts"]
         rarety_temp_1: int = 0
         rarety_temp_2: int = 0
         rand_num: int = random.randint(1, 100)
+        cheast_type: None | str = None
         for j in posbil_types:
             p: int = posbil_types[j]
-            printr(p)
+            Graphic.printr(p)
             rarety_temp_1: int = rarety_temp_2
             rarety_temp_2 += p
             if (rarety_temp_1 < rand_num) and (rand_num <= rarety_temp_2):
-                cheast_type: str = j
+                cheast_type = j
                 break
         del rarety_temp_1, rarety_temp_2
-        printr(posbil_types)
+        Graphic.printr(posbil_types)
+        if cheast_type is None:
+            return None
+        
         cheast = GTD.cheast[cheast_type]
         level = self.room.level + random.randint(*cheast["level"])
         rarety_temp_1 = 0
@@ -81,10 +87,10 @@ class Cheast:
         if not self.is_open:
             if self.item == "Gold":
                 player.gold += self.gold
-                printr(f"You got {self.gold}")
-            else:
+                Graphic.printr(f"You got {self.gold}")
+            elif isinstance(self.item, GameItem):
                 player.inventory.append(self.item)
-                printr(f"You got {self.item.name}")
+                Graphic.printr(f"You got {self.item.name}")
             self.is_open = True
-            _ = inputT("\nPress Enter to return...")
+            _ = Graphic.inputT("\nPress Enter to return...")
 

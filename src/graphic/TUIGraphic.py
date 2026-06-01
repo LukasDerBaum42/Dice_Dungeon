@@ -5,7 +5,7 @@ from copy import deepcopy
 from math import ceil
 
 from .TUI_init import *
-from ...data import Game_text_data as GTD
+from data import Game_text_data as GTD
 from . import TUIGraphicCommon as com
 from .TUIGraphicCommon import clear, printr, wait, inputT, get_color_code
 

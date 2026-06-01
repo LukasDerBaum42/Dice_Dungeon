@@ -1,24 +1,25 @@
-import math
-import os
-import random
-import time
-from random import Random, choice, randint
-#from tkinter import TclError
-
-import data.Game_text_data as GTD
-import src.graphic.Graphic as Graphic
-#from Graphic import clear, inputT, printr, wait
-from src.Items import GameItem
-
-
-
-from src.player import Player
-from src.enemy import enemy_move, Enemy
-from src.dungeon import Dungeon
-# from src.afiliation import *
-from src.fight import fight_loop
-
-# from collections import deque
+if __name__ == "__main__":
+    import math
+    import os
+    import random
+    import time
+    from random import Random, choice, randint
+    #from tkinter import TclError
+    
+    from data import Game_text_data as GTD
+    from src.graphic import Graphic
+    #from Graphic import clear, inputT, printr, wait
+    from src.Items import GameItem
+    
+    
+    
+    from src.player import Player
+    from src.enemy import enemy_move, Enemy
+    from src.dungeon import Dungeon
+    # from src.afiliation import *
+    from src.fight import fight_loop
+    
+    # from collections import deque
 
 
 def wrap_text(text: str, width: int = 72):
@@ -269,12 +270,10 @@ def game_loop_room(player):
             Graphic.wait(1)
 
 
-def p_chance(chance):
-    rand = random.randint(1, 100)
-    return True if rand <= chance else False
-
-
-
+GAME_STATE = {}
+Layers = []
+Curent_Layer = 0
+CHEATS_ON = False
 
 if __name__ == "__main__":
     main_loop = True

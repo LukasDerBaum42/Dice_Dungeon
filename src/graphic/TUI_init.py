@@ -4,8 +4,6 @@ import select
 import shutil
 #from .Graphic import *
 #from .TUIGraphic import * 
-from . import TUIGraphicCommon as com
-
 
 PLAYER = "P"
 TRAP = "T"
@@ -15,6 +13,8 @@ BOSS = "B"
 ENEMY = "E"
 MERCHENT = "M"
 WIDTH, HEIGHT = shutil.get_terminal_size(fallback=(80, 30))
+
+from . import TUIGraphicCommon as com
 
 class TerminalInputUNIX:
     def __init__(self):

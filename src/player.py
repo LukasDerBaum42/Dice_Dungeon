@@ -5,15 +5,25 @@ import time
 from random import Random, choice, randint
 #from tkinter import TclError
 
-from ..data import Game_text_data as GTD
+from data import Game_text_data as GTD
 from .graphic import Graphic
-from Items import GameItem
+from .Items import GameItem
+from .afiliation import Afiliations
+from .dungeon import Dungeon
+from .fight import fight_loop
+from .enemy import Enemy
+
+from ..Main import Curent_Layer, Layers, Dungeon_type
+
+from .room_object.cheast import Cheast
+from .room_object.trape import Trape
+from .room_object.merchent import Merchent
 
 # from src.player import *
 # from src.enemy import *
 # from src.dungeon import *
-from src.afiliation import Afiliations
-from src.fight import fight_loop
+# from src.afiliation import Afiliations
+# from src.fight import fight_loop
 
 class Player:
     def __init__(self, cls: str):
@@ -181,10 +191,10 @@ class Player:
             elif choice == "P":
                 page -= 1 if page > 0 else 0
             elif choice == "E":
-                if is_item_selected:
+                if is_item_selected and selected_item != None:
                     if is_shop:
                         choice = (
-                            inputT(
+                            Graphic.inputT(
                                 f"You sure you want to sell this item?\nYou will get {selected_item.value} Gold\n [y/n] >"
                             )
                             .upper()
@@ -196,13 +206,14 @@ class Player:
                             selected_item = None
                             is_item_selected = False
                             per_page, size = items_per_page(is_item_selected)
-                            page = selected_num // per_page
-                            selected_num = None
+                            if selected_num != None:
+                                page = selected_num // per_page
+                                selected_num = None
                     else:
                         self.equip_item(selected_item)
                 else:
                     Graphic.printr("No item select")
-                    wait(1)
+                    Graphic.wait(1)
             elif choice == "SE":
                 is_fav = False
                 if is_equ:
@@ -216,7 +227,7 @@ class Player:
                     page = 0
                     selected_num = None
             elif choice == "F":
-                if is_item_selected:
+                if is_item_selected and selected_item != None:
                     if selected_item in self.favorit:
                         self.favorit.remove(selected_item)
                         selected_item.is_fav = False
@@ -236,22 +247,27 @@ class Player:
                     page = 0
                     selected_num = None
             elif choice == "PAGE":
-                choice = inputT("Selacte page > ", True, True).upper().strip()
+                choice = Graphic.inputT("Selacte page > ", True, True).upper().strip()
                 try:
                     if (int(choice) - 1) >= 0 and (int(choice) - 1) <= max_page:
                         page = int(choice) - 1
                 except:
                     Graphic.printr("Invalid inputT")
-                    wait(1)
+                    Graphic.wait(1)
             elif is_item_selected and (choice == ""):
                 selected_item = None
                 is_item_selected = False
                 per_page, size = items_per_page(is_item_selected)
-                page = selected_num // per_page
-                selected_num = None
+                if selected_num != None:
+                    page = selected_num // per_page
+                    selected_num = None
+                else:
+                    page = 0
 
             else:
                 try:
+                    if choice == None:
+                        return
                     choice = int(choice)
                     choice -= 1
                     if choice >= 0 and choice <= len(item_fillter):
@@ -281,7 +297,7 @@ class Player:
                     Graphic.printr("Invalid inputT\n Item can’t be selected")
                     Graphic.printr(f"{choice}")
                     Graphic.update()
-                    wait(1)
+                    Graphic.wait(1)
                     Graphic.printr("done")
                     Graphic.update()
 
@@ -367,7 +383,7 @@ class Player:
                     loop_levelup = False
                 else:
                     Graphic.printr("Invalid inputT")
-                    wait(1)
+                    Graphic.wait(1)
             self.xp -= self.max_xp
             self.level += 1
             self.max_xp += self.next_level_xp(self.level)
@@ -472,7 +488,7 @@ class Player:
         update_player(self, room)
         #Graphic.game_menu(self, dungeon,GAME_STATE)
         #print_room_options(self)
-        wait(0.1)
+        Graphic.wait(0.1)
         return "fine"
 
     def rest(self):
