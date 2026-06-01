@@ -1,6 +1,6 @@
 import random
 import time
-import Game_text_data as GTD
+from ..data import Game_text_data as GTD
 
 
 class GameItem:

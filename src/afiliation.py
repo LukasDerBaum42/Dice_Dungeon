@@ -1,13 +1,15 @@
+from codecs import ignore_errors
 import math
 import os
 import random
 import time
 from random import Random, choice, randint
+from tokenize import Ignore
 #from tkinter import TclError
 
-import Game_text_data as GTD
-import Graphic
-from Graphic import clear, inputT, printr, wait
+from ..data import Game_text_data as GTD
+from .graphic import Graphic
+# from Graphic import clear, inputT, printr, wait
 from Items import GameItem
 
 # from src.player import *

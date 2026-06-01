@@ -5,9 +5,8 @@ import time
 from random import Random, choice, randint
 #from tkinter import TclError
 
-import Game_text_data as GTD
-import Graphic
-from Graphic import clear, inputT, printr, wait
+from ..data import Game_text_data as GTD
+from .graphic import Graphic
 from Items import GameItem
 
 # from src.player import *
@@ -32,7 +31,7 @@ class Player:
         self.inventory: list[GameItem] = []
         self.equiped_items: list[GameItem] = []
         self.favorit: list[GameItem] = []
-        self.equipt_slots: dict[str, list[bool | GameItem]] = {
+        self.equipt_slots: dict[str,list] = {
             "wappon": [False, None],
             "helmet": [False, None],
             "chestplate": [False, None],
@@ -52,7 +51,7 @@ class Player:
         self.crit_bonus: int = stats["crit_bonus"]
         self.wapon_ele = None
         self.add_to_inv(GameItem(*GTD.player_cls[cls]["item"]))
-        self.attacks: list[str] = []
+        self.attacks: list = []
         self.attacks_used: dict[str, int] = {}
         for i in GTD.player_cls[cls]["attacks"]:
             self.attacks.append(GTD.attacks[i])
@@ -106,10 +105,10 @@ class Player:
             self.equipt_slots[slot][1] = None
         else:
             if self.equipt_slots[slot][0]:
-                # printr("\033[u")
+                # Graphic.printr("\033[u")
 
-                printr(f"You have laredy a {slot} equipped", pos=-1)
-                choice = inputT("Do you want to swape? [y/n]>")
+                Graphic.printr(f"You have laredy a {slot} equipped", pos=-1)
+                choice = Graphic.inputT("Do you want to swape? [y/n]>")
                 if choice == "Y" or choice == "E":
                     self.equiped_items.remove(self.equipt_slots[slot][1])
                     self.equipt_slots[slot][1].is_equiped = False
@@ -172,7 +171,7 @@ class Player:
                 curser,
                 size,
             )
-            printr(choice)
+            Graphic.printr(choice)
             # choice = inputT("> ", True).upper().strip()
             if choice == "Q":
                 show_inv = False
@@ -202,7 +201,7 @@ class Player:
                     else:
                         self.equip_item(selected_item)
                 else:
-                    printr("No item select")
+                    Graphic.printr("No item select")
                     wait(1)
             elif choice == "SE":
                 is_fav = False
@@ -242,7 +241,7 @@ class Player:
                     if (int(choice) - 1) >= 0 and (int(choice) - 1) <= max_page:
                         page = int(choice) - 1
                 except:
-                    printr("Invalid inputT")
+                    Graphic.printr("Invalid inputT")
                     wait(1)
             elif is_item_selected and (choice == ""):
                 selected_item = None
@@ -279,11 +278,11 @@ class Player:
                             curser[1] = temp % 2
                             curser[0] = temp // 2
                 except:
-                    printr("Invalid inputT\n Item can’t be selected")
-                    printr(f"{choice}")
+                    Graphic.printr("Invalid inputT\n Item can’t be selected")
+                    Graphic.printr(f"{choice}")
                     Graphic.update()
                     wait(1)
-                    printr("done")
+                    Graphic.printr("done")
                     Graphic.update()
 
     def item_stats_add(self):
@@ -367,7 +366,7 @@ class Player:
                     self.max_move += rand
                     loop_levelup = False
                 else:
-                    printr("Invalid inputT")
+                    Graphic.printr("Invalid inputT")
                     wait(1)
             self.xp -= self.max_xp
             self.level += 1
@@ -393,47 +392,47 @@ class Player:
         x, y = self.x, self.y
         if dir == "W":
             if y - 1 < 0:
-                printr("Move in valed")
+                Graphic.printr("Move in valed")
                 return "brake"
             elif room.map[y - 1][x] != "#":
                 self.y -= 1
                 self.moves -= 1
             else:
-                printr("Move in valed")
-                printr(room.map[y - 1][x])
+                Graphic.printr("Move in valed")
+                Graphic.printr(room.map[y - 1][x])
                 return "brake"
         elif dir == "S":
             if y + 1 >= len(room.map):
-                printr("Move in valed")
+                Graphic.printr("Move in valed")
                 return "brake"
             elif room.map[y + 1][x] != "#":
                 self.y += 1
                 self.moves -= 1
             else:
-                printr("Move in valed")
-                printr(room.map[y + 1][x])
+                Graphic.printr("Move in valed")
+                Graphic.printr(room.map[y + 1][x])
                 return "brake"
         elif dir == "D":
             if x + 1 >= len(room.map[0]):
-                printr("Move in valed")
+                Graphic.printr("Move in valed")
                 return "brake"
             elif room.map[y][x + 1] != "#":
                 self.x += 1
                 self.moves -= 1
             else:
-                printr("Move in valed")
-                printr(room.map[y][x + 1])
+                Graphic.printr("Move in valed")
+                Graphic.printr(room.map[y][x + 1])
                 return "brake"
         elif dir == "A":
             if x - 1 < 0:
-                printr("Move in valed")
+                Graphic.printr("Move in valed")
                 return "brake"
             elif room.map[y][x - 1] != "#":
                 self.x -= 1
                 self.moves -= 1
             else:
-                printr("Move in valed")
-                printr(room.map[y][x - 1])
+                Graphic.printr("Move in valed")
+                Graphic.printr(room.map[y][x - 1])
                 return "brake"
         x, y = self.x, self.y
         if room.map[y][x] == "D":

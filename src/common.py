@@ -6,7 +6,7 @@ def p_chois(opption: dict[str, int]) -> str:
     changs2 = 0
     rand_num = random.randint(1, 100)
     ops: list[str] = []
-    out = None
+    out : str | None = None
     for j in opption:
         ops.append(j)
         p = opption[j]
@@ -16,5 +16,5 @@ def p_chois(opption: dict[str, int]) -> str:
             out = j
             break
     if out == None:
-        out: str = str(Random.choice(ops))
+        out = str(Random.choice(ops))
     return out

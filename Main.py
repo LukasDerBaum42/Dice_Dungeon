@@ -5,18 +5,18 @@ import time
 from random import Random, choice, randint
 #from tkinter import TclError
 
-import Game_text_data as GTD
-import Graphic
-from Graphic import clear, inputT, printr, wait
-from Items import GameItem
+import data.Game_text_data as GTD
+import src.graphic.Graphic as Graphic
+#from Graphic import clear, inputT, printr, wait
+from src.Items import GameItem
 
 
 
 from src.player import Player
-from src.enemy import enemy_move
+from src.enemy import enemy_move, Enemy
 from src.dungeon import Dungeon
 # from src.afiliation import *
-# from src.fight import *
+from src.fight import fight_loop
 
 # from collections import deque
 
@@ -72,27 +72,27 @@ def main_menu():
         elif choice == "mods":
             mod_menu()
         elif choice == "exit":
-            printr("Goodbye, hero...")
+            Graphic.printr("Goodbye, hero...")
             Graphic.update()
-            wait(0.1)
+            Graphic.wait(0.1)
             return "exit"
         else:
-            printr("Invalid option.")
+            Graphic.printr("Invalid option.")
             Graphic.update()
-            wait(1)
+            Graphic.wait(1)
 
 
 def show_help_new(page=0):
     max_page = 0
     help_text = GTD.help_txt
     while True:
-        clear()
-        printr(f"""=============
+        Graphic.clear()
+        Graphic.printr(f"""=============
     Help Page {page} / {max_page}
 P = Privios Page | N = Next """)
-        printr(help_text[f"page {page}"])
+        Graphic.printr(help_text[f"page {page}"])
         Graphic.update()
-        choice = inputT("Press Enter to return... > ").upper().strip()
+        choice = Graphic.inputT("Press Enter to return... > ").upper().strip()
         if choice == "N":
             if page < max_page:
                 page += 1
@@ -135,7 +135,7 @@ def select_dungeon():
 def print_dungeon_map(dungeon, spacing=1, room_size=2):
     Graphic.print_dungeon_map(dungeon, spacing, room_size, CHEATS_ON)
     Graphic.update()
-    inputT("\nPress Enter to return...")
+    Graphic.inputT("\nPress Enter to return...")
 
 
 def game_loop_room(player):
@@ -149,7 +149,7 @@ def game_loop_room(player):
         choice = str(choice).upper().strip()
         #choice = inputT("> ").upper().strip()
         if choice == "/":
-            choice = inputT("> ", True).upper().strip()
+            choice = Graphic.inputT("> ", True).upper().strip()
         if choice == "H":
             show_help_new()
             continue
@@ -163,7 +163,7 @@ def game_loop_room(player):
             print_dungeon_map(dungeon)
             continue
         elif choice == "Q":
-            choice = inputT("You sure you want to qite? [Y/N]>").upper().strip()
+            choice = Graphic.inputT("You sure you want to qite? [Y/N]>").upper().strip()
             if choice == "Y" or choice == "Q":
                 loop_room = False
                 break
@@ -173,14 +173,14 @@ def game_loop_room(player):
 
         elif player.moves >= 0:
             if any(c not in ("W", "A", "S", "D") for c in choice):
-                printr("Invalid inputT")
-                wait(1)
+                Graphic.printr("Invalid inputT")
+                Graphic.wait(1)
                 continue
             elif len(choice) <= player.moves:
                 for i in choice:
                     out = player.move(i, dungeon)
                     if out == "brake":
-                        wait(1)
+                        Graphic.wait(1)
                         break
                 continue
         elif player.moves == -2:
@@ -252,11 +252,11 @@ def game_loop_room(player):
             player.add_to_inv(GameItem("common", "sword", 10))
             continue
         elif choice == "FIGHT" and CHEATS_ON:
-            enemy = Enemy("Zomby", random.randint(1, 5), 0, 5, 5)
+            enemy = Enemy("Zomby", random.randint(1, 5),0,None, 5, 5)
             player, loop_room = fight_loop(player, enemy)
             continue
         elif choice == "TP" and CHEATS_ON:
-            choice = inputT("> ").upper().strip()
+            choice = Graphic.inputT("> ").upper().strip()
             dungeon.room = int(choice)
         elif player.moves == -1:
             enemy_move(dungeon, player)
@@ -265,8 +265,8 @@ def game_loop_room(player):
                     sp.update(player)
             player.moves = -2
         else:
-            printr("Invalid inputT")
-            wait(1)
+            Graphic.printr("Invalid inputT")
+            Graphic.wait(1)
 
 
 def p_chance(chance):
