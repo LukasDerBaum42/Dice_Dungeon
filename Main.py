@@ -1,31 +1,15 @@
-if __name__ == "__main__":
-    import math
-    import os
-    import random
-    import time
-    from random import Random, choice, randint
-    #from tkinter import TclError
+import random
     
-    from data import Game_text_data as GTD
-    from src.graphic import Graphic
-    #from Graphic import clear, inputT, printr, wait
-    from src.Items import GameItem
+from data import Game_text_data as GTD
+from src.graphic import Graphic
+from src.Items import GameItem
+from gamestate import GameState
     
     
-    
-    from src.player import Player
-    from src.enemy import enemy_move, Enemy
-    from src.dungeon import Dungeon
-    # from src.afiliation import *
-    from src.fight import fight_loop
-    
-    # from collections import deque
-
-
-def wrap_text(text: str, width: int = 72):
-    words: list[str] = text.split()
-    lines: list[str] = []
-    current_line = " "
+from src import player as Mply
+from src import enemy as Mene
+from src import dungeon as Mdun
+from src import fight as Mfight
 
 
 def mod_menu():
@@ -60,27 +44,6 @@ def mod_menu():
         Graphic.update()
         return
         
-
-def main_menu():
-    struc = {"start": "Start Game", "help": "How to Play","mods":"Mod opptions", "exit": "Quit"}
-    while True:
-        choice,_ = Graphic.select_menu_page("DICE DUNGEON: DESCENT", struc, {"Q": "exit"})
-        # printr(choice)
-        if choice == "start":
-            return "start"
-        elif choice == "help":
-            show_help_new()
-        elif choice == "mods":
-            mod_menu()
-        elif choice == "exit":
-            Graphic.printr("Goodbye, hero...")
-            Graphic.update()
-            Graphic.wait(0.1)
-            return "exit"
-        else:
-            Graphic.printr("Invalid option.")
-            Graphic.update()
-            Graphic.wait(1)
 
 
 def show_help_new(page=0):
@@ -133,68 +96,41 @@ def select_dungeon():
         return choice
 
 
-def print_dungeon_map(dungeon, spacing=1, room_size=2):
-    Graphic.print_dungeon_map(dungeon, spacing, room_size, CHEATS_ON)
+def print_dungeon_map(GS:GameState, spacing=1, room_size=2):
+    Graphic.print_dungeon_map(GS.dungeon, spacing, room_size, GS.cheats_on)
     Graphic.update()
     Graphic.inputT("\nPress Enter to return...")
 
 
-def game_loop_room(player):
-    global loop_room, Layers, DUNGEON, CHEATS_ON
-    loop_room = True
-    cursor = [0,0,0,0]
-    while loop_room:
-        dungeon: Dungeon = DUNGEON
-        choice, cursor = Graphic.game_menu(player, dungeon,GAME_STATE,cursor)
-        #print_room_options(player)
-        choice = str(choice).upper().strip()
-        #choice = inputT("> ").upper().strip()
-        if choice == "/":
-            choice = Graphic.inputT("> ", True).upper().strip()
-        if choice == "H":
-            show_help_new()
-            continue
-        elif choice == "T":
-            player.show_stats()
-            continue
-        elif choice == "I":
-            player.show_inventory()
-            continue
-        elif choice == "M":
-            print_dungeon_map(dungeon)
-            continue
-        elif choice == "Q":
-            choice = Graphic.inputT("You sure you want to qite? [Y/N]>").upper().strip()
-            if choice == "Y" or choice == "Q":
-                loop_room = False
-                break
-        elif choice == "UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT B A":
-            CHEATS_ON = True
-            continue
-
-        elif player.moves >= 0:
-            if any(c not in ("W", "A", "S", "D") for c in choice):
-                Graphic.printr("Invalid inputT")
-                Graphic.wait(1)
-                continue
-            elif len(choice) <= player.moves:
-                for i in choice:
-                    out = player.move(i, dungeon)
-                    if out == "brake":
-                        Graphic.wait(1)
-                        break
-                continue
-        elif player.moves == -2:
-            if choice == "R":
-                player.roll_for_move()
-                continue
-                # wait(1)
-            elif choice == "P":
-                player.rest()
-                player.moves = -1
-                continue
-
-        elif choice == "GIVE ALL" and CHEATS_ON:
+def cheats(choice,GS) -> bool:
+    player = GS.player
+    if choice == "GIVE ALL":
+        for rarity in [
+            "common",
+            "uncommon",
+            "rare",
+            "epic",
+            "legendary",
+            "unique",
+        ]:
+            for item_type in [
+                "sword",
+                "knife",
+                "bow",
+                "stafe",
+                "spear",
+                "chestplate",
+                "helmet",
+                "boots",
+                "pants",
+                "pan",
+                "gloves",
+                "sheald",
+            ]:  # , "consumable"
+                player.add_to_inv(GameItem(rarity, item_type, 100))
+        return True
+    elif choice == "GIVE ALL ALL":
+        for _ in range(5):
             for rarity in [
                 "common",
                 "uncommon",
@@ -217,50 +153,82 @@ def game_loop_room(player):
                     "gloves",
                     "sheald",
                 ]:  # , "consumable"
-                    player.add_to_inv(GameItem(rarity, item_type, 100))
-            continue
-        elif choice == "GIVE ALL ALL" and CHEATS_ON:
-            for _ in range(5):
-                for rarity in [
-                    "common",
-                    "uncommon",
-                    "rare",
-                    "epic",
-                    "legendary",
-                    "unique",
-                ]:
-                    for item_type in [
-                        "sword",
-                        "knife",
-                        "bow",
-                        "stafe",
-                        "spear",
-                        "chestplate",
-                        "helmet",
-                        "boots",
-                        "pants",
-                        "pan",
-                        "gloves",
-                        "sheald",
-                    ]:  # , "consumable"
-                        for _ in range(5):
-                            player.add_to_inv(GameItem(rarity, item_type, 100))
-                continue
-        elif choice == "LEVEL UP" and CHEATS_ON:
-            player.Level(player.max_xp + 1)
-            continue
-        elif choice == "GIVE ITEM" and CHEATS_ON:
-            player.add_to_inv(GameItem("common", "sword", 10))
-            continue
-        elif choice == "FIGHT" and CHEATS_ON:
-            enemy = Enemy("Zomby", random.randint(1, 5),0,None, 5, 5)
-            player, loop_room = fight_loop(player, enemy)
-            continue
-        elif choice == "TP" and CHEATS_ON:
-            choice = Graphic.inputT("> ").upper().strip()
-            dungeon.room = int(choice)
+                    for _ in range(5):
+                        player.add_to_inv(GameItem(rarity, item_type, 100))
+        return True
+    elif choice == "LEVEL UP":
+        player.Level(player.max_xp + 1)
+        return True
+    elif choice == "GIVE ITEM":
+        player.add_to_inv(GameItem("common", "sword", 10))
+        return True
+    elif choice == "FIGHT":
+        enemy = Mene.Enemy("Zomby", random.randint(1, 5),0,None, 5, 5)
+        player, loop_room = Mfight.fight_loop(player, enemy)
+        return True
+    elif choice == "TP":
+        choice = Graphic.inputT("> ").upper().strip()
+        GS.dungeon.room = int(choice)
+        return True
+    else:
+        return False
+
+
+
+
+def game_loop_room(GS:GameState):
+        dungeon: Mdun.Dungeon = GS.dungeon
+        player :Mply.Player = GS.player
+        choice = Graphic.game_menu(GS)
+        choice = str(choice).upper().strip()
+        if choice == "/":
+            choice = Graphic.inputT("> ", True).upper().strip()
+        if choice == "H":
+            show_help_new()
+            return
+        elif choice == "T":
+            player.show_stats()
+            return
+        elif choice == "I":
+            player.show_inventory()
+            return
+        elif choice == "M":
+            print_dungeon_map(GS)
+            return
+        elif choice == "Q":
+            choice = Graphic.inputT("You sure you want to qite? [Y/N]>").upper().strip()
+            if choice == "Y" or choice == "Q":
+                GS.ret_loop()
+                return
+        elif choice == "UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT B A":
+            GS.cheats_on = True
+            return
+        if GS.cheats_on:
+            cheat_used = cheats(choice,GS)
+            if cheat_used: return
+        if player.moves >= 0:
+            if any(c not in ("W", "A", "S", "D") for c in choice):
+                Graphic.printr("Invalid inputT")
+                Graphic.wait(1)
+                return
+            elif len(choice) <= player.moves:
+                for i in choice:
+                    out = player.move(i, dungeon)
+                    if out == "brake":
+                        Graphic.wait(1)
+                        break
+                return
+        elif player.moves == -2:
+            if choice == "R":
+                player.roll_for_move()
+                return
+                # wait(1)
+            elif choice == "P":
+                player.rest()
+                player.moves = -1
+                return
         elif player.moves == -1:
-            enemy_move(dungeon, player)
+            Mene.enemy_move(dungeon, player)
             for rom in dungeon.rooms:
                 for sp in dungeon.rooms[rom].spawners:
                     sp.update(player)
@@ -270,43 +238,59 @@ def game_loop_room(player):
             Graphic.wait(1)
 
 
-GAME_STATE = {}
-Layers = []
-Curent_Layer = 0
-CHEATS_ON = False
+def main_menu():
+    struc = {"start": "Start Game", "help": "How to Play","mods":"Mod opptions", "exit": "Quit"}
+    while True:
+        choice,_ = Graphic.select_menu_page("DICE DUNGEON: DESCENT", struc, {"Q": "exit"})
+        # printr(choice)
+        if choice == "start":
+            return "start"
+        elif choice == "help":
+            show_help_new()
+        elif choice == "mods":
+            mod_menu()
+        elif choice == "exit":
+            Graphic.printr("Goodbye, hero...")
+            Graphic.update()
+            Graphic.wait(0.1)
+            return "exit"
+        else:
+            Graphic.printr("Invalid option.")
+            Graphic.update()
+            Graphic.wait(1)
 
+
+def main_loop(gamestate):
+    out = main_menu()
+    if out == "start":
+        GTD.load_mods()
+        cls = select_player_class()
+        if cls == "Q":
+            return
+        sel_d_type = select_dungeon()
+        if sel_d_type == "Q":
+            return
+        else:
+            gamestate.dungeon_type = sel_d_type
+        gamestate.layers.append(Mdun.Dungeon(gamestate.curent_Layer, gamestate.dungeon_type))
+        gamestate.dungeon = gamestate.layers[gamestate.curent_Layer]
+        gamestate.player = Mply.Player(cls)
+        gamestate.new_loop("room")
+    elif out == "exit":
+        gamestate.running = False
+
+
+GAMESTATE = GameState()
+RUNNING = True
+GAMESTATE.running = RUNNING
 if __name__ == "__main__":
-    main_loop = True
-    loop_room = False
-    loop_fight = False
-    while main_loop:
-        Layers = []
-        Curent_Layer = 0
-        CHEATS_ON = True
-        out = main_menu()
-        if out == "start":
-            GTD.load_mods()
-            cls = select_player_class()
-            if cls == "Q":
-                continue
-            Dungeon_type = select_dungeon()
-            Layers = []
-            Curent_Layer = 0
-            if Dungeon_type == "Q":
-                continue
-            Layers.append(Dungeon(Curent_Layer, Dungeon_type))
-            # for _ in range(0):
-            #    Curent_Layer += 1
-            #    Layers.append(Dungeon(Curent_Layer, Dungeon_type))
-            # print(len(Layers))
-            DUNGEON = Layers[Curent_Layer]
-            player = Player(cls)
-            #player.add_to_inv(GameItem("legendary", "sword", 75))
-            #player.add_to_inv(GameItem("common", "sword", 10))
-            GAME_STATE = "map"
-            game_loop_room(player)
-        # game_menu()
-        # give all
-        elif out == "exit":
-            main_loop = False
-            break
+
+    while GAMESTATE.running:
+        
+        match GAMESTATE.loop:
+            case "main":
+                main_loop(GAMESTATE)
+            case "room":
+                game_loop_room(GAMESTATE)
+        
+        

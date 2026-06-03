@@ -1,18 +1,16 @@
-import math
-import os
 import random
-import time
-from random import Random, choice, randint
+from random import choice
 #from tkinter import TclError
 
 from data import Game_text_data as GTD
 from .graphic import Graphic
-from .Items import GameItem
 
-# from src.player import *
-from .enemy import Enemy
-# from src.dungeon import *
-# from src.fight import *
+
+# from . import afiliation as Mafi
+# from . import dungeon as Mdun
+# from . import fight as Mfight 
+from . import enemy as Mene
+
 
 from .room_object.cheast import Cheast
 from .room_object.trape import Trape
@@ -48,7 +46,7 @@ class EnemySpawner:
             if e_level > self.max_l:
                 e_level = self.max_l
 
-        self.enemy = Enemy(self.mob, e_level, self.room, self, self.x, self.y, self.is_boss)
+        self.enemy = Mene.Enemy(self.mob, e_level, self.room, self, self.x, self.y, self.is_boss)
         self.room.enemys.append(self.enemy)
         self.is_spawnd = True
         self.has_spawned = True
@@ -131,7 +129,7 @@ class Dungeon:
     def print_room(self, player):
         # clear()
         room: Room = self.rooms[self.room]
-        enemys: list[Enemy] = room.enemys
+        enemys: list[Mene.Enemy] = room.enemys
         traps: list[Trape] = room.traps
         cheasts: list[Cheast] = room.cheasts
         merchents: list[Merchent] = room.shops
@@ -549,8 +547,10 @@ class Room:
         return (x, y)
 
     def generate_room(self, room_type, width=None, height=None):
-        width: int = width if width else random.randint(6, 10)
-        height: int = height if height else random.randint(6, 10)
+        if not width:
+            width = random.randint(6, 10)
+        if not height:
+            height = random.randint(6, 10)
         self.width, self.height = width , height
         return [
             [

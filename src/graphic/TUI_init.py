@@ -14,7 +14,6 @@ ENEMY = "E"
 MERCHENT = "M"
 WIDTH, HEIGHT = shutil.get_terminal_size(fallback=(80, 30))
 
-from . import TUIGraphicCommon as com
 
 class TerminalInputUNIX:
     def __init__(self):
@@ -24,6 +23,7 @@ class TerminalInputUNIX:
         self.buf = ""
 
     def poll(self):
+        from . import TUIGraphicCommon as com
         global PRINT_BUFFER
         events = []
 
@@ -69,6 +69,7 @@ class TerminalInputWIN:
         self.buf = ""
 
     def poll(self):
+        from . import TUIGraphicCommon as com
         events = []
 
         # drain keyboard buffer (non-blocking)

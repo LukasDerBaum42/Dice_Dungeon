@@ -8,8 +8,8 @@ from random import Random, choice, randint
 from data import Game_text_data as GTD
 from ..graphic import Graphic
 from ..Items import GameItem
-from ..enemy import Enemy
-from ..fight import fight_loop
+from .. import enemy as Mene
+from .. import fight as Mfight
 # from src import player, enemy, dungeon, afiliation, fight
 # from src.player import *
 # from src.enemy import *
@@ -58,8 +58,8 @@ class Trape:
         if self.type == "Mimic":
             Graphic.inputT("\nPress Enter to return...")
             level = self.room.level
-            enemy = Enemy("Mimic", level, None,None, 0, 0)
-            player = fight_loop(player, enemy, False)
+            enemy = Mene.Enemy("Mimic", level, None,None, 0, 0)
+            player = Mfight.fight_loop(player, enemy, False)
         else:
             Graphic.inputT("\nPress Enter to return...")
             if GTD.traps[self.type]["damage_type"] == 0:

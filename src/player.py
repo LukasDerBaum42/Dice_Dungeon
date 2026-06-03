@@ -1,19 +1,15 @@
 import math
-import os
-import random
-import time
-from random import Random, choice, randint
 #from tkinter import TclError
 
 from data import Game_text_data as GTD
 from .graphic import Graphic
 from .Items import GameItem
-from .afiliation import Afiliations
-from .dungeon import Dungeon
-from .fight import fight_loop
-from .enemy import Enemy
+from gamestate import GameState
 
-from ..Main import Curent_Layer, Layers, Dungeon_type
+from . import afiliation as Mafi
+from . import dungeon as Mdun
+from . import fight as Mfight 
+from . import enemy as Mene
 
 from .room_object.cheast import Cheast
 from .room_object.trape import Trape
@@ -66,10 +62,10 @@ class Player:
         for i in GTD.player_cls[cls]["attacks"]:
             self.attacks.append(GTD.attacks[i])
             self.attacks_used[i] = 0
-        self.ele_afi = Afiliations(
+        self.ele_afi = Mafi.Afiliations(
             GTD.ele_list, GTD.player_cls[cls]["affiliations"]["elements"]
         )
-        self.wapon_afi = Afiliations(
+        self.wapon_afi = Mafi.Afiliations(
             GTD.wappon_sub_typse, GTD.player_cls[cls]["affiliations"]["wapons"]
         )
 
@@ -163,13 +159,13 @@ class Player:
         selected_item: None | GameItem = None
         selected_num = None
         show_inv = True
-        curser = [0, 0, 0, 0]
+        cursor = [0, 0, 0, 0]
         while show_inv:
             # clear()
             per_page, size = items_per_page(is_item_selected)
             max_page = max(0, (len(item_fillter) - 1) // per_page)
 
-            choice, curser = Graphic.show_inventory(
+            choice, cursor = Graphic.show_inventory(
                 page,
                 per_page,
                 max_page,
@@ -178,7 +174,7 @@ class Player:
                 selected_item,
                 is_shop,
                 self.gold,
-                curser,
+                cursor,
                 size,
             )
             Graphic.printr(choice)
@@ -277,22 +273,22 @@ class Player:
                             selected_num = None
                             per_page, size = items_per_page(is_item_selected)
                             page = choice // per_page
-                            curser[2] = curser[0]
-                            curser[3] = curser[1]
+                            cursor[2] = cursor[0]
+                            cursor[3] = cursor[1]
                             temp = choice % per_page
-                            curser[1] = temp % 2
-                            curser[0] = temp // 2
+                            cursor[1] = temp % 2
+                            cursor[0] = temp // 2
                         else:
                             selected_item = item_fillter[choice]
                             is_item_selected = True
                             selected_num = choice
                             per_page, size = items_per_page(is_item_selected)
                             page = choice // per_page
-                            curser[2] = curser[0]
-                            curser[3] = curser[1]
+                            cursor[2] = cursor[0]
+                            cursor[3] = cursor[1]
                             temp = choice % per_page
-                            curser[1] = temp % 2
-                            curser[0] = temp // 2
+                            cursor[1] = temp % 2
+                            cursor[0] = temp // 2
                 except:
                     Graphic.printr("Invalid inputT\n Item can’t be selected")
                     Graphic.printr(f"{choice}")
@@ -401,8 +397,8 @@ class Player:
     def show_stats(self):
         Graphic.show_stats(self)
 
-    def move(self, dir: str, dungeon):
-        global Curent_Layer, DUNGEON
+    def move(self, dir: str, GS: GameState):
+        dungeon = GS.dungeon
         room = dungeon.rooms[dungeon.room]
         self.last_pos = [self.x, self.y]
         x, y = self.x, self.y
@@ -465,22 +461,20 @@ class Player:
                     sp.update(self, new_room)
             self.x, self.y = px, py
         elif room.map[y][x] == "S":
-            if Curent_Layer <= 0:
+            if GS.curent_Layer <= 0:
                 pass
             else:
-                Curent_Layer -= 1
-                DUNGEON = Layers[Curent_Layer]
-                dungeon = DUNGEON
+                GS.curent_Layer -= 1
+                dungeon = GS.layers[GS.curent_Layer]
                 new_room = dungeon.rooms[dungeon.room]
                 new_room.show_on_map = True
                 self.y = len(new_room.map) // 2
                 self.x = len(new_room.map[0]) // 2
         elif room.map[y][x] == "s":
-            Curent_Layer += 1
-            if len(Layers) <= Curent_Layer:
-                Layers.append(Dungeon(Curent_Layer, Dungeon_type))
-            DUNGEON = Layers[Curent_Layer]
-            dungeon = DUNGEON
+            GS.curent_Layer += 1
+            if len(GS.layers) <= GS.curent_Layer:
+                GS.layers.append(Mdun.Dungeon(GS.Curent_Layer, GS.Dungeon_type))
+            dungeon = GS.layers[GS.curent_Layer]
             new_room = dungeon.rooms[dungeon.room]
             new_room.show_on_map = True
             self.y = len(new_room.map) // 2
@@ -503,7 +497,7 @@ class Player:
 
 
 def update_player(player, room):
-    enemys: list[Enemy] = room.enemys
+    enemys: list[Mene.Enemy] = room.enemys
     traps: list[Trape] = room.traps
     cheasts: list[Cheast] = room.cheasts
     shops: list[Merchent] = room.shops
@@ -512,9 +506,9 @@ def update_player(player, room):
         Graphic.update()
         if e.x == px and e.y == py:
             if player.moves < 0:
-                fight_loop(player, e, False)
+                Mfight.fight_loop(player, e, False)
             else:
-                fight_loop(player, e, True)
+                Mfight.fight_loop(player, e, True)
             if e.is_boss:
                 player.x, player.y = player.last_pos
             e.del_()

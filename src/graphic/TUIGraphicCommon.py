@@ -10,6 +10,7 @@ from types import LambdaType
 
 from .TUI_init import *
 from .Graphic import FPS
+from .TUI_init import input_lol
 
 FPS: int = FPS
 
@@ -426,8 +427,8 @@ def print_titelbar(text: str, width: int = WIDTH-2):
     printr(text)
     printr(f"╚{sep}╝")
     
-def header_options(struc, curser_temp=[0, 0, 0, 0], width=36, curser_pos_inver=False):
-    curser = curser_temp.copy()
+def header_options(struc, cursor_temp=[0, 0, 0, 0], width=36, cursor_pos_inver=False):
+    cursor = cursor_temp.copy()
     lines = []
     lines_temp = []
     ops = [i for i in struc]
@@ -454,24 +455,24 @@ def header_options(struc, curser_temp=[0, 0, 0, 0], width=36, curser_pos_inver=F
     #print(shape)
             
     # max_len = max([len(i) for i in lines])
-    if curser_pos_inver:
-        curser[0] = len(lines) + curser[0]
-        if curser[0] < 0:
-            curser[0] = 0
-            curser_temp[0] = 0 - len(lines)
+    if cursor_pos_inver:
+        cursor[0] = len(lines) + cursor[0]
+        if cursor[0] < 0:
+            cursor[0] = 0
+            cursor_temp[0] = 0 - len(lines)
         
-        curser[2] = len(lines) + curser[2]
-        if curser[2] < 0:
-            curser[2] = 0
-            curser_temp[2] = 2 - len(lines)
+        cursor[2] = len(lines) + cursor[2]
+        if cursor[2] < 0:
+            cursor[2] = 0
+            cursor_temp[2] = 2 - len(lines)
 
     out = None
     for i in range(len(lines)):
         mark = None
         line = ""
-        if curser[0] == i:
-            if curser[1] < len(lines[i]):
-                mark = curser[1]
+        if cursor[0] == i:
+            if cursor[1] < len(lines[i]):
+                mark = cursor[1]
             else:
                 mark = len(lines[i]) - 1
         for j in range(len(lines[i])):
@@ -499,7 +500,7 @@ class BoxPreRender:
         return 1 + len(self.texts)
     
     
-def box_menu(pre_render:list[BoxPreRender],curser:list,size = [2,4]):
+def box_menu(pre_render:list[BoxPreRender],cursor:list,size = [2,4]):
         
         shape = []
         #printr(size)
@@ -543,8 +544,8 @@ def box_menu(pre_render:list[BoxPreRender],curser:list,size = [2,4]):
                 printr(out)
     
         render = []
-        if curser[0] > -1:
-            selected = (curser[0] * size[0] + curser[1])
+        if cursor[0] > -1:
+            selected = (cursor[0] * size[0] + cursor[1])
             #printr(selected)
         else:
             selected = None
@@ -559,93 +560,93 @@ def box_menu(pre_render:list[BoxPreRender],curser:list,size = [2,4]):
         box_to_render(render)
         return selected, shape
     
-def menu_handler(curser,box_menu_shape=None,header_menu_shape=None, page=0, max_page=0):
+def menu_handler(cursor,box_menu_shape=None,header_menu_shape=None, page=0, max_page=0):
     
     layout = []
     y_off = 0
     
     if header_menu_shape and not box_menu_shape:
-        if curser[0] < 0:
-            curser[0] = 0
-        elif curser[0] >= len(header_menu_shape):
-            curser[0] = len(header_menu_shape) - 1
+        if cursor[0] < 0:
+            cursor[0] = 0
+        elif cursor[0] >= len(header_menu_shape):
+            cursor[0] = len(header_menu_shape) - 1
     elif not header_menu_shape and box_menu_shape:
-        if curser[0] < 0:
-            curser[0] = 0
-        elif curser[0] >= len(box_menu_shape):
-            curser[0] = len(box_menu_shape) - 1
+        if cursor[0] < 0:
+            cursor[0] = 0
+        elif cursor[0] >= len(box_menu_shape):
+            cursor[0] = len(box_menu_shape) - 1
     elif header_menu_shape and box_menu_shape:
         y_off = len(header_menu_shape)
-        if curser[0] < - len(header_menu_shape):
-            curser[0] = 0 - len(header_menu_shape)
-        elif curser[0] >= len(box_menu_shape):
-            curser[0] = len(box_menu_shape) - 1
+        if cursor[0] < - len(header_menu_shape):
+            cursor[0] = 0 - len(header_menu_shape)
+        elif cursor[0] >= len(box_menu_shape):
+            cursor[0] = len(box_menu_shape) - 1
     
-    if curser[0] >= 0 and box_menu_shape:
-        if curser[1] < 0:
+    if cursor[0] >= 0 and box_menu_shape:
+        if cursor[1] < 0:
             if page > 0:
-                curser[2] = curser[0]
-                curser[3] = curser[1]
-                curser[1] = box_menu_shape[curser[0]] - 1
-                return "P", curser
+                cursor[2] = cursor[0]
+                cursor[3] = cursor[1]
+                cursor[1] = box_menu_shape[cursor[0]] - 1
+                return "P", cursor
             else:
-                curser[1] = 0
-        elif curser[1] > box_menu_shape[curser[0]] - 1:
-            #printr(f"{curser[1]}  {box_menu_shape[curser[0]] - 1}")
+                cursor[1] = 0
+        elif cursor[1] > box_menu_shape[cursor[0]] - 1:
+            #printr(f"{cursor[1]}  {box_menu_shape[cursor[0]] - 1}")
             if page < max_page:
-                curser[2] = curser[0]
-                curser[3] = curser[1]
-                curser[1] = 0
-                return "N", curser
+                cursor[2] = cursor[0]
+                cursor[3] = cursor[1]
+                cursor[1] = 0
+                return "N", cursor
             else:
-                curser[1] = 1
+                cursor[1] = 1
                 
-    if curser[0] + y_off < len(layout):
-        line_len = layout[curser[0]+ y_off]
-        if curser[1] >= line_len:
-            curser[1] = line_len - 1
-        elif curser[1] < 0:
-            curser[1] = 0
-    elif curser[2]+ y_off < len(layout):
+    if cursor[0] + y_off < len(layout):
+        line_len = layout[cursor[0]+ y_off]
+        if cursor[1] >= line_len:
+            cursor[1] = line_len - 1
+        elif cursor[1] < 0:
+            cursor[1] = 0
+    elif cursor[2]+ y_off < len(layout):
         line_len = 2
-        if curser[1] >= line_len:
-            curser[1] = line_len - 1
-        elif curser[1] < 0:
-            curser[1] = 0
+        if cursor[1] >= line_len:
+            cursor[1] = line_len - 1
+        elif cursor[1] < 0:
+            cursor[1] = 0
             
-    prev_line = curser[2]+ y_off
+    prev_line = cursor[2]+ y_off
         
         # clamp prev_line too, or it will bite you later
-    if curser[0]+ y_off != curser[2]+ y_off:
+    if cursor[0]+ y_off != cursor[2]+ y_off:
         if prev_line < 0:
             prev_line = 0
             prev_len = layout[prev_line]
         elif prev_line >= len(layout):
-            prev_line = curser[0]+ y_off
+            prev_line = cursor[0]+ y_off
             prev_len = 2
         else:
             prev_len = layout[prev_line]
                 
-        if curser[0]+ y_off >= len(layout):
+        if cursor[0]+ y_off >= len(layout):
             new_len = 2
         else:
-            new_len  = layout[curser[0]+ y_off]
+            new_len  = layout[cursor[0]+ y_off]
            
         if prev_len > 1:
-            ratio = curser[3] / (prev_len - 1)
+            ratio = cursor[3] / (prev_len - 1)
         else:
             ratio = 0
            
-        curser[1] = round(ratio * (new_len - 1))
+        cursor[1] = round(ratio * (new_len - 1))
       
-    #curser_temp[1] = curser[1]
-    #curser_temp[3] = curser[3]
+    #cursor_temp[1] = cursor[1]
+    #cursor_temp[3] = cursor[3]
     
                 
-    # printr(curser)
+    # printr(cursor)
     # printr(header_menu_shape)
-    # printr(f"{curser[0] + y_off},{curser[1]}")
-    return None, curser
+    # printr(f"{cursor[0] + y_off},{cursor[1]}")
+    return None, cursor
 
 def select_menu_page(
     title: str|None, structure: dict[str, str], special_key: dict[str, str] = {} ,other = None, cursor_pos = 0

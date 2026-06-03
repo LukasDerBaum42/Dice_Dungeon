@@ -9,8 +9,8 @@ from data import Game_text_data as GTD
 from ..graphic import Graphic
 from ..Items import GameItem
 
-from ..dungeon import Room
-from ..player import Player
+from .. import dungeon as Mdun
+from .. import player as Mply
 # from src import player, enemy, dungeon, afiliation, fight
 # from src.player import *
 # from src.enemy import *
@@ -20,10 +20,10 @@ from ..player import Player
 
 
 class Cheast:
-    def __init__(self, room: Room, x: int, y: int):
+    def __init__(self, room: Mdun.Room, x: int, y: int):
         self.x: int = x
         self.y: int = y
-        self.room: Room = room
+        self.room: Mdun.Room = room
         self.gold: int = 3
         self.is_open: bool = False
 
@@ -83,7 +83,7 @@ class Cheast:
             item: GameItem = GameItem(rarety, item_type, level)
             return item
 
-    def give_player(self, player: Player):
+    def give_player(self, player:Mply.Player):
         if not self.is_open:
             if self.item == "Gold":
                 player.gold += self.gold

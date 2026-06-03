@@ -12,8 +12,8 @@ from .Items import GameItem
 from .afiliation import Afiliations
 # from .room import Room
 # from .player import update_player
-from Main import GAME_STATE
-
+from gamestate import GameState
+from . import dungeon as Mdun
 # from src.player import *
 # from src.enemy import *
 # from src.dungeon import *
@@ -26,7 +26,7 @@ class Enemy:
     def __init__(
         self, mob: str, level: int, room, spawner, x: int, y: int, is_boss: bool = False
     ) -> None:
-        self.room: Room = room
+        self.room: Mdun.Room = room
         self.mob: str = mob
         self.is_boss: bool = is_boss
         self.x: int = x

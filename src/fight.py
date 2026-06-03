@@ -10,7 +10,7 @@ from .graphic import Graphic
 
 from .Items import GameItem
 from .common import p_chance
-from Main import CHEATS_ON
+from gamestate import GameState
 
 # from src.player import *
 # from src.enemy import *
@@ -58,10 +58,10 @@ def you_died():
     Graphic.inputT("\nPress Enter to return...")
 
 
-def fight_selact_attack(player, enemy, curser):
+def fight_selact_attack(player, enemy, cursor):
     Graphic.clear()
-    choice, curser = Graphic.fight_selact_attack(player, enemy, curser)
-    return choice, curser
+    choice, cursor = Graphic.fight_selact_attack(player, enemy, cursor)
+    return choice, cursor
 
 
 def get_attaker_stats(attaker, defender, sel):
@@ -177,7 +177,7 @@ def fight_roll_dice(player, enemy, start, end, sel=0, advan=0, atk=True):
 def fight_loop(player, enemy, player_start=True):
     global loop_fight, loop_room
     loop_fight = True
-    curser = [0, 0, 0, 0]
+    cursor = [0, 0, 0, 0]
     turn = 1 if player_start else 0
     first_turn = True
     while loop_fight:
@@ -209,7 +209,7 @@ def fight_loop(player, enemy, player_start=True):
                 turn = 1
                 first_turn = False
         elif turn == 1:
-            choice, curser = fight_selact_attack(player, enemy, curser)
+            choice, cursor = fight_selact_attack(player, enemy, cursor)
             # choice = inputT(">").upper().strip()
             
             try:

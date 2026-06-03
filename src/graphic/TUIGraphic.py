@@ -53,16 +53,16 @@ def show_inventory(
     selected_item,
     is_shop,
     gold,
-    curser=[0, 0,0,0],
+    cursor=[0, 0,0,0],
     size=[2,4]
 ):
     while True:
         clear()
         #printr(f"{[WIDTH // 40, (HEIGHT - 10) // 6]}  {size}")
         if [WIDTH // 40, (HEIGHT - 10) // 6] != size and not is_item_selected:
-            return None , curser
+            return None , cursor
         
-        out, header_shape = render_inventory_header(page, max_page, is_shop, gold, curser)
+        out, header_shape = render_inventory_header(page, max_page, is_shop, gold, cursor)
         
         if is_item_selected:
             render_item_details(selected_item)
@@ -74,49 +74,49 @@ def show_inventory(
         item_render = build_item_render(items, is_shop,selected_item,offset)
         
 
-        if curser[0] > -1:
-            sel = (curser[0] * 2 + curser[1]) 
+        if cursor[0] > -1:
+            sel = (cursor[0] * 2 + cursor[1]) 
         else:
             sel = None
         # printr(ceil(len(item_render) / 2) - 1)
         #render_item_boxes(item_render, offset, sel)
         printr('')
-        sel, box_shape = com.box_menu(item_render,curser,size)
-        #menu_handler(curser,box_shape,header_shape,page,max_page)
+        sel, box_shape = com.box_menu(item_render,cursor,size)
+        #menu_handler(cursor,box_shape,header_shape,page,max_page)
         choice = inputT("> ", True)
         if choice not in ["UP", "DOWN", "LEFT", "RIGHT", "ENTER"]:
-            return choice, curser
+            return choice, cursor
         else:
             if choice == "ENTER":
                 if sel != None:
                     printr(sel + 1 + offset)
-                    return sel + 1 + offset, curser
+                    return sel + 1 + offset, cursor
                 elif out:
-                    return out, curser
+                    return out, cursor
             elif choice == "UP":
-                curser[3] = curser[1]
-                curser[2] = curser[0]
-                curser[0] -= 1
+                cursor[3] = cursor[1]
+                cursor[2] = cursor[0]
+                cursor[0] -= 1
             elif choice == "DOWN":
-                curser[3] = curser[1]
-                curser[2] = curser[0]
-                curser[0] += 1
+                cursor[3] = cursor[1]
+                cursor[2] = cursor[0]
+                cursor[0] += 1
             elif choice == "LEFT":
-                curser[2] = curser[0]
-                curser[3] = curser[1]
-                curser[1] -= 1
+                cursor[2] = cursor[0]
+                cursor[3] = cursor[1]
+                cursor[1] -= 1
             elif choice == "RIGHT":
-                curser[2] = curser[0]
-                curser[3] = curser[1]
-                curser[1] += 1
+                cursor[2] = cursor[0]
+                cursor[3] = cursor[1]
+                cursor[1] += 1
                 
-            choice, curser = com.menu_handler(curser,box_shape,header_shape,page,max_page)
+            choice, cursor = com.menu_handler(cursor,box_shape,header_shape,page,max_page)
             if choice:
-                return choice, curser
+                return choice, cursor
             
 
 
-def render_inventory_header(page, max_page, is_shop, gold, curser):
+def render_inventory_header(page, max_page, is_shop, gold, cursor):
     ops = {
         "SE": "Show Equipped",
         "SF": "Show Favorites",
@@ -139,7 +139,7 @@ def render_inventory_header(page, max_page, is_shop, gold, curser):
     # E = {"Sell" if is_shop else "Equip"} | F = Favorite | SF = Show Favorites
     # PAGE = Go to Page | Number = Select Item | SE = Show Equipped
     # ==============================================================================""")
-    out, shape = com.header_options(ops, curser, 50, True)
+    out, shape = com.header_options(ops, cursor, 50, True)
     return out, shape
 
 
@@ -400,7 +400,7 @@ def print_fight_UI(player, enemy):
         
 
 
-def fight_selact_attack(player, enemy,curser = [0,0,0,0]):
+def fight_selact_attack(player, enemy,cursor = [0,0,0,0]):
     while True:
         clear()
         com.print_titelbar("FIGHT", 59)
@@ -409,41 +409,41 @@ def fight_selact_attack(player, enemy,curser = [0,0,0,0]):
         print_bars_player(player)
         atk_render = show_attack(player)
         
-        sel, box_shape = com.box_menu(atk_render,curser,[2,2])
+        sel, box_shape = com.box_menu(atk_render,cursor,[2,2])
         
 
         # printr(ceil(len(item_render) / 2) - 1)
         #render_item_boxes(item_render, offset, sel)
         choice = inputT("> ", True)
         if choice not in ["UP", "DOWN", "LEFT", "RIGHT", "ENTER"]:
-            return choice, curser
+            return choice
         else:
             if choice == "ENTER":
                 if sel != None:
                     #printr(sel)
-                    return sel + 1, curser
+                    return sel + 1, cursor
             elif choice == "UP":
-                curser[2] = curser[0]
-                curser[3] = curser[1]
-                curser[0] -= 1
+                cursor[2] = cursor[0]
+                cursor[3] = cursor[1]
+                cursor[0] -= 1
             elif choice == "DOWN":
-                curser[2] = curser[0]
-                curser[3] = curser[1]
-                curser[0] += 1
-            elif curser[0] > 1:
-                curser[0] = 1
+                cursor[2] = cursor[0]
+                cursor[3] = cursor[1]
+                cursor[0] += 1
+            elif cursor[0] > 1:
+                cursor[0] = 1
             elif choice == "LEFT":
-                curser[2] = curser[0]
-                curser[3] = curser[1]
-                curser[1] -= 1
+                cursor[2] = cursor[0]
+                cursor[3] = cursor[1]
+                cursor[1] -= 1
             elif choice == "RIGHT":
-                curser[2] = curser[0]
-                curser[3] = curser[1]
-                curser[1] += 1
+                cursor[2] = cursor[0]
+                cursor[3] = cursor[1]
+                cursor[1] += 1
             
-            choice, curser = com.menu_handler(curser,box_menu_shape=box_shape,page=0,max_page=0)
+            choice, cursor = com.menu_handler(cursor,box_menu_shape=box_shape,page=0,max_page=0)
             if choice:
-                return choice, curser
+                return choice
 
 def print_atk_damage(sel,atk,sp_atk,deff,sp_deff,crit,damage,who=True):
     if crit:
@@ -536,7 +536,7 @@ def print_room(
 
 
 
-def shop_hader(page, max_page, gold, curser=[0, 0, 0, 0]):
+def shop_hader(page, max_page, gold, cursor=[0, 0, 0, 0]):
     com.print_titelbar(f"Shop Page {page + 1} / {max_page + 1}", 78)
     printr(f"Gold {gold}")
     ops = {
@@ -548,7 +548,7 @@ def shop_hader(page, max_page, gold, curser=[0, 0, 0, 0]):
         "PAGE": "Go to Page",
     }
     printr("")
-    out,shape = com.header_options(ops, curser, 45, True)
+    out,shape = com.header_options(ops, cursor, 45, True)
     # printr(f""" Q = Close | N = Next | P = Previous | H = Help
     # E = Buy |  PAGE = Go to Page | Number = Select Item""")
     printr(com.center_text("", 78, "="))
@@ -563,12 +563,12 @@ def shop_buy_page(
     item_fillter,
     selected_item,
     gold,
-    curser=[0, 0,0,0],
+    cursor=[0, 0,0,0],
     size=[2,4]
 ):
     while True:
         clear()
-        out,header_shape = shop_hader(page, max_page, gold, curser)
+        out,header_shape = shop_hader(page, max_page, gold, cursor)
         if is_item_selected:
             render_item_details(selected_item)
 
@@ -578,62 +578,65 @@ def shop_buy_page(
         offset = page * per_page
         item_render = build_item_render(items, True,selected_item,offset)
         
-        if curser[0] > -1:
-            sel = (curser[0] * 2 + curser[1]) 
+        if cursor[0] > -1:
+            sel = (cursor[0] * 2 + cursor[1]) 
         else:
             sel = None
 
-        sel, box_shape = com.box_menu(item_render,curser,size)
+        sel, box_shape = com.box_menu(item_render,cursor,size)
 
         choice = inputT("> ", True)
         if choice not in ["UP", "DOWN", "LEFT", "RIGHT", "ENTER"]:
-            return choice, curser
+            return choice, cursor
         else:
             if choice == "ENTER":
                 if sel != None:
                     printr(sel + 1 + offset)
-                    return sel + 1 + offset, curser
+                    return sel + 1 + offset, cursor
                 elif out:
-                    return out, curser
+                    return out, cursor
             elif choice == "UP":
-                curser[2] = curser[0]
-                curser[3] = curser[1]
-                curser[0] -= 1
+                cursor[2] = cursor[0]
+                cursor[3] = cursor[1]
+                cursor[0] -= 1
             elif choice == "DOWN":
-                curser[2] = curser[0]
-                curser[3] = curser[1]
-                curser[0] += 1
+                cursor[2] = cursor[0]
+                cursor[3] = cursor[1]
+                cursor[0] += 1
             elif choice == "LEFT":
-                curser[2] = curser[0]
-                curser[3] = curser[1]
-                curser[1] -= 1
+                cursor[2] = cursor[0]
+                cursor[3] = cursor[1]
+                cursor[1] -= 1
             elif choice == "RIGHT":
-                curser[2] = curser[0]
-                curser[3] = curser[1]
-                curser[1] += 1
+                cursor[2] = cursor[0]
+                cursor[3] = cursor[1]
+                cursor[1] += 1
                 
-            choice, curser = com.menu_handler(curser,box_shape,header_shape,page,max_page)
+            choice, cursor = com.menu_handler(cursor,box_shape,header_shape,page,max_page)
             if choice:
-                return choice, curser
-#            if curser[0] >= 0:
-#                if curser[1] < 0:
+                return choice, cursor
+#            if cursor[0] >= 0:
+#                if cursor[1] < 0:
 #                    if page > 0:
-#                        curser[1] = 1
-#                        return "P", curser
+#                        cursor[1] = 1
+#                        return "P", cursor
 #                    else:
-#                        curser[1] = 0
-#                elif curser[1] > 1:
+#                        cursor[1] = 0
+#                elif cursor[1] > 1:
 #                    if page < max_page:
-#                        curser[1] = 0
-#                        return "N", curser
+#                        cursor[1] = 0
+#                        return "N", cursor
 #                    else:
-#                        curser[1] = 1
-#                elif curser[0] > ceil(len(item_render) / 2) - 1:
-#                    curser[0] = ceil(len(item_render) / 2) - 1
+#                        cursor[1] = 1
+#                elif cursor[0] > ceil(len(item_render) / 2) - 1:
+#                    cursor[0] = ceil(len(item_render) / 2) - 1
 
 
 
-def game_menu(player,dungeon,game_state,curser=[0,0,0,0],is_enemy_turn=False) -> tuple[str,list[int]]:
+def game_menu(GS,is_enemy_turn=False):
+    player = GS.player
+    dungeon = GS.dungeon
+    cursor = GS.cursor
     hp: str = f"HP {player.hp}/{player.max_hp + player.max_hp_items}"
     mp: str = f"MP {player.mp}/{player.max_mp + player.max_mp_items}"
     gold: str = f"Gold {player.gold}"
@@ -646,7 +649,7 @@ def game_menu(player,dungeon,game_state,curser=[0,0,0,0],is_enemy_turn=False) ->
     level = com.center_text(level, 13)
     while True:
         clear()
-        #printr(curser)
+        #printr(cursor)
         com.print_titelbar("Dice Dungeon", 40)
         ops = {
             'H':'Help',
@@ -665,8 +668,8 @@ def game_menu(player,dungeon,game_state,curser=[0,0,0,0],is_enemy_turn=False) ->
             if player.cls == "Roghe":
                 ops['F'] = 'Roll to check for traps'
         printr(com.put_in_box(f"{hp}  {mp}  {gold}\n{level}  {xp}"),strip=True,)
-        out, shape = com.header_options(ops,curser)
-        if game_state == "map":
+        out, shape = com.header_options(ops,cursor)
+        if GS.loop == "room":
             room = dungeon.rooms[dungeon.room]
             enemys = room.enemys
             traps = room.traps
@@ -684,30 +687,30 @@ def game_menu(player,dungeon,game_state,curser=[0,0,0,0],is_enemy_turn=False) ->
         
         choice = inputT("perss any unbount key to start enemy turn" if player.moves == -1 else "> ")
         if choice not in ["UP", "DOWN", "LEFT", "RIGHT", "ENTER"]:
-            return choice, curser
+            return choice
         else:
             if choice == "ENTER":
-                return out, curser
+                return out, cursor
             elif choice == "UP":
-                curser[3] = curser[1]
-                curser[2] = curser[0]
-                curser[0] -= 1
+                cursor[3] = cursor[1]
+                cursor[2] = cursor[0]
+                cursor[0] -= 1
             elif choice == "DOWN":
-                curser[3] = curser[1]
-                curser[2] = curser[0]
-                curser[0] += 1
+                cursor[3] = cursor[1]
+                cursor[2] = cursor[0]
+                cursor[0] += 1
             elif choice == "LEFT":
-                curser[2] = curser[0]
-                curser[3] = curser[1]
-                curser[1] -= 1
+                cursor[2] = cursor[0]
+                cursor[3] = cursor[1]
+                cursor[1] -= 1
             elif choice == "RIGHT":
-                curser[2] = curser[0]
-                curser[3] = curser[1]
-                curser[1] += 1
+                cursor[2] = cursor[0]
+                cursor[3] = cursor[1]
+                cursor[1] += 1
                 
-            choice, curser = com.menu_handler(curser,header_menu_shape=shape)
+            choice, cursor = com.menu_handler(cursor,header_menu_shape=shape)
             if choice:
-                return choice, curser
+                return choice
 
 def print_dungeon_map(dungeon, spacing=1, room_size=2, CHEATS_ON=False):
     # 1. BFS: relative Positionen bestimmen
