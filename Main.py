@@ -46,8 +46,11 @@ def mod_menu():
         
 
 
-def show_help_new(page=0):
+def show_help_new(GS:GameState):
     max_page = 0
+    if GS.other is None:
+        raise LookupError("GameState has other no other set: show_help_new needs other to have element 'page'")
+    page = GS.other["page"]
     help_text = GTD.help_txt
     while True:
         Graphic.clear()
@@ -63,8 +66,9 @@ P = Privios Page | N = Next """)
         elif choice == "P":
             if page > 0:
                 page -= 1
-        else:
-            break
+        elif choice == "Q":
+            GS.ret_loop()
+            return
 
 
 
@@ -184,7 +188,7 @@ def game_loop_room(GS:GameState):
         if choice == "/":
             choice = Graphic.inputT("> ", True).upper().strip()
         if choice == "H":
-            show_help_new()
+            GS.new_loop("help",{"page":0})
             return
         elif choice == "T":
             player.show_stats()
@@ -193,6 +197,7 @@ def game_loop_room(GS:GameState):
             player.show_inventory()
             return
         elif choice == "M":
+            
             print_dungeon_map(GS)
             return
         elif choice == "Q":
@@ -202,6 +207,7 @@ def game_loop_room(GS:GameState):
                 return
         elif choice == "UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT B A":
             GS.cheats_on = True
+            Graphic.printr("Cheats Enabled")
             return
         if GS.cheats_on:
             cheat_used = cheats(choice,GS)
@@ -213,7 +219,7 @@ def game_loop_room(GS:GameState):
                 return
             elif len(choice) <= player.moves:
                 for i in choice:
-                    out = player.move(i, dungeon)
+                    out = player.move(i, GS)
                     if out == "brake":
                         Graphic.wait(1)
                         break
@@ -228,7 +234,7 @@ def game_loop_room(GS:GameState):
                 player.moves = -1
                 return
         elif player.moves == -1:
-            Mene.enemy_move(dungeon, player)
+            Mene.enemy_move(GS)
             for rom in dungeon.rooms:
                 for sp in dungeon.rooms[rom].spawners:
                     sp.update(player)
@@ -238,31 +244,12 @@ def game_loop_room(GS:GameState):
             Graphic.wait(1)
 
 
-def main_menu():
+
+def main_loop(gamestate:GameState):
     struc = {"start": "Start Game", "help": "How to Play","mods":"Mod opptions", "exit": "Quit"}
-    while True:
-        choice,_ = Graphic.select_menu_page("DICE DUNGEON: DESCENT", struc, {"Q": "exit"})
-        # printr(choice)
-        if choice == "start":
-            return "start"
-        elif choice == "help":
-            show_help_new()
-        elif choice == "mods":
-            mod_menu()
-        elif choice == "exit":
-            Graphic.printr("Goodbye, hero...")
-            Graphic.update()
-            Graphic.wait(0.1)
-            return "exit"
-        else:
-            Graphic.printr("Invalid option.")
-            Graphic.update()
-            Graphic.wait(1)
-
-
-def main_loop(gamestate):
-    out = main_menu()
-    if out == "start":
+    choice,_ = Graphic.select_menu_page("DICE DUNGEON: DESCENT", struc, {"Q": "exit"})
+    # printr(choice)
+    if choice == "start":
         GTD.load_mods()
         cls = select_player_class()
         if cls == "Q":
@@ -276,13 +263,23 @@ def main_loop(gamestate):
         gamestate.dungeon = gamestate.layers[gamestate.curent_Layer]
         gamestate.player = Mply.Player(cls)
         gamestate.new_loop("room")
-    elif out == "exit":
+    elif choice == "help":
+        gamestate.new_loop("help",{"page":0})
+    elif choice == "mods":
+        mod_menu()
+    elif choice == "exit":
+        Graphic.printr("Goodbye, hero...")
+        Graphic.update()
+        Graphic.wait(0.1)
         gamestate.running = False
+    else:
+        Graphic.printr("Invalid option.")
+        Graphic.update()
+        Graphic.wait(1)
 
 
 GAMESTATE = GameState()
-RUNNING = True
-GAMESTATE.running = RUNNING
+GAMESTATE.running = True
 if __name__ == "__main__":
 
     while GAMESTATE.running:
@@ -292,5 +289,7 @@ if __name__ == "__main__":
                 main_loop(GAMESTATE)
             case "room":
                 game_loop_room(GAMESTATE)
+            case "help":
+                show_help_new(GAMESTATE)
         
         

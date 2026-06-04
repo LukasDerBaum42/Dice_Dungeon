@@ -633,7 +633,7 @@ def shop_buy_page(
 
 
 
-def game_menu(GS,is_enemy_turn=False):
+def game_menu(GS,is_enemy_turn=False) -> str | None:
     player = GS.player
     dungeon = GS.dungeon
     cursor = GS.cursor
@@ -690,7 +690,7 @@ def game_menu(GS,is_enemy_turn=False):
             return choice
         else:
             if choice == "ENTER":
-                return out, cursor
+                return out
             elif choice == "UP":
                 cursor[3] = cursor[1]
                 cursor[2] = cursor[0]

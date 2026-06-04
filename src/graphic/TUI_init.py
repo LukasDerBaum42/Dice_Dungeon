@@ -15,6 +15,9 @@ MERCHENT = "M"
 WIDTH, HEIGHT = shutil.get_terminal_size(fallback=(80, 30))
 
 
+
+
+
 class TerminalInputUNIX:
     def __init__(self):
         self.fd = sys.stdin.fileno()
@@ -101,7 +104,9 @@ class TerminalInputWIN:
 if os.name == "nt":
     import msvcrt
     input_lol = TerminalInputWIN()
+    print("\x1b[2J\x1b[H")
 else:
     import termios
     import tty
     input_lol = TerminalInputUNIX()
+    print("\x1b[2J\x1b[H")

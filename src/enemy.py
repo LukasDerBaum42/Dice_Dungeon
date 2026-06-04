@@ -172,7 +172,8 @@ class Enemy:
             self.attacks.append(GTD.attacks[i])
             self.attacks_used[i] = 0
 
-    def move(self, player, room, dungeon):
+    def move(self, room, GS):
+        player = GS.player
         rand = random.randint(self.min_move, self.max_move)
         enemy_pos = room.get_enemy_pos()
         player_pos : tuple[int, int] = player.x, player.y
@@ -191,7 +192,7 @@ class Enemy:
             elif path[i] == "E":
                 self.x += 1
             update_player(player, room)
-            Graphic.game_menu(player, dungeon,GAME_STATE,is_enemy_turn=True)
+            Graphic.game_menu(GS,is_enemy_turn=True)
             #Graphic.update()
             Graphic.wait(0.2)
 
@@ -289,7 +290,9 @@ class Enemy:
 
 
 
-def enemy_move(dungeon, player):
+def enemy_move(GS:GameState):
+    dungeon = GS.dungeon
+    player = GS.player
     room = dungeon.rooms[dungeon.room]
     # printr('enemys in room', len(room.enemys))
     steck = []
@@ -309,7 +312,7 @@ def enemy_move(dungeon, player):
             except:
                 continue
         else:
-            enemy.move(player, room, dungeon)
+            enemy.move(room,GS)
         try:
             if enemy.is_del:
                 enemy.spawner.is_spawnd = False
