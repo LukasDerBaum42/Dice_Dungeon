@@ -183,9 +183,6 @@ class Player:
             self.crit_chance += 1
             self.crit_bonus += 2
 
-    def show_stats(self):
-        Graphic.show_stats(self)
-
     def move(self, dir: str, GS: GameState):
         dungeon = GS.dungeon
         room = dungeon.rooms[dungeon.room]
@@ -262,7 +259,7 @@ class Player:
         elif room.map[y][x] == "s":
             GS.curent_Layer += 1
             if len(GS.layers) <= GS.curent_Layer:
-                GS.layers.append(Mdun.Dungeon(GS.Curent_Layer, GS.Dungeon_type))
+                GS.layers.append(Mdun.Dungeon(GS.curent_Layer, GS.dungeon_type))
             dungeon = GS.layers[GS.curent_Layer]
             new_room = dungeon.rooms[dungeon.room]
             new_room.show_on_map = True

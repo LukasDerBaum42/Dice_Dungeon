@@ -1,6 +1,7 @@
 import random
     
 from data import Game_text_data as GTD
+from data import settings_handler as GSH
 from src.graphic import Graphic
 from src.Items import GameItem
 from gamestate import GameState
@@ -9,6 +10,7 @@ from gamestate import GameState
 from src import player as Mply
 from src import enemy as Mene
 from src import dungeon as Mdun
+from src import inventory as Minv
 from src import fight as Mfight
 
 
@@ -44,6 +46,9 @@ def mod_menu():
         Graphic.update()
         return
         
+        
+
+
 
 
 def show_help_new(GS:GameState):
@@ -178,6 +183,10 @@ def cheats(choice,GS) -> bool:
         return False
 
 
+def show_stats(GS:GameState):
+    Graphic.show_stats(GS.player)
+    GS.ret_loop()
+
 
 
 def game_loop_room(GS:GameState):
@@ -191,10 +200,10 @@ def game_loop_room(GS:GameState):
             GS.new_loop("help",{"page":0})
             return
         elif choice == "T":
-            player.show_stats()
+            GS.new_loop("stats")
             return
         elif choice == "I":
-            player.show_inventory()
+            GS.new_loop("inventory",{"is_shop":False})
             return
         elif choice == "M":
             
@@ -246,7 +255,7 @@ def game_loop_room(GS:GameState):
 
 
 def main_loop(gamestate:GameState):
-    struc = {"start": "Start Game", "help": "How to Play","mods":"Mod opptions", "exit": "Quit"}
+    struc = {"start": "Start Game", "help": "How to Play","opptions":"Settings","mods":"Mod opptions", "exit": "Quit"}
     choice,_ = Graphic.select_menu_page("DICE DUNGEON: DESCENT", struc, {"Q": "exit"})
     # printr(choice)
     if choice == "start":
@@ -267,6 +276,8 @@ def main_loop(gamestate:GameState):
         gamestate.new_loop("help",{"page":0})
     elif choice == "mods":
         mod_menu()
+    elif choice == "opptions":
+        gamestate.new_loop("opptions")
     elif choice == "exit":
         Graphic.printr("Goodbye, hero...")
         Graphic.update()
@@ -283,7 +294,8 @@ GAMESTATE.running = True
 if __name__ == "__main__":
 
     while GAMESTATE.running:
-        
+        print(GSH.settings["general"]["test_mode"])
+        break
         match GAMESTATE.loop:
             case "main":
                 main_loop(GAMESTATE)
@@ -291,5 +303,11 @@ if __name__ == "__main__":
                 game_loop_room(GAMESTATE)
             case "help":
                 show_help_new(GAMESTATE)
+            case "inventory":
+                Minv.show_inventory(GAMESTATE)
+            case "stats":
+                show_stats(GAMESTATE)
+            case "opptions":
+                GSH.options_menu(GAMESTATE)
         
         

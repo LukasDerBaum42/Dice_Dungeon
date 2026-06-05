@@ -84,11 +84,11 @@ def show_inventory(GS: GameState):
     page: int = 0
     is_fav: bool = False
     is_equ: bool = False
-    # item_fillter = self.inventory
+    item_fillter = player.inventory.inventory
     selected_item: None | GameItem = None
     selected_num = None
     show_inv = True
-    cursor = [0, 0, 0, 0]
+    cursor = GS.cursor
     while show_inv:
         # clear()
         per_page, size = items_per_page(is_item_selected)
@@ -125,8 +125,8 @@ def show_inventory(GS: GameState):
                         .strip()
                     )
                     if choice == "Y" or choice == "E":
-                        self.remove_item(selected_item)
-                        self.gold += selected_item.value
+                        player.inventory.remove_item(selected_item)
+                        player.gold += selected_item.value
                         selected_item = None
                         is_item_selected = False
                         per_page, size = items_per_page(is_item_selected)
@@ -134,7 +134,8 @@ def show_inventory(GS: GameState):
                             page = selected_num // per_page
                             selected_num = None
                 else:
-                    self.equip_item(selected_item)
+                    player.inventory.equip_item(selected_item)
+                    player.item_stats_add()
             else:
                 Graphic.printr("No item select")
                 Graphic.wait(1)
@@ -142,32 +143,32 @@ def show_inventory(GS: GameState):
             is_fav = False
             if is_equ:
                 is_equ = False
-                item_fillter = self.inventory
+                item_fillter = player.inventory.inventory
                 page = 0
                 selected_num = None
             else:
                 is_equ = True
-                item_fillter = self.equiped_items
+                item_fillter = player.inventory.equiped_items
                 page = 0
                 selected_num = None
         elif choice == "F":
             if is_item_selected and selected_item != None:
-                if selected_item in self.favorit:
-                    self.favorit.remove(selected_item)
+                if selected_item in player.inventory.favorit:
+                    player.inventory.favorit.remove(selected_item)
                     selected_item.is_fav = False
                 else:
-                    self.favorit.append(selected_item)
+                    player.inventory.favorit.append(selected_item)
                     selected_item.is_fav = True
         elif choice == "SF":
             is_equ = False
             if is_fav:
                 is_fav = False
-                item_fillter = self.inventory
+                item_fillter = player.inventory.inventory
                 page = 0
                 selected_num = None
             else:
                 is_fav = True
-                item_fillter = self.favorit
+                item_fillter = player.inventory.favorit
                 page = 0
                 selected_num = None
         elif choice == "PAGE":

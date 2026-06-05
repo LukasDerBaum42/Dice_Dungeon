@@ -649,7 +649,7 @@ def menu_handler(cursor,box_menu_shape=None,header_menu_shape=None, page=0, max_
     return None, cursor
 
 def select_menu_page(
-    title: str|None, structure: dict[str, str], special_key: dict[str, str] = {} ,other = None, cursor_pos = 0
+    title: str|None, structure: dict[str, str], special_key: dict[str, str] = {} ,other = None, cursor_pos = 0, take_lr = False
 ):
     elements = [i for i in structure]
     max_el_len = max([plen(structure[i]) for i in structure]) + 6
@@ -701,6 +701,10 @@ def select_menu_page(
             cursor_pos = (cursor_pos - 1) % el_len
         elif choic == "DOWN":
             cursor_pos = (cursor_pos + 1) % el_len
+        elif take_lr and choic == "LEFT":
+            return (elements[cursor_pos], choic) , cursor_pos
+        elif take_lr and choic == "RIGHT":
+            return (elements[cursor_pos], choic) , cursor_pos
         elif choic == "ENTER":
             return elements[cursor_pos] , cursor_pos
         else:

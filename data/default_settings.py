@@ -4,3 +4,10 @@ base_settings = {
         "test_mode" : False,
     }
 }
+
+
+setings_options = {
+    "general": {
+        "graphic_mode" : ["TUI","GUI"]
+    }
+}
