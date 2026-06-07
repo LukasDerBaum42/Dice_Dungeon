@@ -95,7 +95,7 @@ def load_settings():
 
 def save_settings():
     change_setting(settings, settings_change)
-    path = current_dir + "settings.json" 
+    path = current_dir + "/settings.json" 
     with open(path,"w") as f:
         json.dump(settings_change,f)
 
@@ -105,7 +105,7 @@ def save_settings():
 current_dir = os.path.dirname(os.path.abspath(__file__))
 files_in_dir = os.listdir(current_dir)
 if "settings.json" in files_in_dir:
-    path = current_dir + "settings.json" 
+    path = current_dir + "/settings.json" 
     with open(path, "r") as f:
         settings_change = json.load(f)
         

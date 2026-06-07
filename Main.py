@@ -294,8 +294,8 @@ GAMESTATE.running = True
 if __name__ == "__main__":
 
     while GAMESTATE.running:
-        print(GSH.settings["general"]["test_mode"])
-        break
+        # print(GSH.settings["general"]["test_mode"])
+        # break
         match GAMESTATE.loop:
             case "main":
                 main_loop(GAMESTATE)
